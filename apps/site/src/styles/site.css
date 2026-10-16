@@ -3,6 +3,12 @@
     --header-h: 68px;
   }
 
+  html {
+    /* Keeps focused and scrolled-to content clear of the fixed header (WCAG 2.4.11). */
+    scroll-padding-top: calc(var(--header-h) + var(--space-m));
+    scroll-padding-bottom: 104px;
+  }
+
   body {
     overflow-x: hidden;
   }

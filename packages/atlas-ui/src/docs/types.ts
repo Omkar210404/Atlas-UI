@@ -69,7 +69,11 @@ export interface Preset {
   id: string;
   name: string;
   description: string;
-  render: () => ReactNode;
+  /**
+   * Renders the preset. `instance` names a second copy on the same page (for example
+   * "light" when both themes are shown), so labelled landmarks stay unique.
+   */
+  render: (instance?: string) => ReactNode;
 }
 
 export interface ComponentDocs {

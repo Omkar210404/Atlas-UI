@@ -75,13 +75,13 @@ const path: Crumb[] = [
   { label: 'Anchorage plan', href: '#anchorage-plan' },
 ];
 
-function Demo({ depth, width }: { depth: number; width: number }) {
+function Demo({ depth, width, label }: { depth: number; width: number; label: string }) {
   const [trail, setTrail] = useState(() => path.slice(0, depth));
   return (
     <div style={{ width: `min(${width}px, 100%)`, display: 'grid', gap: 'var(--space-s)' }}>
       <div style={{ boxShadow: 'inset 0 -1px 0 var(--isobath)', paddingBottom: 'var(--space-xs)' }}>
         <BreadcrumbTrail
-          label="Chart location"
+          label={label}
           items={trail}
           onNavigate={(crumb, event) => {
             event.preventDefault();
@@ -103,6 +103,9 @@ function Demo({ depth, width }: { depth: number; width: number }) {
   );
 }
 
+const named = (preset: string, instance?: string) =>
+  ['Chart location', preset, instance].filter(Boolean).join(', ');
+
 export const docs: ComponentDocs = {
   meta,
   presets: [
@@ -110,22 +113,27 @@ export const docs: ComponentDocs = {
       id: 'roomy',
       name: 'Room to spare',
       description: 'Every level fits, so nothing folds.',
-      render: () => <Demo depth={4} width={720} />,
+      render: (instance) => <Demo depth={4} width={720} label={named('roomy', instance)} />,
     },
     {
       id: 'narrow',
       name: 'Narrow container',
       description: 'The middle levels fold into a button.',
-      render: () => <Demo depth={6} width={340} />,
+      render: (instance) => <Demo depth={6} width={340} label={named('narrow', instance)} />,
     },
     {
       id: 'deep',
       name: 'Deep path',
       description: 'Seven levels, folding only what does not fit.',
-      render: () => <Demo depth={7} width={560} />,
+      render: (instance) => <Demo depth={7} width={560} label={named('deep', instance)} />,
     },
   ],
   Playground: ({ values }) => (
-    <Demo key={String(values.depth)} depth={Number(values.depth)} width={Number(values.width)} />
+    <Demo
+      key={String(values.depth)}
+      depth={Number(values.depth)}
+      width={Number(values.width)}
+      label="Chart location, playground"
+    />
   ),
 };

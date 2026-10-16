@@ -82,7 +82,7 @@ function Stage({ docs, slug }: { docs: ComponentDocs; slug: string }) {
                   style={p.id === docs.presets[0]?.id && t === themes[0] ? { viewTransitionName: `stage-${slug}` } : undefined}
                 >
                   {themes.length > 1 ? <span className="stage__frame-label">{t === 'night' ? 'Dark' : 'Light'}</span> : null}
-                  {p.render()}
+                  {p.render(themes.length > 1 ? (t === 'night' ? 'dark' : 'light') : undefined)}
                 </div>
               ))}
             </div>

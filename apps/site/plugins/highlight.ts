@@ -1,8 +1,13 @@
 import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
 import { createCssVariablesTheme, createHighlighter, type Highlighter } from 'shiki';
 import type { Plugin } from 'vite';
 
 const SUFFIX = '?highlight';
+// A virtual id keeps other plugins away from these modules. It ends in .js so that
+// extension-based plugins (notably CSS processing) never treat a stylesheet's source as CSS.
+const PREFIX = '\0atlas-highlight:';
+const ENDING = '.source.js';
 
 /**
  * `import source from './File.tsx?highlight'` yields `{ code, html }` with the file's source
@@ -17,9 +22,14 @@ export function highlight(): Plugin {
   return {
     name: 'atlas-highlight',
     enforce: 'pre',
+    resolveId(source, importer) {
+      if (!source.endsWith(SUFFIX)) return null;
+      const path = source.slice(0, -SUFFIX.length);
+      return PREFIX + (importer ? resolve(dirname(importer), path) : resolve(path)) + ENDING;
+    },
     async load(id) {
-      if (!id.endsWith(SUFFIX)) return null;
-      const file = id.slice(0, -SUFFIX.length);
+      if (!id.startsWith(PREFIX)) return null;
+      const file = id.slice(PREFIX.length, -ENDING.length);
       this.addWatchFile(file);
       const code = (await readFile(file, 'utf8')).replace(/\r\n/g, '\n');
       const lang = file.endsWith('.css') ? 'css' : file.endsWith('.tsx') ? 'tsx' : 'ts';

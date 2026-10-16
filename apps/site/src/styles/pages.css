@@ -73,6 +73,11 @@
     font-size: 0.86em;
   }
 
+  .swatch-table__token code,
+  .ease figcaption code {
+    justify-self: start;
+  }
+
   .text-link,
   .page a:not([class]) {
     color: var(--ink);

@@ -10,7 +10,15 @@ import { SimpleAtlas, SimpleRegion } from './pages/Simple';
 import { SpecPage } from './pages/SpecPage';
 import { TypePage } from './pages/TypePage';
 import { autoSimpleReason, setPref, usePrefs } from './prefs';
-import { depth, navigate, parent, previousRoute, setTransitionPolicy, useRoute, type Route } from './router';
+import {
+  depth,
+  navigate,
+  parent,
+  previousRoute,
+  setTransitionPolicy,
+  useRoute,
+  type Route,
+} from './router';
 import { Header } from './shell/Header';
 import { InsetMap } from './shell/InsetMap';
 import { ScaleBar } from './shell/ScaleBar';
@@ -67,7 +75,10 @@ export function App() {
   }, [view]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--sea', `var(--sea-${Math.min(depth[route.level], 3)})`);
+    document.documentElement.style.setProperty(
+      '--sea',
+      `var(--sea-${Math.min(depth[route.level], 3)})`,
+    );
     document.documentElement.dataset.level = route.level;
   }, [route.level]);
 
@@ -103,7 +114,11 @@ export function App() {
     content =
       view === 'spatial' ? (
         <Chart route={route} layout={layout}>
-          {route.level === 'region' && category ? <RegionPanel category={category} /> : <AtlasIntro />}
+          {route.level === 'region' && category ? (
+            <RegionPanel category={category} />
+          ) : (
+            <AtlasIntro />
+          )}
         </Chart>
       ) : route.level === 'region' && category ? (
         <SimpleRegion category={category} />
@@ -125,15 +140,19 @@ export function App() {
       </a>
       <Header route={route} view={view} onViewChange={(v) => setPref('view', v)} />
       {reason && !noticeDismissed ? (
-        <div className="notice" role="status">
+        <aside className="notice" aria-label="About this view">
           <p>{reason}</p>
-          <button type="button" className="notice__action" onClick={() => setPref('view', 'spatial')}>
+          <button
+            type="button"
+            className="notice__action"
+            onClick={() => setPref('view', 'spatial')}
+          >
             Use the Spatial view
           </button>
           <button type="button" className="notice__close" onClick={() => setNoticeDismissed(true)}>
             Dismiss
           </button>
-        </div>
+        </aside>
       ) : null}
       <main id="main" className="main" data-view={view} data-level={route.level} tabIndex={-1}>
         {content}

@@ -7,8 +7,8 @@ export interface Source {
 const sources = import.meta.glob<Source>(
   [
     '../../../../packages/atlas-ui/src/components/*/*/*.{ts,tsx,css}',
-    '!**/*.test.tsx',
-    '!**/docs.tsx',
+    '!../../../../packages/atlas-ui/src/components/*/*/*.test.tsx',
+    '!../../../../packages/atlas-ui/src/components/*/*/docs.tsx',
   ],
   { query: '?highlight' },
 );

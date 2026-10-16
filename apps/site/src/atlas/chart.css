@@ -86,6 +86,14 @@
     transition: fill var(--dur-step) var(--ease-anchor);
   }
 
+  [data-theme='day'] .island__ring {
+    fill: color-mix(in oklch, var(--reef) calc(40% + var(--ring) * 18%), var(--shoal));
+  }
+
+  [data-theme='day'] .island__coast {
+    stroke: color-mix(in oklch, var(--isobath), var(--ink-soft) 35%);
+  }
+
   .island__link:hover .island__coast,
   .island__link:focus-visible .island__coast {
     fill: color-mix(in oklch, var(--shoal), var(--reef) 45%);

@@ -94,6 +94,9 @@ export function previousRoute(): Route | null {
 /** Levels drawn by the chart camera; moving between them is a camera move, not a page swap. */
 const onChart = (route: Route) => route.level === 'atlas' || route.level === 'region';
 
+const webKitOnly =
+  /AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Firefox/.test(navigator.userAgent);
+
 let transitionOverride: ((route: Route) => boolean) | null = null;
 
 /** Lets the shell turn page transitions off, for example in Simple view. */
@@ -116,6 +119,10 @@ function go(next: Route, mode: 'push' | 'replace' | 'pop') {
     typeof document.startViewTransition === 'function' &&
     !prefersReducedMotion() &&
     !(onChart(from) && onChart(next)) &&
+    // WebKit's page process crashed on view transitions that start or end on the chart
+    // (seen in Playwright's WebKit, October 2026; the trigger is not isolated yet), so
+    // WebKit swaps those pages directly. Page-to-page transitions still animate there.
+    !(webKitOnly && (onChart(from) || onChart(next))) &&
     (transitionOverride ? transitionOverride(next) : true);
 
   const update = () => {

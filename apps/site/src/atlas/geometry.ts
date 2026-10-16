@@ -144,6 +144,8 @@ export function makeIsland(
     const r = radius * (0.42 + rand() * 0.12);
     return { x: centre.x + r * Math.cos(theta), y: centre.y + r * Math.sin(theta) };
   });
+  // Top to bottom, so on the region chart the leader lines run to cards in the same order.
+  soundings.sort((a, b) => a.y - b.y);
 
   const xs = coastPoints.map((p) => p.x).concat(labelPoints.map((p) => p.x));
   const ys = coastPoints.map((p) => p.y).concat(labelPoints.map((p) => p.y - radius * 0.25));
