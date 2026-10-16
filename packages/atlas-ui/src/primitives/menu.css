@@ -1,0 +1,108 @@
+@layer atlas.components {
+  .atl-menu {
+    display: grid;
+    min-width: 13rem;
+    max-width: min(22rem, calc(100vw - 16px));
+    padding: var(--space-2xs);
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    color: var(--ink);
+    box-shadow: var(--elev-overlay);
+  }
+
+  .atl-menu:focus {
+    outline: none;
+  }
+
+  .atl-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    min-height: var(--target-comfort);
+    padding: var(--space-2xs) var(--space-s);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .atl-menu__item[data-separator] {
+    margin-top: var(--space-2xs);
+    box-shadow: 0 -1px 0 color-mix(in oklch, var(--isobath) 55%, transparent);
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .atl-menu__item:focus {
+    outline: none;
+    background: var(--reef);
+    box-shadow: inset 3px 0 0 var(--chart-magenta);
+  }
+
+  .atl-menu__item[data-separator]:focus {
+    box-shadow:
+      inset 3px 0 0 var(--chart-magenta),
+      0 -1px 0 color-mix(in oklch, var(--isobath) 55%, transparent);
+  }
+
+  .atl-menu__item[aria-disabled='true'] {
+    color: var(--ink-soft);
+    cursor: not-allowed;
+  }
+
+  .atl-menu__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    color: var(--ink-soft);
+  }
+
+  .atl-menu__text {
+    display: grid;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .atl-menu__label {
+    font-weight: 550;
+  }
+
+  .atl-menu__description,
+  .atl-menu__hint {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  .atl-menu__hint {
+    flex: none;
+  }
+
+  /* Menus opened as popovers sit in the top layer and are placed by script. */
+  .atl-menu-popover {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    overflow: visible;
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      translate var(--dur-step) var(--ease-anchor);
+  }
+
+  @starting-style {
+    .atl-menu-popover:popover-open {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .atl-menu {
+      border: 1px solid CanvasText;
+    }
+    .atl-menu__item:focus {
+      outline: 2px solid Highlight;
+    }
+  }
+}

@@ -1,0 +1,96 @@
+@layer atlas.components {
+  /* Every face sits in the same grid cell, so the button keeps the width of its widest state. */
+  .atl-load__stack {
+    display: inline-grid;
+  }
+
+  .atl-load__face {
+    grid-area: 1 / 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    visibility: hidden;
+    opacity: 0;
+    translate: 0 4px;
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      translate var(--dur-step) var(--ease-anchor),
+      visibility 0s linear var(--dur-step);
+  }
+
+  .atl-load__face[data-active] {
+    visibility: visible;
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      translate var(--dur-step) var(--ease-anchor),
+      visibility 0s;
+  }
+
+  .atl-load__icon {
+    display: grid;
+    place-items: center;
+  }
+
+  .atl-load__icon svg {
+    width: 1.15em;
+    height: 1.15em;
+  }
+
+  /* While busy the button keeps its colours; aria-disabled must not grey it out. */
+  .atl-load[data-state='loading'][aria-disabled='true'] {
+    opacity: 1;
+    cursor: progress;
+  }
+
+  .atl-load[data-state='success'] {
+    --atl-button-bg: color-mix(in oklch, var(--starboard) 22%, var(--shoal));
+    --atl-button-fg: var(--ink);
+    --atl-button-edge: var(--starboard);
+  }
+
+  .atl-load[data-state='error'] {
+    --atl-button-bg: color-mix(in oklch, var(--port) 18%, var(--shoal));
+    --atl-button-fg: var(--ink);
+    --atl-button-edge: var(--port);
+  }
+
+  .atl-load[data-state='success'] .atl-load__icon {
+    color: var(--starboard);
+  }
+
+  .atl-load[data-state='error'] .atl-load__icon {
+    color: var(--port);
+  }
+
+  .atl-load__spinner {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    animation: atl-load-turn 900ms linear infinite;
+  }
+
+  .atl-load__spinner circle {
+    opacity: 0.3;
+  }
+
+  @keyframes atl-load-turn {
+    to {
+      rotate: 360deg;
+    }
+  }
+
+  /* Reduced motion: no spinning. The label already says the work is in progress. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-load__spinner {
+      animation: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-load__spinner {
+    animation: none;
+  }
+}

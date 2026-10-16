@@ -21,6 +21,7 @@ export const categories: readonly Category[] = [
     name: 'Actions',
     description: 'Buttons that respond to how you reach for them.',
     types: [
+      { slug: 'button', name: 'Button', summary: 'The base button every other action builds on.' },
       { slug: 'magnetic-button', name: 'Magnetic button', summary: 'A button that leans toward the pointer.' },
       { slug: 'morphing-icon-button', name: 'Morphing icon button', summary: 'A toggle whose icon reshapes between states.' },
       { slug: 'split-action-button', name: 'Split action button', summary: 'One main action with alternatives behind a seam.' },

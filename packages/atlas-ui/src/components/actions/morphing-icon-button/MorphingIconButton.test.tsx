@@ -21,7 +21,8 @@ describe('glyphs', () => {
 
   it('rotates bars instead of shrinking them through the middle', () => {
     const [bar] = glyphAt(glyphs['plus-close'], 0.5);
-    const [[x1, y1], [x2, y2]] = bar!;
+    const [x1, y1] = bar![0]!;
+    const [x2, y2] = bar![1]!;
     expect(Math.hypot(x2 - x1, y2 - y1)).toBeCloseTo(16, 5);
   });
 });

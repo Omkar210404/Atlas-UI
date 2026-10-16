@@ -1,0 +1,44 @@
+@layer atlas.components {
+  .atl-split {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+  }
+
+  .atl-split__main {
+    border-start-end-radius: 0;
+    border-end-end-radius: 0;
+  }
+
+  .atl-split__more {
+    width: auto;
+    padding-inline: var(--space-s);
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+  }
+
+  .atl-split__more .atl-button__icon svg {
+    transition: rotate var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-split[data-open] .atl-split__more .atl-button__icon svg {
+    rotate: 180deg;
+  }
+
+  /* The seam: a hairline that reads on the fill colour of either variant. */
+  .atl-split__seam {
+    position: relative;
+    z-index: 1;
+    width: 1px;
+    margin-inline: -0.5px;
+    background: color-mix(in oklch, var(--on-magenta) 38%, transparent);
+  }
+
+  .atl-split[data-variant='secondary'] .atl-split__seam {
+    background: var(--edge);
+  }
+
+  .atl-split .atl-button:focus-visible {
+    z-index: 2;
+  }
+}
