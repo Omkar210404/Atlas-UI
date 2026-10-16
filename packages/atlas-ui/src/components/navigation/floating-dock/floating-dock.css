@@ -1,0 +1,164 @@
+@layer atlas.components {
+  .atl-dock {
+    --atl-dock-size: var(--target-comfort);
+    --atl-dock-pad: 6px;
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: calc(var(--atl-dock-size) + 2 * var(--atl-dock-pad));
+    padding: var(--atl-dock-pad);
+    border-radius: calc(var(--radius-overlay) + 2px);
+    background: var(--shoal);
+    box-shadow: var(--elev-overlay);
+  }
+
+  .atl-dock[data-floating] {
+    position: fixed;
+    left: 50%;
+    bottom: max(var(--space-m), env(safe-area-inset-bottom));
+    z-index: 20;
+    translate: -50% 0;
+  }
+
+  .atl-dock__item {
+    --atl-dock-scale: 1;
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: calc(var(--atl-dock-size) * var(--atl-dock-scale));
+    height: calc(var(--atl-dock-size) * var(--atl-dock-scale));
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--radius-panel) * var(--atl-dock-scale));
+    background: none;
+    color: var(--ink-soft);
+    text-decoration: none;
+    transition:
+      background-color var(--dur-tick) var(--ease-anchor),
+      color var(--dur-tick) var(--ease-anchor);
+  }
+
+  .atl-dock[data-magnify] .atl-dock__item {
+    transition:
+      width var(--dur-tick) var(--ease-anchor),
+      height var(--dur-tick) var(--ease-anchor),
+      border-radius var(--dur-tick) var(--ease-anchor),
+      background-color var(--dur-tick) var(--ease-anchor),
+      color var(--dur-tick) var(--ease-anchor);
+  }
+
+  .atl-dock__item:hover {
+    background: var(--reef);
+    color: var(--ink);
+  }
+
+  .atl-dock__item[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .atl-dock__item[aria-disabled='true']:hover {
+    background: none;
+    color: var(--ink-soft);
+  }
+
+  .atl-dock__icon {
+    display: grid;
+    place-items: center;
+    width: 46%;
+    height: 46%;
+  }
+
+  .atl-dock__icon > svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .atl-dock__item[aria-pressed='true'] {
+    background: var(--magenta-wash);
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--chart-magenta) 55%, transparent);
+  }
+
+  /* "You are here": a magenta position mark under the current item. */
+  .atl-dock__item[data-current]::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--chart-magenta);
+    translate: -50% 0;
+  }
+
+  .atl-dock__item[data-current] {
+    color: var(--ink);
+  }
+
+  .atl-dock__item:focus-visible {
+    outline-offset: 1px;
+  }
+
+  .atl-dock__tip {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-control);
+    background: var(--ink);
+    color: var(--sea-0);
+    font-size: var(--step--1);
+    font-weight: 500;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    translate: -50% 4px;
+    transition:
+      opacity var(--dur-tick) var(--ease-anchor),
+      translate var(--dur-tick) var(--ease-anchor);
+  }
+
+  .atl-dock__tip kbd {
+    background: color-mix(in oklch, var(--sea-0) 16%, transparent);
+    box-shadow: none;
+    color: inherit;
+  }
+
+  .atl-dock__item:hover .atl-dock__tip,
+  .atl-dock__item:focus-visible .atl-dock__tip {
+    opacity: 1;
+    translate: -50% 0;
+    transition-delay: 60ms;
+  }
+
+  .atl-dock[data-tips-hidden] .atl-dock__tip {
+    opacity: 0;
+  }
+
+  .atl-dock__separator {
+    align-self: center;
+    flex: none;
+    width: 1px;
+    height: 60%;
+    margin: 0 4px;
+    background: color-mix(in oklch, var(--isobath) 80%, transparent);
+  }
+
+  @media (forced-colors: active) {
+    .atl-dock {
+      border: 1px solid CanvasText;
+    }
+    .atl-dock__item[data-current]::after {
+      background: Highlight;
+    }
+    .atl-dock__tip {
+      border: 1px solid CanvasText;
+    }
+  }
+}
