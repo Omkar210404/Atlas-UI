@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-popover",
+  "type": "primitive",
+  "title": "use-popover",
+  "files": [
+    {
+      "path": "primitives/use-popover.ts",
+      "kind": "source",
+      "content": "import { useLayoutEffect, type RefObject } from 'react';\n\n/**\n * Shows an element with the `popover` attribute in the top layer while `open` is true, so\n * it is never clipped by an ancestor's overflow or stacking context. Falls back to leaving\n * it in place when the Popover API is missing.\n */\nexport function usePopover(ref: RefObject<HTMLElement | null>, open: boolean): void {\n  useLayoutEffect(() => {\n    const el = ref.current;\n    if (!el || typeof el.showPopover !== 'function') return;\n    if (open && !el.matches(':popover-open')) el.showPopover();\n    if (!open && el.matches(':popover-open')) el.hidePopover();\n  }, [ref, open]);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

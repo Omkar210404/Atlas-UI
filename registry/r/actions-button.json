@@ -1,0 +1,57 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "actions/button",
+  "type": "component",
+  "title": "Button",
+  "description": "The base button every other action builds on.",
+  "category": "actions",
+  "files": [
+    {
+      "path": "components/actions/button/Button.tsx",
+      "kind": "source",
+      "content": "import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';\nimport './button.css';\n\nexport type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';\nexport type ButtonSize = 's' | 'm' | 'l';\n\nexport interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {\n  ref?: Ref<HTMLButtonElement>;\n  /** `primary` is for the one main action in a view; `quiet` for low-emphasis actions. */\n  variant?: ButtonVariant;\n  size?: ButtonSize;\n  /** An icon shown before (or after) the label. Decorative; the label names the button. */\n  icon?: ReactNode;\n  iconPosition?: 'start' | 'end';\n  children?: ReactNode;\n}\n\n/**\n * The base button. `disabled` keeps its native meaning; pass `aria-disabled` instead when\n * the button must stay focusable (for example while it explains why it cannot be used).\n */\nexport function Button({\n  ref,\n  variant = 'secondary',\n  size = 'm',\n  icon,\n  iconPosition = 'start',\n  type = 'button',\n  className,\n  children,\n  onClick,\n  ...rest\n}: ButtonProps) {\n  const ariaDisabled = rest['aria-disabled'] === true || rest['aria-disabled'] === 'true';\n  return (\n    <button\n      ref={ref}\n      type={type}\n      className={['atl-button', className].filter(Boolean).join(' ')}\n      data-variant={variant}\n      data-size={size}\n      data-icon-only={!children || undefined}\n      onClick={(event) => {\n        if (ariaDisabled) {\n          event.preventDefault();\n          return;\n        }\n        onClick?.(event);\n      }}\n      {...rest}\n    >\n      {icon && iconPosition === 'start' ? (\n        <span className=\"atl-button__icon\" aria-hidden=\"true\">\n          {icon}\n        </span>\n      ) : null}\n      {children ? <span className=\"atl-button__label\">{children}</span> : null}\n      {icon && iconPosition === 'end' ? (\n        <span className=\"atl-button__icon\" aria-hidden=\"true\">\n          {icon}\n        </span>\n      ) : null}\n    </button>\n  );\n}\n"
+    },
+    {
+      "path": "components/actions/button/button.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-button {\n    --atl-button-h: 40px;\n    --atl-button-bg: var(--reef);\n    --atl-button-fg: var(--ink);\n    --atl-button-edge: var(--edge);\n    position: relative;\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    gap: var(--space-xs);\n    min-height: var(--atl-button-h);\n    padding: 0 var(--space-m);\n    border: 0;\n    border-radius: var(--radius-control);\n    background: var(--atl-button-bg);\n    color: var(--atl-button-fg);\n    box-shadow: inset 0 0 0 1px var(--atl-button-edge);\n    font-size: var(--step-0);\n    font-weight: 600;\n    line-height: 1.1;\n    white-space: nowrap;\n    text-decoration: none;\n    cursor: pointer;\n    user-select: none;\n    -webkit-tap-highlight-color: transparent;\n    transition:\n      background-color var(--dur-tick) var(--ease-anchor),\n      box-shadow var(--dur-tick) var(--ease-anchor),\n      translate var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-button[data-size='s'] {\n    --atl-button-h: 32px;\n    padding: 0 var(--space-s);\n    font-size: var(--step--1);\n  }\n\n  .atl-button[data-size='l'] {\n    --atl-button-h: 48px;\n    padding: 0 var(--space-l);\n    font-size: var(--step-1);\n  }\n\n  .atl-button[data-icon-only] {\n    width: var(--atl-button-h);\n    padding: 0;\n  }\n\n  .atl-button[data-variant='primary'] {\n    --atl-button-bg: var(--chart-magenta);\n    --atl-button-fg: var(--on-magenta);\n    --atl-button-edge: transparent;\n  }\n\n  .atl-button[data-variant='quiet'] {\n    --atl-button-bg: transparent;\n    --atl-button-edge: transparent;\n  }\n\n  .atl-button[data-variant='danger'] {\n    --atl-button-bg: var(--port);\n    --atl-button-fg: var(--on-magenta);\n    --atl-button-edge: transparent;\n  }\n\n  .atl-button:hover:not(:disabled, [aria-disabled='true']) {\n    background: color-mix(in oklch, var(--atl-button-bg), var(--ink) 9%);\n  }\n\n  .atl-button[data-variant='quiet']:hover:not(:disabled, [aria-disabled='true']) {\n    background: var(--ink-wash);\n  }\n\n  .atl-button[data-variant='primary']:hover:not(:disabled, [aria-disabled='true']),\n  .atl-button[data-variant='danger']:hover:not(:disabled, [aria-disabled='true']) {\n    background: color-mix(in oklch, var(--atl-button-bg), var(--sea-0) 12%);\n  }\n\n  .atl-button:active:not(:disabled, [aria-disabled='true']) {\n    translate: 0 1px;\n  }\n\n  .atl-button:disabled,\n  .atl-button[aria-disabled='true'] {\n    cursor: not-allowed;\n    opacity: 0.55;\n  }\n\n  .atl-button__icon {\n    display: grid;\n    place-items: center;\n    flex: none;\n  }\n\n  .atl-button__icon > svg {\n    width: 1.15em;\n    height: 1.15em;\n  }\n\n  .atl-button__label {\n    display: inline-block;\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-button:active {\n      translate: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-button:active {\n    translate: none;\n  }\n\n  @media (forced-colors: active) {\n    .atl-button {\n      border: 1px solid ButtonText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/actions/button/index.ts",
+      "kind": "index",
+      "content": "export { Button } from './Button';\nexport type { ButtonProps, ButtonSize, ButtonVariant } from './Button';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Activate the button."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move focus to and from the button."
+      }
+    ],
+    "notes": [
+      "A native `<button>` with `type=\"button\"` by default, so it never submits a form by accident.",
+      "Small buttons are 32 px tall, above the 24 px minimum target; the default is 40 px and large is 48 px.",
+      "With `aria-disabled`, clicks are ignored but the button stays in the Tab order and keeps its name.",
+      "In forced-colours mode the button gets a system-coloured border."
+    ],
+    "reducedMotion": "The 1 px press dip is removed; colour changes stay."
+  },
+  "license": "MIT"
+}

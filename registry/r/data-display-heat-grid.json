@@ -1,0 +1,73 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "data-display/heat-grid",
+  "type": "component",
+  "title": "Heat-grid",
+  "description": "A grid of cells shaded by value, navigable by keyboard.",
+  "category": "data-display",
+  "files": [
+    {
+      "path": "components/data-display/heat-grid/HeatGrid.tsx",
+      "kind": "source",
+      "content": "import { useState, type KeyboardEvent } from 'react';\nimport './heat-grid.css';\n\nexport interface HeatGridProps {\n  /** Names the grid, for example \"Wind speed by day and hour\". */\n  label: string;\n  rows: readonly string[];\n  columns: readonly string[];\n  /** values[row][column] */\n  values: readonly (readonly number[])[];\n  formatValue?: (value: number) => string;\n  /** Print each value inside its cell. */\n  showValues?: boolean;\n  className?: string;\n}\n\nconst STEPS = 5;\n\n/**\n * A grid of cells shaded by value, in five depth tints with a legend. Follows the WAI-ARIA\n * grid pattern: one Tab stop, arrow keys between cells, and every cell names its row,\n * column and value.\n */\nexport function HeatGrid({\n  label,\n  rows,\n  columns,\n  values,\n  formatValue = (v) => String(v),\n  showValues = false,\n  className,\n}: HeatGridProps) {\n  const [focus, setFocus] = useState({ r: 0, c: 0 });\n  const flat = values.flat();\n  const min = Math.min(...flat);\n  const max = Math.max(...flat);\n  const step = (v: number) =>\n    Math.min(STEPS - 1, Math.floor(((v - min) / (max - min || 1)) * STEPS));\n  const bounds = (v: number) => min + ((max - min) * v) / STEPS;\n\n  const move = (r: number, c: number, el: HTMLElement) => {\n    const next = {\n      r: Math.min(Math.max(r, 0), rows.length - 1),\n      c: Math.min(Math.max(c, 0), columns.length - 1),\n    };\n    setFocus(next);\n    el.closest('[role=\"grid\"]')\n      ?.querySelector<HTMLElement>(`[data-cell=\"${next.r}-${next.c}\"]`)\n      ?.focus();\n  };\n\n  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {\n    const { r, c } = focus;\n    const moves: Record<string, [number, number]> = {\n      ArrowRight: [r, c + 1],\n      ArrowLeft: [r, c - 1],\n      ArrowDown: [r + 1, c],\n      ArrowUp: [r - 1, c],\n      Home: event.ctrlKey ? [0, 0] : [r, 0],\n      End: event.ctrlKey ? [rows.length - 1, columns.length - 1] : [r, columns.length - 1],\n    };\n    const target = moves[event.key];\n    if (!target) return;\n    event.preventDefault();\n    move(target[0], target[1], event.target as HTMLElement);\n  };\n\n  return (\n    <figure className={['atl-heat', className].filter(Boolean).join(' ')}>\n      {/* The cells take focus (roving tabindex); the grid only routes their arrow keys. */}\n      {/* eslint-disable-next-line jsx-a11y/interactive-supports-focus */}\n      <div\n        role=\"grid\"\n        aria-label={label}\n        className=\"atl-heat__grid\"\n        onKeyDown={onKeyDown}\n        style={{ '--cols': columns.length } as React.CSSProperties}\n      >\n        <div role=\"row\" className=\"atl-heat__row\">\n          <span role=\"columnheader\" className=\"atl-heat__corner\" aria-hidden=\"true\" />\n          {columns.map((col) => (\n            <span key={col} role=\"columnheader\" className=\"atl-heat__colhead\">\n              {col}\n            </span>\n          ))}\n        </div>\n        {rows.map((row, r) => (\n          <div key={row} role=\"row\" className=\"atl-heat__row\">\n            <span role=\"rowheader\" className=\"atl-heat__rowhead\">\n              {row}\n            </span>\n            {columns.map((col, c) => {\n              const value = values[r]?.[c] ?? 0;\n              return (\n                // Keys are handled once on the grid (WAI-ARIA grid pattern).\n                // eslint-disable-next-line jsx-a11y/click-events-have-key-events\n                <span\n                  key={col}\n                  role=\"gridcell\"\n                  tabIndex={focus.r === r && focus.c === c ? 0 : -1}\n                  data-cell={`${r}-${c}`}\n                  data-step={step(value)}\n                  className=\"atl-heat__cell\"\n                  aria-label={`${row}, ${col}: ${formatValue(value)}`}\n                  onFocus={() => setFocus({ r, c })}\n                  onClick={(event) => move(r, c, event.currentTarget)}\n                >\n                  <span\n                    className=\"atl-heat__value\"\n                    aria-hidden=\"true\"\n                    data-visible={showValues || undefined}\n                  >\n                    {formatValue(value)}\n                  </span>\n                </span>\n              );\n            })}\n          </div>\n        ))}\n      </div>\n      <figcaption className=\"atl-heat__legend\" aria-hidden=\"true\">\n        {Array.from({ length: STEPS }, (_, i) => (\n          <span key={i} className=\"atl-heat__key\">\n            <span className=\"atl-heat__swatch\" data-step={i} />\n            {formatValue(Math.round(bounds(i)))}–{formatValue(Math.round(bounds(i + 1)))}\n          </span>\n        ))}\n      </figcaption>\n    </figure>\n  );\n}\n"
+    },
+    {
+      "path": "components/data-display/heat-grid/heat-grid.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-heat {\n    display: grid;\n    gap: var(--space-s);\n    margin: 0;\n    max-width: 100%;\n    overflow-x: auto;\n  }\n\n  .atl-heat__grid {\n    display: grid;\n    gap: 3px;\n    width: max-content;\n  }\n\n  .atl-heat__row {\n    display: grid;\n    grid-template-columns: 3.5rem repeat(var(--cols), 2.25rem);\n    gap: 3px;\n    align-items: center;\n  }\n\n  .atl-heat__colhead,\n  .atl-heat__rowhead {\n    color: var(--ink-soft);\n    font-size: 0.75rem;\n    font-variant-numeric: tabular-nums;\n  }\n\n  .atl-heat__colhead {\n    text-align: center;\n  }\n\n  /* Depth tints: deeper water, darker cell in the night theme; the reverse by day. */\n  .atl-heat__cell,\n  .atl-heat__swatch {\n    --atl-heat: color-mix(in oklch, var(--ink) calc(8% + var(--s, 0) * 21%), var(--sea-1));\n  }\n\n  [data-step='0'] {\n    --s: 0;\n  }\n  [data-step='1'] {\n    --s: 1;\n  }\n  [data-step='2'] {\n    --s: 2;\n  }\n  [data-step='3'] {\n    --s: 3;\n  }\n  [data-step='4'] {\n    --s: 4;\n  }\n\n  .atl-heat__cell {\n    display: grid;\n    place-items: center;\n    height: 2.25rem;\n    border-radius: 4px;\n    background: var(--atl-heat);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 40%, transparent);\n    cursor: pointer;\n  }\n\n  .atl-heat__cell:focus-visible {\n    outline: var(--focus-ring);\n    outline-offset: 1px;\n    z-index: 1;\n  }\n\n  .atl-heat__value {\n    font-size: 0.7rem;\n    font-weight: 600;\n    font-variant-numeric: tabular-nums;\n    color: var(--ink);\n    opacity: 0;\n  }\n\n  .atl-heat__cell[data-step='2'] .atl-heat__value,\n  .atl-heat__cell[data-step='3'] .atl-heat__value,\n  .atl-heat__cell[data-step='4'] .atl-heat__value {\n    color: var(--sea-0);\n  }\n\n  .atl-heat__value[data-visible],\n  .atl-heat__cell:focus-visible .atl-heat__value,\n  .atl-heat__cell:hover .atl-heat__value {\n    opacity: 1;\n  }\n\n  .atl-heat__legend {\n    display: flex;\n    flex-wrap: wrap;\n    gap: var(--space-xs) var(--space-s);\n    color: var(--ink-soft);\n    font-size: 0.75rem;\n  }\n\n  .atl-heat__key {\n    display: inline-flex;\n    align-items: center;\n    gap: var(--space-2xs);\n  }\n\n  .atl-heat__swatch {\n    width: 14px;\n    height: 14px;\n    border-radius: 3px;\n    background: var(--atl-heat);\n    box-shadow: inset 0 0 0 1px var(--isobath);\n  }\n}\n"
+    },
+    {
+      "path": "components/data-display/heat-grid/index.ts",
+      "kind": "index",
+      "content": "export { HeatGrid } from './HeatGrid';\nexport type { HeatGridProps } from './HeatGrid';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move into the grid (to the last focused cell) and out again."
+      },
+      {
+        "keys": [
+          "ArrowRight",
+          "ArrowLeft",
+          "ArrowUp",
+          "ArrowDown"
+        ],
+        "action": "Move one cell."
+      },
+      {
+        "keys": [
+          "Home",
+          "End"
+        ],
+        "action": "Go to the first or last cell in the row."
+      },
+      {
+        "keys": [
+          "Control+Home",
+          "Control+End"
+        ],
+        "action": "Go to the first or last cell in the grid."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA grid pattern: `grid`, `row`, `columnheader`, `rowheader` and `gridcell`, with one Tab stop (roving tabindex).",
+      "Every cell is named with its row, column and value, so the colour is never needed to read it.",
+      "Values appear inside the cell on hover and focus, with text colour chosen per tint for contrast.",
+      "The grid scrolls sideways inside its own box on narrow screens instead of shrinking cells below 36 px."
+    ],
+    "reducedMotion": "Nothing animates."
+  },
+  "license": "MIT"
+}

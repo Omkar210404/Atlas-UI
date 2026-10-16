@@ -1,0 +1,48 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "spatial/depth-layers-card",
+  "type": "component",
+  "title": "Depth-layers card",
+  "description": "Planes that separate in CSS 3D.",
+  "category": "spatial",
+  "files": [
+    {
+      "path": "components/spatial/depth-layers-card/DepthLayersCard.tsx",
+      "kind": "source",
+      "content": "import type { ReactNode } from 'react';\nimport './depth-layers-card.css';\n\nexport interface DepthLayer {\n  id: string;\n  content: ReactNode;\n}\n\nexport interface DepthLayersCardProps {\n  /** Layers from back to front. */\n  layers: readonly DepthLayer[];\n  /** Readable content below the stack: title, text, actions. */\n  children?: ReactNode;\n  /** Distance in px between layers when the card opens out. */\n  spread?: number;\n  className?: string;\n}\n\n/**\n * A card whose picture is a stack of flat planes that separate in CSS 3D on hover or focus,\n * like the layers of a chart lifted apart: sea, contours, labels. No WebGL.\n */\nexport function DepthLayersCard({\n  layers,\n  children,\n  spread = 22,\n  className,\n}: DepthLayersCardProps) {\n  return (\n    <div\n      className={['atl-depth', className].filter(Boolean).join(' ')}\n      style={{ '--atl-spread': `${spread}px` } as React.CSSProperties}\n    >\n      <div className=\"atl-depth__stage\" aria-hidden=\"true\">\n        <div className=\"atl-depth__stack\">\n          {layers.map((layer, i) => (\n            <div\n              key={layer.id}\n              className=\"atl-depth__layer\"\n              style={{ '--atl-layer': i } as React.CSSProperties}\n            >\n              {layer.content}\n            </div>\n          ))}\n        </div>\n      </div>\n      {children ? <div className=\"atl-depth__body\">{children}</div> : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/spatial/depth-layers-card/depth-layers-card.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-depth {\n    display: grid;\n    overflow: hidden;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 50%, transparent);\n  }\n\n  .atl-depth__stage {\n    height: 11rem;\n    perspective: 700px;\n    perspective-origin: 50% 20%;\n    background: var(--sea-1);\n  }\n\n  .atl-depth__stack {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    transform-style: preserve-3d;\n    transform: rotateX(28deg) rotateZ(-8deg) scale(0.86);\n    transition: transform var(--dur-voyage) var(--ease-drift);\n  }\n\n  .atl-depth__layer {\n    position: absolute;\n    inset: 12% 14%;\n    transform: translateZ(calc(var(--atl-layer) * 2px));\n    transition: transform var(--dur-voyage) var(--ease-drift);\n    transition-delay: calc(var(--atl-layer) * 30ms);\n  }\n\n  .atl-depth__layer > * {\n    width: 100%;\n    height: 100%;\n  }\n\n  /* Open out on hover, or while anything inside the card has keyboard focus. */\n  .atl-depth:hover .atl-depth__stack,\n  .atl-depth:has(:focus-visible) .atl-depth__stack {\n    transform: rotateX(48deg) rotateZ(-18deg) scale(0.8);\n  }\n\n  .atl-depth:hover .atl-depth__layer,\n  .atl-depth:has(:focus-visible) .atl-depth__layer {\n    transform: translateZ(calc(var(--atl-layer) * var(--atl-spread)));\n  }\n\n  .atl-depth__body {\n    display: grid;\n    gap: var(--space-2xs);\n    padding: var(--space-m);\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-depth .atl-depth__stack,\n    :root:not([data-motion='full']) .atl-depth .atl-depth__layer {\n      transform: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-depth .atl-depth__stack,\n  :root[data-motion='reduce'] .atl-depth .atl-depth__layer {\n    transform: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/spatial/depth-layers-card/index.ts",
+      "kind": "index",
+      "content": "export { DepthLayersCard } from './DepthLayersCard';\nexport type { DepthLayer, DepthLayersCardProps } from './DepthLayersCard';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Focus a control in the card; the planes open out while it has focus."
+      }
+    ],
+    "notes": [
+      "The layered picture is decorative and hidden from assistive technology; the content below carries the meaning.",
+      "Keyboard focus inside the card opens it out just as hover does."
+    ],
+    "reducedMotion": "The planes lie flat and do not move."
+  },
+  "license": "MIT"
+}

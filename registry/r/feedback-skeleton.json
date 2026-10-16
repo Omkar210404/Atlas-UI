@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "feedback/skeleton",
+  "type": "component",
+  "title": "Skeleton shimmer system",
+  "description": "Placeholders shaped like the content to come.",
+  "category": "feedback",
+  "files": [
+    {
+      "path": "components/feedback/skeleton/Skeleton.tsx",
+      "kind": "source",
+      "content": "import type { CSSProperties, ReactNode } from 'react';\nimport './skeleton.css';\n\nexport interface SkeletonProps {\n  /** `line` for text, `block` for media and cards, `circle` for avatars and icons. */\n  shape?: 'line' | 'block' | 'circle';\n  /** CSS width, such as `60%` or `12rem`. Lines default to full width. */\n  width?: string | number;\n  /** CSS height. Lines default to one line of body text. */\n  height?: string | number;\n  /** Repeat a line this many times; the last line is shorter, like a paragraph's last line. */\n  lines?: number;\n  className?: string;\n}\n\nconst size = (value: string | number | undefined) =>\n  typeof value === 'number' ? `${value}px` : value;\n\n/** A placeholder shaped like the content that is about to load. Decorative on its own. */\nexport function Skeleton({ shape = 'line', width, height, lines = 1, className }: SkeletonProps) {\n  const style: CSSProperties = { width: size(width), height: size(height) };\n  if (shape === 'line' && lines > 1) {\n    return (\n      <span\n        className={['atl-skeleton-lines', className].filter(Boolean).join(' ')}\n        aria-hidden=\"true\"\n      >\n        {Array.from({ length: lines }, (_, i) => (\n          <span\n            key={i}\n            className=\"atl-skeleton\"\n            data-shape=\"line\"\n            style={{ ...style, width: i === lines - 1 ? '62%' : style.width }}\n          />\n        ))}\n      </span>\n    );\n  }\n  return (\n    <span\n      className={['atl-skeleton', className].filter(Boolean).join(' ')}\n      data-shape={shape}\n      style={style}\n      aria-hidden=\"true\"\n    />\n  );\n}\n\nexport interface SkeletonGroupProps {\n  /** While true, the placeholders show and the region is marked busy. */\n  loading: boolean;\n  /** What is loading, read to screen readers, for example \"Loading harbour details\". */\n  label: string;\n  /** Placeholders shown while loading. */\n  placeholder: ReactNode;\n  /** The real content, shown once loaded. */\n  children: ReactNode;\n  className?: string;\n}\n\n/**\n * Swaps placeholders for real content. The region is `aria-busy` while loading and says\n * what it is waiting for, so assistive technology does not read the empty shapes.\n */\nexport function SkeletonGroup({\n  loading,\n  label,\n  placeholder,\n  children,\n  className,\n}: SkeletonGroupProps) {\n  return (\n    <div\n      className={['atl-skeleton-group', className].filter(Boolean).join(' ')}\n      aria-busy={loading}\n    >\n      {loading ? (\n        <>\n          <span className=\"atl-visually-hidden\" role=\"status\">\n            {label}\n          </span>\n          {placeholder}\n        </>\n      ) : (\n        children\n      )}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/feedback/skeleton/skeleton.css",
+      "kind": "style",
+      "content": "/* The sweep position is a registered property so the browser can animate it on its own. */\n@property --atl-shimmer {\n  syntax: '<percentage>';\n  inherits: false;\n  initial-value: -40%;\n}\n\n@layer atlas.components {\n  .atl-skeleton {\n    --atl-shimmer: -40%;\n    display: block;\n    border-radius: var(--radius-control);\n    background:\n      linear-gradient(\n          100deg,\n          transparent calc(var(--atl-shimmer) - 20%),\n          color-mix(in oklch, var(--ink) 9%, transparent) var(--atl-shimmer),\n          transparent calc(var(--atl-shimmer) + 20%)\n        )\n        no-repeat,\n      var(--ink-wash);\n    animation: atl-shimmer 1.6s var(--ease-drift) infinite;\n  }\n\n  .atl-skeleton[data-shape='line'] {\n    width: 100%;\n    height: 0.9em;\n    border-radius: 4px;\n  }\n\n  .atl-skeleton[data-shape='block'] {\n    width: 100%;\n    height: 8rem;\n    border-radius: var(--radius-panel);\n  }\n\n  .atl-skeleton[data-shape='circle'] {\n    width: 2.5rem;\n    height: 2.5rem;\n    border-radius: 50%;\n    flex: none;\n  }\n\n  .atl-skeleton-lines {\n    display: grid;\n    gap: 0.6em;\n  }\n\n  @keyframes atl-shimmer {\n    to {\n      --atl-shimmer: 140%;\n    }\n  }\n\n  /* Reduced motion: a still placeholder. */\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-skeleton {\n      animation: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-skeleton {\n    animation: none;\n  }\n\n  @media (forced-colors: active) {\n    .atl-skeleton {\n      border: 1px dashed GrayText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/feedback/skeleton/index.ts",
+      "kind": "index",
+      "content": "export { Skeleton, SkeletonGroup } from './Skeleton';\nexport type { SkeletonGroupProps, SkeletonProps } from './Skeleton';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "`SkeletonGroup` marks its region `aria-busy` while loading and contains a status message naming what is loading.",
+      "The placeholder shapes are hidden from assistive technology; they carry no content.",
+      "In forced-colours mode the shapes get a dashed outline so they stay visible."
+    ],
+    "reducedMotion": "The shimmer stops; placeholders are shown as still shapes."
+  },
+  "license": "MIT"
+}

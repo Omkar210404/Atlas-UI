@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/three-core",
+  "type": "primitive",
+  "title": "three-core",
+  "files": [
+    {
+      "path": "primitives/three-core.ts",
+      "kind": "source",
+      "content": "/**\n * The parts of three.js that atlas-ui's 3D components use, re-exported by name. Importing\n * named exports (instead of `import('three/webgpu')` as a namespace) lets the bundler drop\n * the rest of the library from the lazy chunk.\n */\nexport {\n  CircleGeometry,\n  Color,\n  InstancedMesh,\n  Mesh,\n  MeshBasicMaterial,\n  MeshBasicNodeMaterial,\n  OrthographicCamera,\n  PerspectiveCamera,\n  PlaneGeometry,\n  Scene,\n  Vector2,\n  WebGPURenderer,\n} from 'three/webgpu';\nexport {\n  abs,\n  float,\n  fract,\n  fwidth,\n  mix,\n  mx_noise_float,\n  smoothstep,\n  uniform,\n  uv,\n  vec2,\n  vec3,\n} from 'three/tsl';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

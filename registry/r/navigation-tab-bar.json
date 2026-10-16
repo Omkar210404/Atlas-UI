@@ -1,0 +1,84 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "navigation/tab-bar",
+  "type": "component",
+  "title": "Tab bar",
+  "description": "Tabs with an indicator that glides to the selected tab.",
+  "category": "navigation",
+  "files": [
+    {
+      "path": "components/navigation/tab-bar/TabBar.tsx",
+      "kind": "source",
+      "content": "import {\n  createContext,\n  useContext,\n  useId,\n  useLayoutEffect,\n  useRef,\n  type KeyboardEvent,\n  type ReactNode,\n} from 'react';\nimport { rovingIndex } from '../../../primitives/roving';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport './tab-bar.css';\n\ntype Activation = 'automatic' | 'manual';\n\ninterface TabsContextValue {\n  baseId: string;\n  value: string;\n  select: (value: string) => void;\n  activation: Activation;\n}\n\nconst TabsContext = createContext<TabsContextValue | null>(null);\n\nfunction useTabs(part: string): TabsContextValue {\n  const context = useContext(TabsContext);\n  if (!context) throw new Error(`<${part}> must be used inside <Tabs>.`);\n  return context;\n}\n\nconst safe = (value: string) => value.replace(/[^\\w-]/g, '_');\nconst tabId = (base: string, value: string) => `${base}-tab-${safe(value)}`;\nconst panelId = (base: string, value: string) => `${base}-panel-${safe(value)}`;\n\nexport interface TabsProps {\n  /** Selected tab (controlled). */\n  value?: string;\n  /** Initially selected tab (uncontrolled). */\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  /**\n   * `automatic` selects a tab as soon as it receives focus. `manual` waits for Enter or\n   * Space, which suits panels that are slow to render.\n   */\n  activation?: Activation;\n  className?: string;\n  children: ReactNode;\n}\n\nexport function Tabs({\n  value,\n  defaultValue = '',\n  onValueChange,\n  activation = 'automatic',\n  className,\n  children,\n}: TabsProps) {\n  const baseId = useId();\n  const [selected, setSelected] = useControllableState({\n    value,\n    defaultValue,\n    onChange: onValueChange,\n  });\n  return (\n    <TabsContext.Provider value={{ baseId, value: selected, select: setSelected, activation }}>\n      <div className={['atl-tabs', className].filter(Boolean).join(' ')}>{children}</div>\n    </TabsContext.Provider>\n  );\n}\n\nexport interface TabBarProps {\n  /** Accessible name for the tab list, for example \"Documentation sections\". */\n  label: string;\n  /** `line` draws a magenta rule under the selected tab; `chip` slides a filled chip behind it. */\n  variant?: 'line' | 'chip';\n  className?: string;\n  children: ReactNode;\n}\n\nexport function TabBar({ label, variant = 'line', className, children }: TabBarProps) {\n  const { value, select, activation } = useTabs('TabBar');\n  const listRef = useRef<HTMLDivElement>(null);\n\n  useLayoutEffect(() => {\n    const list = listRef.current;\n    if (!list) return;\n    const measure = () => {\n      const tab = list.querySelector<HTMLElement>('[role=\"tab\"][aria-selected=\"true\"]');\n      if (!tab) {\n        list.style.setProperty('--atl-indicator-w', '0px');\n        return;\n      }\n      list.style.setProperty('--atl-indicator-x', `${tab.offsetLeft}px`);\n      list.style.setProperty('--atl-indicator-w', `${tab.offsetWidth}px`);\n    };\n    measure();\n    // Only animate after the first placement, so the indicator does not slide in from 0.\n    const frame = requestAnimationFrame(() => list.setAttribute('data-ready', ''));\n    const observer = new ResizeObserver(measure);\n    observer.observe(list);\n    list.querySelectorAll('[role=\"tab\"]').forEach((tab) => observer.observe(tab));\n    return () => {\n      cancelAnimationFrame(frame);\n      observer.disconnect();\n    };\n  }, [value, children]);\n\n  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {\n    const tabs = Array.from(\n      event.currentTarget.querySelectorAll<HTMLButtonElement>('[role=\"tab\"]:not(:disabled)'),\n    );\n    const current = tabs.indexOf(document.activeElement as HTMLButtonElement);\n    const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';\n    const next = rovingIndex(event.key, current, tabs.length, { orientation: 'horizontal', rtl });\n    if (next === null || current === -1) return;\n    event.preventDefault();\n    const tab = tabs[next];\n    if (!tab) return;\n    tab.focus();\n    tab.scrollIntoView({ block: 'nearest', inline: 'nearest' });\n    if (activation === 'automatic' && tab.dataset.value) select(tab.dataset.value);\n  };\n\n  return (\n    // The tabs inside are focusable; the list only handles their arrow keys.\n    // eslint-disable-next-line jsx-a11y/interactive-supports-focus\n    <div\n      ref={listRef}\n      role=\"tablist\"\n      aria-label={label}\n      aria-orientation=\"horizontal\"\n      className={['atl-tabbar', className].filter(Boolean).join(' ')}\n      data-variant={variant}\n      onKeyDown={onKeyDown}\n    >\n      <span className=\"atl-tabbar__indicator\" aria-hidden=\"true\" />\n      {children}\n    </div>\n  );\n}\n\nexport interface TabProps {\n  value: string;\n  disabled?: boolean;\n  children: ReactNode;\n}\n\nexport function Tab({ value, disabled = false, children }: TabProps) {\n  const { baseId, value: selected, select } = useTabs('Tab');\n  const isSelected = value === selected;\n  return (\n    <button\n      type=\"button\"\n      role=\"tab\"\n      id={tabId(baseId, value)}\n      aria-selected={isSelected}\n      aria-controls={panelId(baseId, value)}\n      tabIndex={isSelected ? 0 : -1}\n      disabled={disabled}\n      data-value={value}\n      className=\"atl-tab\"\n      onClick={() => select(value)}\n    >\n      {children}\n    </button>\n  );\n}\n\nexport interface TabPanelProps {\n  value: string;\n  className?: string;\n  children: ReactNode;\n}\n\nexport function TabPanel({ value, className, children }: TabPanelProps) {\n  const { baseId, value: selected } = useTabs('TabPanel');\n  const hidden = value !== selected;\n  return (\n    <div\n      role=\"tabpanel\"\n      id={panelId(baseId, value)}\n      aria-labelledby={tabId(baseId, value)}\n      hidden={hidden}\n      tabIndex={0}\n      className={['atl-tabpanel', className].filter(Boolean).join(' ')}\n    >\n      {hidden ? null : children}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/navigation/tab-bar/tab-bar.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-tabbar {\n    position: relative;\n    display: flex;\n    gap: var(--space-3xs);\n    overflow-x: auto;\n    overscroll-behavior-x: contain;\n    scrollbar-width: none;\n  }\n\n  .atl-tabbar::-webkit-scrollbar {\n    display: none;\n  }\n\n  .atl-tab {\n    position: relative;\n    z-index: 1;\n    display: inline-flex;\n    align-items: center;\n    gap: var(--space-xs);\n    flex: none;\n    min-height: var(--target-comfort);\n    padding: 0 var(--space-m);\n    border: 0;\n    background: none;\n    color: var(--ink-soft);\n    font-size: var(--step-0);\n    font-weight: 500;\n    white-space: nowrap;\n    transition:\n      color var(--dur-tick) var(--ease-anchor),\n      background-color var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-tab:hover:not(:disabled) {\n    color: var(--ink);\n  }\n\n  .atl-tab[aria-selected='true'] {\n    color: var(--ink);\n  }\n\n  .atl-tab:disabled {\n    cursor: not-allowed;\n    opacity: 0.55;\n  }\n\n  .atl-tab:focus-visible {\n    outline-offset: -3px;\n  }\n\n  .atl-tabbar__indicator {\n    position: absolute;\n    left: 0;\n    width: var(--atl-indicator-w, 0px);\n    transform: translateX(var(--atl-indicator-x, 0px));\n    pointer-events: none;\n  }\n\n  .atl-tabbar[data-ready] .atl-tabbar__indicator {\n    transition:\n      transform var(--dur-current) var(--ease-current),\n      width var(--dur-current) var(--ease-current);\n  }\n\n  /* line: a magenta course line under the selected tab, over a faint isobath track */\n  .atl-tabbar[data-variant='line'] {\n    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--isobath) 65%, transparent);\n  }\n\n  .atl-tabbar[data-variant='line'] .atl-tab {\n    border-radius: var(--radius-control) var(--radius-control) 0 0;\n  }\n\n  .atl-tabbar[data-variant='line'] .atl-tab:hover:not(:disabled) {\n    background: var(--ink-wash);\n  }\n\n  .atl-tabbar[data-variant='line'] .atl-tabbar__indicator {\n    bottom: 0;\n    height: 3px;\n    border-radius: 3px 3px 0 0;\n    background: var(--chart-magenta);\n  }\n\n  /* chip: a raised chip that slides behind the selected tab */\n  .atl-tabbar[data-variant='chip'] {\n    width: fit-content;\n    max-width: 100%;\n    padding: var(--space-2xs);\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);\n  }\n\n  .atl-tabbar[data-variant='chip'] .atl-tab {\n    min-height: calc(var(--target-comfort) - 4px);\n    border-radius: calc(var(--radius-panel) - 4px);\n  }\n\n  .atl-tabbar[data-variant='chip'] .atl-tabbar__indicator {\n    top: var(--space-2xs);\n    bottom: var(--space-2xs);\n    border-radius: calc(var(--radius-panel) - 4px);\n    background: var(--reef);\n    box-shadow:\n      inset 0 0 0 1px var(--edge),\n      inset 0 -2px 0 var(--chart-magenta);\n  }\n\n  .atl-tabpanel {\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      translate var(--dur-step) var(--ease-anchor);\n  }\n\n  @starting-style {\n    .atl-tabpanel:not([hidden]) {\n      opacity: 0;\n      translate: 0 6px;\n    }\n  }\n\n  .atl-tabpanel:focus-visible {\n    outline-offset: 6px;\n    border-radius: var(--radius-control);\n  }\n\n  @media (forced-colors: active) {\n    .atl-tabbar__indicator {\n      background: Highlight !important;\n    }\n    .atl-tab[aria-selected='true'] {\n      text-decoration: underline;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/navigation/tab-bar/index.ts",
+      "kind": "index",
+      "content": "export { Tab, TabBar, TabPanel, Tabs } from './TabBar';\nexport type { TabBarProps, TabPanelProps, TabProps, TabsProps } from './TabBar';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/roving",
+    "primitives/use-controllable-state",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "ArrowRight"
+        ],
+        "action": "Move focus to the next tab (wraps to the first)."
+      },
+      {
+        "keys": [
+          "ArrowLeft"
+        ],
+        "action": "Move focus to the previous tab (wraps to the last)."
+      },
+      {
+        "keys": [
+          "Home"
+        ],
+        "action": "Move focus to the first tab."
+      },
+      {
+        "keys": [
+          "End"
+        ],
+        "action": "Move focus to the last tab."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Select the focused tab (manual activation)."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move from the selected tab into its panel."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA tabs pattern: `tablist`, `tab` and `tabpanel`, with `aria-selected`, `aria-controls` and `aria-labelledby` wired up.",
+      "Only the selected tab is in the Tab order (roving tabindex); arrow keys move between tabs.",
+      "Each panel is focusable, so keyboard users can reach panels that have no focusable content.",
+      "Right-to-left layouts reverse the arrow keys.",
+      "In forced-colours mode the indicator uses the system highlight colour and the selected label is underlined."
+    ],
+    "reducedMotion": "The indicator jumps to the selected tab instead of gliding, and panels appear without the short fade."
+  },
+  "license": "MIT"
+}

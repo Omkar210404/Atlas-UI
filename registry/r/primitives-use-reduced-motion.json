@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-reduced-motion",
+  "type": "primitive",
+  "title": "use-reduced-motion",
+  "files": [
+    {
+      "path": "primitives/use-reduced-motion.ts",
+      "kind": "source",
+      "content": "import { useSyncExternalStore } from 'react';\n\nconst query = '(prefers-reduced-motion: reduce)';\n\n/**\n * True when motion should be reduced: the OS setting is on (unless the page sets\n * `data-motion=\"full\"` on <html>), or the page sets `data-motion=\"reduce\"`.\n */\nexport function prefersReducedMotion(): boolean {\n  if (typeof window === 'undefined') return false;\n  const override = document.documentElement.dataset.motion;\n  if (override === 'reduce') return true;\n  if (override === 'full') return false;\n  return window.matchMedia(query).matches;\n}\n\nfunction subscribe(onChange: () => void): () => void {\n  const media = window.matchMedia(query);\n  media.addEventListener('change', onChange);\n  const observer = new MutationObserver(onChange);\n  observer.observe(document.documentElement, {\n    attributes: true,\n    attributeFilter: ['data-motion'],\n  });\n  return () => {\n    media.removeEventListener('change', onChange);\n    observer.disconnect();\n  };\n}\n\nexport function useReducedMotion(): boolean {\n  return useSyncExternalStore(subscribe, prefersReducedMotion, () => false);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "layout/bento-grid",
+  "type": "component",
+  "title": "Bento grid",
+  "description": "A spanning grid that reflows with its container.",
+  "category": "layout",
+  "files": [
+    {
+      "path": "components/layout/bento-grid/BentoGrid.tsx",
+      "kind": "source",
+      "content": "import type { ReactNode } from 'react';\nimport './bento-grid.css';\n\nexport interface BentoGridProps {\n  children: ReactNode;\n  /** Columns at full width: 3 or 4. The grid drops to 2 and then 1 as its container narrows. */\n  columns?: 3 | 4;\n  label?: string;\n  className?: string;\n}\n\nexport interface BentoItemProps {\n  children: ReactNode;\n  /** Columns to span at full width (capped as the grid narrows). */\n  colSpan?: 1 | 2 | 3 | 4;\n  /** Rows to span. */\n  rowSpan?: 1 | 2;\n  /** `raised` uses the second surface tint, for the item you want seen first. */\n  tone?: 'plain' | 'raised';\n  className?: string;\n}\n\n/**\n * A spanning grid that re-flows with its container, not the viewport, so it works the same\n * in a sidebar as on a full page. Reading order always follows source order.\n */\nexport function BentoGrid({ children, columns = 4, label, className }: BentoGridProps) {\n  return (\n    <div\n      className={['atl-bento', className].filter(Boolean).join(' ')}\n      role={label ? 'group' : undefined}\n      aria-label={label}\n    >\n      <div className=\"atl-bento__grid\" data-columns={columns}>\n        {children}\n      </div>\n    </div>\n  );\n}\n\nexport function BentoItem({\n  children,\n  colSpan = 1,\n  rowSpan = 1,\n  tone = 'plain',\n  className,\n}: BentoItemProps) {\n  return (\n    <div\n      className={['atl-bento__item', className].filter(Boolean).join(' ')}\n      data-col={colSpan}\n      data-row={rowSpan}\n      data-tone={tone}\n    >\n      {children}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/layout/bento-grid/bento-grid.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-bento {\n    container-type: inline-size;\n    width: 100%;\n  }\n\n  .atl-bento__grid {\n    display: grid;\n    grid-template-columns: repeat(4, minmax(0, 1fr));\n    grid-auto-rows: minmax(8rem, auto);\n    grid-auto-flow: dense;\n    gap: var(--space-s);\n  }\n\n  .atl-bento__grid[data-columns='3'] {\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n  }\n\n  .atl-bento__item {\n    min-width: 0;\n    padding: var(--space-m);\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 45%, transparent);\n  }\n\n  .atl-bento__item[data-tone='raised'] {\n    background: var(--reef);\n  }\n\n  .atl-bento__item[data-col='2'] {\n    grid-column: span 2;\n  }\n  .atl-bento__item[data-col='3'] {\n    grid-column: span 3;\n  }\n  .atl-bento__item[data-col='4'] {\n    grid-column: span 4;\n  }\n  .atl-bento__item[data-row='2'] {\n    grid-row: span 2;\n  }\n\n  .atl-bento__grid[data-columns='3'] .atl-bento__item[data-col='4'] {\n    grid-column: span 3;\n  }\n\n  /* Medium containers: two columns, wide items span both. */\n  @container (width < 44rem) {\n    .atl-bento__grid,\n    .atl-bento__grid[data-columns='3'] {\n      grid-template-columns: repeat(2, minmax(0, 1fr));\n    }\n    .atl-bento__grid .atl-bento__item:is([data-col='3'], [data-col='4']) {\n      grid-column: span 2;\n    }\n  }\n\n  /* Narrow containers: one column, in source order. */\n  @container (width < 26rem) {\n    .atl-bento__grid,\n    .atl-bento__grid[data-columns='3'] {\n      grid-template-columns: minmax(0, 1fr);\n      grid-auto-flow: row;\n    }\n    .atl-bento__grid .atl-bento__item {\n      grid-column: auto;\n      grid-row: auto;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/layout/bento-grid/index.ts",
+      "kind": "index",
+      "content": "export { BentoGrid, BentoItem } from './BentoGrid';\nexport type { BentoGridProps, BentoItemProps } from './BentoGrid';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move through the controls inside the tiles, in source order."
+      }
+    ],
+    "notes": [
+      "Reading and Tab order follow the source order at every width.",
+      "At one column, dense packing is turned off so the visual order matches the source exactly.",
+      "With `label`, the grid is a `group` with an accessible name."
+    ],
+    "reducedMotion": "Nothing animates."
+  },
+  "license": "MIT"
+}

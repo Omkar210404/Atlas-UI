@@ -1,0 +1,63 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "overlays/modal",
+  "type": "component",
+  "title": "Modal",
+  "description": "A dialog that holds focus until you close it.",
+  "category": "overlays",
+  "files": [
+    {
+      "path": "components/overlays/modal/Modal.tsx",
+      "kind": "source",
+      "content": "import { useId, type ReactNode } from 'react';\nimport { IconClose } from '../../../icons/close';\nimport { DialogShell } from '../../../primitives/dialog';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { Button } from '../../actions/button/Button';\nimport './modal.css';\n\nexport interface ModalProps {\n  /** Names the dialog. Required: every dialog needs a title. */\n  title: ReactNode;\n  description?: ReactNode;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  /** Buttons along the bottom, such as Cancel and Confirm. */\n  footer?: ReactNode;\n  size?: 's' | 'm' | 'l';\n  /** Allow Escape, the backdrop and the close button to dismiss it. Turn off for decisions that must be made. */\n  dismissible?: boolean;\n  children?: ReactNode;\n}\n\n/**\n * A modal dialog that holds focus until it is closed. Built on `<dialog>`, with Tab\n * wrapping inside it, the page behind it inert and unscrollable, and focus returned to\n * whatever opened it.\n */\nexport function Modal({\n  title,\n  description,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  footer,\n  size = 'm',\n  dismissible = true,\n  children,\n}: ModalProps) {\n  const [open, setOpen] = useControllableState({\n    value: openProp,\n    defaultValue: defaultOpen,\n    onChange: onOpenChange,\n  });\n  const id = useId();\n  return (\n    <DialogShell\n      open={open}\n      onClose={() => setOpen(false)}\n      dismissible={dismissible}\n      labelledBy={`${id}-title`}\n      describedBy={description ? `${id}-description` : undefined}\n      className=\"atl-dialog-surface atl-modal\"\n    >\n      <div className=\"atl-modal__panel\" data-size={size}>\n        <div className=\"atl-dialog__header\">\n          <div className=\"atl-dialog__titles\">\n            <h2 id={`${id}-title`} className=\"atl-dialog__title\">\n              {title}\n            </h2>\n            {description ? (\n              <p id={`${id}-description`} className=\"atl-dialog__description\">\n                {description}\n              </p>\n            ) : null}\n          </div>\n          {dismissible ? (\n            <Button\n              variant=\"quiet\"\n              size=\"s\"\n              icon={<IconClose />}\n              aria-label=\"Close\"\n              onClick={() => setOpen(false)}\n            />\n          ) : null}\n        </div>\n        {children ? <div className=\"atl-dialog__body\">{children}</div> : null}\n        {footer ? <div className=\"atl-dialog__footer\">{footer}</div> : null}\n      </div>\n    </DialogShell>\n  );\n}\n"
+    },
+    {
+      "path": "components/overlays/modal/modal.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-modal {\n    width: min(var(--atl-modal-w, 32rem), calc(100% - 2 * var(--space-m)));\n    margin: auto;\n    border-radius: var(--radius-overlay);\n    opacity: 1;\n    translate: 0 0;\n    transition:\n      opacity var(--dur-glide) var(--ease-anchor),\n      translate var(--dur-glide) var(--ease-drift),\n      overlay var(--dur-glide) allow-discrete,\n      display var(--dur-glide) allow-discrete;\n  }\n\n  .atl-modal:has([data-size='s']) {\n    --atl-modal-w: 24rem;\n  }\n\n  .atl-modal:has([data-size='l']) {\n    --atl-modal-w: 44rem;\n  }\n\n  .atl-modal:not([open]) {\n    opacity: 0;\n    translate: 0 8px;\n    transition-timing-function: var(--ease-ebb);\n  }\n\n  @starting-style {\n    .atl-modal[open] {\n      opacity: 0;\n      translate: 0 16px;\n    }\n  }\n\n  .atl-modal__panel {\n    display: grid;\n    gap: var(--space-l);\n    max-height: calc(100dvh - 4rem);\n    padding: var(--space-l);\n    overflow-y: auto;\n  }\n}\n"
+    },
+    {
+      "path": "components/overlays/modal/index.ts",
+      "kind": "index",
+      "content": "export { Modal } from './Modal';\nexport type { ModalProps } from './Modal';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/dialog",
+    "primitives/focus",
+    "primitives/use-controllable-state",
+    "icons/close",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab",
+          "Shift+Tab"
+        ],
+        "action": "Move through the dialog’s controls; wraps from last to first and back."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close the dialog (when dismissible) and return focus to its trigger."
+      }
+    ],
+    "notes": [
+      "A native modal `<dialog>` with `aria-modal`, labelled by its title and described by its description.",
+      "The rest of the page is inert while it is open; focus cannot leave the dialog with Tab.",
+      "Focus moves to the first focusable element on open and returns to the opener on close.",
+      "Escape is consumed by the dialog, so it never also triggers shortcuts on the page behind.",
+      "The close button has a text name and a 32 px target."
+    ],
+    "reducedMotion": "The dialog appears and disappears without rising or fading."
+  },
+  "license": "MIT"
+}

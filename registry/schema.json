@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Omkar210404/atlas-ui/registry/schema.json",
+  "title": "atlas-ui registry (format atlas-registry/1)",
+  "description": "The index (registry.json) lists items; each item file (r/*.json) holds everything needed to copy one component, primitive, icon set member or the tokens into a project.",
+  "oneOf": [{ "$ref": "#/$defs/index" }, { "$ref": "#/$defs/item" }],
+  "$defs": {
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z-]+(/[a-z0-9-]+)?$",
+      "description": "Stable identifier, for example \"navigation/command-palette\", \"primitives/roving\" or \"tokens\"."
+    },
+    "index": {
+      "type": "object",
+      "required": ["format", "name", "version", "items"],
+      "properties": {
+        "format": { "const": "atlas-registry/1" },
+        "name": { "type": "string" },
+        "version": { "type": "string" },
+        "homepage": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "type", "title", "url"],
+            "properties": {
+              "name": { "$ref": "#/$defs/name" },
+              "type": { "enum": ["component", "primitive", "icon", "tokens"] },
+              "title": { "type": "string" },
+              "description": { "type": "string" },
+              "category": { "type": "string" },
+              "url": { "type": "string", "description": "Path of the item file, relative to registry.json." }
+            }
+          }
+        }
+      }
+    },
+    "item": {
+      "type": "object",
+      "required": ["format", "name", "type", "title", "files", "dependencies", "registryDependencies", "license"],
+      "properties": {
+        "format": { "const": "atlas-registry/1" },
+        "name": { "$ref": "#/$defs/name" },
+        "type": { "enum": ["component", "primitive", "icon", "tokens"] },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "kind", "content"],
+            "properties": {
+              "path": { "type": "string", "description": "Path inside the library source tree; a CLI keeps it relative to the install directory so relative imports resolve." },
+              "kind": { "enum": ["source", "style", "index"] },
+              "content": { "type": "string" }
+            }
+          }
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "npm packages and version ranges the files import."
+        },
+        "registryDependencies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/name" },
+          "description": "Other registry items these files import."
+        },
+        "accessibility": {
+          "type": "object",
+          "properties": {
+            "keyboard": { "type": "array" },
+            "notes": { "type": "array", "items": { "type": "string" } },
+            "reducedMotion": { "type": "string" }
+          }
+        },
+        "license": { "const": "MIT" }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "spatial/ambient-background",
+  "type": "component",
+  "title": "WebGL ambient background",
+  "description": "A slow contour field behind the page.",
+  "category": "spatial",
+  "files": [
+    {
+      "path": "components/spatial/ambient-background/AmbientBackground.tsx",
+      "kind": "source",
+      "content": "import { useEffect, useRef, useState } from 'react';\nimport {\n  canRender3d,\n  startHost,\n  tokenColour,\n  type RendererChoice,\n} from '../../../primitives/three-host';\nimport './ambient-background.css';\n\nexport interface AmbientBackgroundProps {\n  /** `auto` tries WebGPU then WebGL2; `webgl` forces WebGL2; `none` shows the still fallback. */\n  renderer?: RendererChoice | 'none';\n  /** Contour lines across the field. */\n  density?: number;\n  /** How fast the field drifts. 0 holds it still. */\n  speed?: number;\n  className?: string;\n}\n\ntype Status = 'loading' | 'running' | 'fallback';\n\n/**\n * A slow field of contour lines, drawn by a TSL shader on WebGPU (or WebGL2), drifting\n * behind the page and leaning a little toward the pointer. Decorative: hidden from\n * assistive technology, paused when off screen, still under reduced motion, and replaced by\n * a static SVG pattern where 3D rendering is unavailable.\n */\nexport function AmbientBackground({\n  renderer = 'auto',\n  density = 9,\n  speed = 0.05,\n  className,\n}: AmbientBackgroundProps) {\n  const canvasRef = useRef<HTMLCanvasElement>(null);\n  const [status, setStatus] = useState<Status>(() =>\n    renderer === 'none' || (typeof window !== 'undefined' && !canRender3d())\n      ? 'fallback'\n      : 'loading',\n  );\n\n  useEffect(() => {\n    const canvas = canvasRef.current;\n    if (!canvas || renderer === 'none' || !canRender3d()) return;\n    let stop: (() => void) | null = null;\n    let cancelled = false;\n\n    (async () => {\n      const tsl = await import('../../../primitives/three-core');\n      const {\n        uniform,\n        uv,\n        vec2,\n        vec3,\n        mix,\n        abs,\n        fract,\n        fwidth,\n        smoothstep,\n        mx_noise_float,\n        float,\n      } = tsl;\n      stop = await startHost(\n        canvas,\n        (three, scene) => {\n          const root = canvas.parentElement ?? document.documentElement;\n          const deep = uniform(new three.Color(tokenColour(root, '--sea')));\n          const line = uniform(new three.Color(tokenColour(root, '--isobath')));\n          const time = uniform(0);\n          const aspect = uniform(1);\n          const lean = uniform(new three.Vector2(0, 0));\n          const levels = uniform(density);\n\n          // Height field: smooth noise in 3D (x, y, time) leaning toward the pointer.\n          const p = uv().sub(0.5).mul(vec2(aspect, 1)).mul(2.4).add(lean.mul(0.12));\n          const height = mx_noise_float(vec3(p, time)).mul(0.5).add(0.5).mul(levels);\n          // Distance to the nearest whole level, in screen pixels via fwidth: crisp 1px isolines.\n          const distance = abs(fract(height.add(0.5)).sub(0.5));\n          const isoline = float(1).sub(smoothstep(float(0), fwidth(height).mul(1.2), distance));\n\n          const material = new three.MeshBasicNodeMaterial();\n          material.colorNode = mix(deep, line, isoline.mul(0.7));\n          scene.add(new three.Mesh(new three.PlaneGeometry(2, 2), material));\n\n          return {\n            frame: ({ delta, pointer }) => {\n              time.value += delta * speed;\n              const target = pointer ?? { x: 0, y: 0 };\n              lean.value.x += (target.x - lean.value.x) * Math.min(delta * 2, 1);\n              lean.value.y += (target.y - lean.value.y) * Math.min(delta * 2, 1);\n            },\n            resize: (w, h) => {\n              aspect.value = w / h;\n            },\n            theme: () => {\n              deep.value.set(tokenColour(root, '--sea'));\n              line.value.set(tokenColour(root, '--isobath'));\n            },\n            dispose: () => material.dispose(),\n          };\n        },\n        { renderer: renderer === 'webgl' ? 'webgl' : 'auto' },\n      );\n      if (cancelled) stop();\n      else setStatus('running');\n    })().catch(() => {\n      if (!cancelled) setStatus('fallback');\n    });\n\n    return () => {\n      cancelled = true;\n      stop?.();\n    };\n  }, [renderer, density, speed]);\n\n  return (\n    <div\n      className={['atl-ambient', className].filter(Boolean).join(' ')}\n      data-status={status}\n      aria-hidden=\"true\"\n    >\n      <div className=\"atl-ambient__fallback\" />\n      {status !== 'fallback' ? <canvas ref={canvasRef} className=\"atl-ambient__canvas\" /> : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/spatial/ambient-background/ambient-background.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  /* Fill a positioned parent, for use as a background. */\n  .atl-ambient.atl-fill {\n    position: absolute;\n    inset: 0;\n  }\n\n  .atl-ambient {\n    position: relative;\n    overflow: hidden;\n    background: var(--sea);\n    pointer-events: none;\n  }\n\n  .atl-ambient__canvas,\n  .atl-ambient__fallback {\n    position: absolute;\n    inset: 0;\n    width: 100%;\n    height: 100%;\n  }\n\n  .atl-ambient__canvas {\n    opacity: 0;\n    transition: opacity var(--dur-voyage) var(--ease-anchor);\n  }\n\n  .atl-ambient[data-status='running'] .atl-ambient__canvas {\n    opacity: 1;\n  }\n\n  /* The still fallback: concentric contour rings, drawn once by CSS. */\n  .atl-ambient__fallback {\n    background:\n      repeating-radial-gradient(\n        ellipse at 30% 40%,\n        transparent 0 34px,\n        color-mix(in oklch, var(--isobath) 50%, transparent) 34px 35px\n      ),\n      repeating-radial-gradient(\n        ellipse at 78% 70%,\n        transparent 0 28px,\n        color-mix(in oklch, var(--isobath) 35%, transparent) 28px 29px\n      );\n    opacity: 0.6;\n  }\n\n  .atl-ambient[data-status='running'] .atl-ambient__fallback {\n    opacity: 0;\n    transition: opacity var(--dur-voyage) var(--ease-anchor);\n  }\n}\n"
+    },
+    {
+      "path": "components/spatial/ambient-background/index.ts",
+      "kind": "index",
+      "content": "export { AmbientBackground } from './AmbientBackground';\nexport type { AmbientBackgroundProps } from './AmbientBackground';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19",
+    "three": ">=0.180"
+  },
+  "registryDependencies": [
+    "primitives/three-host",
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "Decorative: hidden from assistive technology and ignores pointer events.",
+      "Never required: where WebGPU and WebGL2 are both missing, or loading fails, a static CSS contour pattern is shown instead.",
+      "Pauses when off screen or when the tab is hidden, and holds one still frame under reduced motion.",
+      "The pixel ratio is capped at 1.5 to limit GPU work on high-density screens."
+    ],
+    "reducedMotion": "Draws a single still frame of the field."
+  },
+  "license": "MIT"
+}

@@ -34,6 +34,8 @@ jobs:
       - run: npm run build
       - name: Bundle budgets (fails when exceeded)
         run: npm run size
+      - name: Registry is up to date
+        run: npm run registry:check
       - uses: actions/upload-artifact@v7
         if: always()
         with:

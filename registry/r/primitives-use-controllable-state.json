@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-controllable-state",
+  "type": "primitive",
+  "title": "use-controllable-state",
+  "files": [
+    {
+      "path": "primitives/use-controllable-state.ts",
+      "kind": "source",
+      "content": "import { useCallback, useState } from 'react';\nimport { useLatest } from './use-latest';\n\ninterface Options<T> {\n  value?: T | undefined;\n  defaultValue: T;\n  onChange?: ((value: T) => void) | undefined;\n}\n\n/**\n * State that can be controlled (`value` + `onChange`) or uncontrolled (`defaultValue`).\n * Whether it is controlled is decided on first render, like native inputs.\n */\nexport function useControllableState<T>({\n  value,\n  defaultValue,\n  onChange,\n}: Options<T>): [T, (next: T | ((previous: T) => T)) => void] {\n  const [isControlled] = useState(value !== undefined);\n  const [internal, setInternal] = useState(defaultValue);\n  const current = isControlled ? (value as T) : internal;\n  const latest = useLatest({ current, onChange });\n\n  const setValue = useCallback(\n    (next: T | ((previous: T) => T)) => {\n      const resolved =\n        typeof next === 'function' ? (next as (previous: T) => T)(latest.current.current) : next;\n      if (Object.is(resolved, latest.current.current)) return;\n      if (!isControlled) setInternal(resolved);\n      latest.current.onChange?.(resolved);\n    },\n    [isControlled, latest],\n  );\n\n  return [current, setValue];\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-latest"
+  ],
+  "license": "MIT"
+}

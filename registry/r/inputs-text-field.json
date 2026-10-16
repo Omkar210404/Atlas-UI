@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "inputs/text-field",
+  "type": "component",
+  "title": "Text field",
+  "description": "A labelled field with hint and error text.",
+  "category": "inputs",
+  "files": [
+    {
+      "path": "components/inputs/text-field/TextField.tsx",
+      "kind": "source",
+      "content": "import { useEffect, useRef, type InputHTMLAttributes, type ReactNode, type Ref } from 'react';\nimport { announce } from '../../../primitives/announce';\nimport { describedBy, FieldShell, useFieldIds } from '../../../primitives/field';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport './text-field.css';\n\ntype NativeProps = Omit<\n  InputHTMLAttributes<HTMLInputElement>,\n  'value' | 'defaultValue' | 'onChange' | 'size' | 'prefix'\n>;\n\nexport interface TextFieldProps extends NativeProps {\n  ref?: Ref<HTMLInputElement & HTMLTextAreaElement>;\n  /** Visible label. Required: placeholders are not labels. */\n  label: ReactNode;\n  hint?: ReactNode;\n  /** An error message. Setting it marks the field invalid. */\n  error?: ReactNode;\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  /** Grow into a multi-line textarea with this many rows. */\n  multiline?: number;\n  /** Text or an icon shown inside the box before the input, such as a unit or a search icon. */\n  prefix?: ReactNode;\n  suffix?: ReactNode;\n  hideLabel?: boolean;\n}\n\n/**\n * A labelled text field with hint, error and an optional character counter. The label sits\n * above the box and never floats away; the error is announced through `aria-describedby`.\n */\nexport function TextField({\n  ref,\n  id,\n  label,\n  hint,\n  error,\n  value,\n  defaultValue = '',\n  onValueChange,\n  multiline,\n  prefix,\n  suffix,\n  required,\n  maxLength,\n  hideLabel,\n  className,\n  ...rest\n}: TextFieldProps) {\n  const ids = useFieldIds(id);\n  const [text, setText] = useControllableState({ value, defaultValue, onChange: onValueChange });\n  const remaining = maxLength ? maxLength - text.length : null;\n  const countId = `${ids.inputId}-count`;\n  // undefined until the first render's check, then the last milestone announced (or null).\n  const lastAnnounced = useRef<number | null | undefined>(undefined);\n\n  // Announce the remaining count once it gets low, at most at a few milestones.\n  useEffect(() => {\n    if (remaining === null) return;\n    const milestone = remaining <= 0 ? 0 : remaining <= 5 ? 5 : remaining <= 10 ? 10 : null;\n    if (milestone === null) {\n      lastAnnounced.current = null;\n      return;\n    }\n    // A field that starts near its limit says so on focus (aria-describedby), not on load.\n    if (lastAnnounced.current === undefined) {\n      lastAnnounced.current = milestone;\n      return;\n    }\n    if (lastAnnounced.current === milestone) return;\n    lastAnnounced.current = milestone;\n    const note = remaining <= 0 ? 'Character limit reached' : `${remaining} characters left`;\n    announce(note);\n  }, [remaining]);\n\n  const shared = {\n    id: ids.inputId,\n    className: 'atl-text-field__input',\n    value: text,\n    required,\n    maxLength,\n    'aria-invalid': error ? true : undefined,\n    'aria-describedby':\n      [describedBy(ids, hint, error), maxLength ? countId : null].filter(Boolean).join(' ') ||\n      undefined,\n    onChange: (event: { target: { value: string } }) => setText(event.target.value),\n  };\n\n  return (\n    <FieldShell\n      ids={ids}\n      label={label}\n      hint={hint}\n      error={error}\n      required={required}\n      hideLabel={hideLabel}\n      className={['atl-text-field', className].filter(Boolean).join(' ')}\n      aside={\n        maxLength ? (\n          <span\n            className=\"atl-text-field__counter\"\n            data-low={remaining !== null && remaining <= 10 ? '' : undefined}\n          >\n            <span aria-hidden=\"true\">\n              {text.length}/{maxLength}\n            </span>\n            <span id={countId} className=\"atl-visually-hidden\">\n              {text.length} of {maxLength} characters used\n            </span>\n          </span>\n        ) : null\n      }\n    >\n      <div\n        className=\"atl-control-box atl-text-field__box\"\n        data-multiline={multiline ? '' : undefined}\n      >\n        {prefix ? (\n          <span className=\"atl-text-field__affix\" aria-hidden=\"true\">\n            {prefix}\n          </span>\n        ) : null}\n        {multiline ? (\n          <textarea ref={ref} rows={multiline} {...shared} {...(rest as object)} />\n        ) : (\n          <input ref={ref} {...shared} {...rest} />\n        )}\n        {suffix ? (\n          <span className=\"atl-text-field__affix\" aria-hidden=\"true\">\n            {suffix}\n          </span>\n        ) : null}\n      </div>\n    </FieldShell>\n  );\n}\n"
+    },
+    {
+      "path": "components/inputs/text-field/text-field.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-text-field__box {\n    gap: var(--space-xs);\n    padding-inline: var(--space-s);\n  }\n\n  .atl-text-field__box[data-multiline] {\n    align-items: flex-start;\n    padding-block: var(--space-xs);\n  }\n\n  .atl-text-field__input {\n    flex: 1;\n    min-width: 0;\n    min-height: 42px;\n    padding: 0;\n    border: 0;\n    background: none;\n    color: var(--ink);\n    font-size: var(--step-0);\n  }\n\n  textarea.atl-text-field__input {\n    min-height: 0;\n    resize: vertical;\n    line-height: var(--leading-prose);\n    font-family: var(--font-prose);\n  }\n\n  .atl-text-field__input::placeholder {\n    color: var(--ink-soft);\n    opacity: 1;\n  }\n\n  .atl-text-field__input:focus-visible {\n    outline: none;\n  }\n\n  .atl-text-field__input:disabled {\n    cursor: not-allowed;\n  }\n\n  .atl-text-field:has(.atl-text-field__input:disabled) .atl-control-box {\n    opacity: 0.55;\n  }\n\n  .atl-text-field__affix {\n    display: inline-flex;\n    align-items: center;\n    flex: none;\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n  }\n\n  .atl-text-field__counter {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n    font-variant-numeric: tabular-nums;\n  }\n\n  .atl-text-field__counter[data-low] {\n    color: var(--caution);\n    font-weight: 600;\n  }\n}\n"
+    },
+    {
+      "path": "components/inputs/text-field/index.ts",
+      "kind": "index",
+      "content": "export { TextField } from './TextField';\nexport type { TextFieldProps } from './TextField';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/field",
+    "primitives/announce",
+    "primitives/use-controllable-state",
+    "icons/alert",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move focus into and out of the field."
+      },
+      {
+        "keys": [
+          "a–z"
+        ],
+        "action": "Type. The counter updates as you go."
+      }
+    ],
+    "notes": [
+      "A native `<input>` (or `<textarea>`) with a `<label for>`.",
+      "The error and the hint are linked with `aria-describedby`, error first, and the field sets `aria-invalid` while an error is shown.",
+      "The counter is described to screen readers as “12 of 40 characters used” and announced at 10 and 5 characters left and at the limit.",
+      "Required fields say “(required)” in words, not with an asterisk alone.",
+      "The error state uses a thicker red edge and an icon, not colour alone."
+    ],
+    "reducedMotion": "Nothing in the field moves. Focus and error edges change instantly."
+  },
+  "license": "MIT"
+}

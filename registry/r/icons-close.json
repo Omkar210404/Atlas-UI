@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/close",
+  "type": "icon",
+  "title": "close",
+  "files": [
+    {
+      "path": "icons/close.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconClose = createIcon('IconClose', <path d=\"m5.5 5.5 9 9m0-9-9 9\" />);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

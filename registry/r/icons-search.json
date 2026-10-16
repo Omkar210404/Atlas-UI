@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/search",
+  "type": "icon",
+  "title": "search",
+  "files": [
+    {
+      "path": "icons/search.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconSearch = createIcon(\n  'IconSearch',\n  <>\n    <circle cx=\"8.75\" cy=\"8.75\" r=\"5\" />\n    <path d=\"m12.5 12.5 4 4\" />\n    <path d=\"M6.5 8.75a2.25 2.25 0 0 1 2.25-2.25\" strokeWidth={1.25} />\n  </>,\n);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

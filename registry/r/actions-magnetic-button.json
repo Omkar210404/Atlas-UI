@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "actions/magnetic-button",
+  "type": "component",
+  "title": "Magnetic button",
+  "description": "A button that leans toward the pointer.",
+  "category": "actions",
+  "files": [
+    {
+      "path": "components/actions/magnetic-button/MagneticButton.tsx",
+      "kind": "source",
+      "content": "import { useSpring } from 'motion/react';\nimport { useEffect, useRef } from 'react';\nimport { springs } from '../../../tokens/tokens';\nimport { useReducedMotion } from '../../../primitives/use-reduced-motion';\nimport { Button, type ButtonProps } from '../button/Button';\nimport './magnetic-button.css';\n\nexport interface MagneticButtonProps extends ButtonProps {\n  /** How far the button follows the pointer, from 0 (not at all) to 1 (fully). */\n  strength?: number;\n  /** Distance in px beyond the button's edge at which the pull begins. */\n  reach?: number;\n}\n\n/**\n * A button that leans toward the pointer when it comes near, and settles back with a\n * spring when it leaves. The label leans a little further than the body, which gives the\n * button depth. Mouse and pen only; never under reduced motion.\n */\nexport function MagneticButton({\n  strength = 0.35,\n  reach = 56,\n  className,\n  disabled,\n  ...props\n}: MagneticButtonProps) {\n  const ref = useRef<HTMLButtonElement>(null);\n  const reduced = useReducedMotion();\n  const x = useSpring(0, springs.buoy);\n  const y = useSpring(0, springs.buoy);\n  const inactive = reduced || disabled || props['aria-disabled'] === 'true' || strength <= 0;\n\n  // Write spring values straight to custom properties: no React render per frame.\n  useEffect(() => {\n    const el = ref.current;\n    if (!el) return;\n    const write = () => {\n      el.style.setProperty('--atl-magnet-x', `${x.get().toFixed(2)}px`);\n      el.style.setProperty('--atl-magnet-y', `${y.get().toFixed(2)}px`);\n    };\n    const offX = x.on('change', write);\n    const offY = y.on('change', write);\n    return () => {\n      offX();\n      offY();\n    };\n  }, [x, y]);\n\n  useEffect(() => {\n    if (inactive) {\n      x.jump(0);\n      y.jump(0);\n      return;\n    }\n    let frame = 0;\n    const onMove = (event: PointerEvent) => {\n      if (event.pointerType === 'touch') return;\n      cancelAnimationFrame(frame);\n      frame = requestAnimationFrame(() => {\n        const el = ref.current;\n        if (!el) return;\n        const rect = el.getBoundingClientRect();\n        // Measure from the resting position: undo the current offset first.\n        const cx = rect.left + rect.width / 2 - x.get();\n        const cy = rect.top + rect.height / 2 - y.get();\n        const dx = event.clientX - cx;\n        const dy = event.clientY - cy;\n        const near =\n          Math.abs(dx) <= rect.width / 2 + reach && Math.abs(dy) <= rect.height / 2 + reach;\n        const limit = Math.max(8, reach * 0.4);\n        x.set(near ? Math.max(-limit, Math.min(limit, dx * strength)) : 0);\n        y.set(near ? Math.max(-limit, Math.min(limit, dy * strength)) : 0);\n      });\n    };\n    const onLeave = () => {\n      x.set(0);\n      y.set(0);\n    };\n    window.addEventListener('pointermove', onMove, { passive: true });\n    document.documentElement.addEventListener('pointerleave', onLeave);\n    return () => {\n      cancelAnimationFrame(frame);\n      window.removeEventListener('pointermove', onMove);\n      document.documentElement.removeEventListener('pointerleave', onLeave);\n    };\n  }, [inactive, reach, strength, x, y]);\n\n  return (\n    <Button\n      ref={ref}\n      className={['atl-magnetic', className].filter(Boolean).join(' ')}\n      disabled={disabled}\n      data-magnetic={inactive ? undefined : ''}\n      {...props}\n    />\n  );\n}\n"
+    },
+    {
+      "path": "components/actions/magnetic-button/magnetic-button.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-magnetic {\n    translate: var(--atl-magnet-x, 0px) var(--atl-magnet-y, 0px);\n  }\n\n  /* The label leans further than the body. */\n  .atl-magnetic .atl-button__label,\n  .atl-magnetic .atl-button__icon {\n    translate: calc(var(--atl-magnet-x, 0px) * 0.35) calc(var(--atl-magnet-y, 0px) * 0.35);\n  }\n\n  /* A contour ring marks the field; pressing tightens it onto the button. */\n  .atl-magnetic[data-magnetic]::after {\n    content: '';\n    position: absolute;\n    inset: -7px;\n    border-radius: calc(var(--radius-control) + 7px);\n    box-shadow: 0 0 0 1px color-mix(in oklch, var(--isobath) 80%, transparent);\n    opacity: 0;\n    scale: 1.06;\n    pointer-events: none;\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      scale var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-magnetic[data-magnetic]:hover::after {\n    opacity: 1;\n    scale: 1;\n  }\n\n  .atl-magnetic[data-magnetic]:active::after {\n    scale: 0.94;\n    opacity: 0.6;\n  }\n\n  .atl-magnetic:active:not(:disabled, [aria-disabled='true']) {\n    translate: var(--atl-magnet-x, 0px) calc(var(--atl-magnet-y, 0px) + 1px);\n  }\n}\n"
+    },
+    {
+      "path": "components/actions/magnetic-button/index.ts",
+      "kind": "index",
+      "content": "export { MagneticButton } from './MagneticButton';\nexport type { MagneticButtonProps } from './MagneticButton';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19",
+    "motion": ">=12"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Activate the button."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move focus to and from the button. Focus never moves it."
+      }
+    ],
+    "notes": [
+      "A native `<button>`; the pull is purely visual and never changes focus or the accessible name.",
+      "The pull is capped at 40% of the reach (at least 8 px), so the button never leaves its own footprint.",
+      "Movement is driven by the pointer only. Touch input is ignored, so a tap lands where it was aimed.",
+      "Spring updates write CSS variables directly, so no React render runs per frame."
+    ],
+    "reducedMotion": "The button does not move and the field ring does not appear. It behaves exactly like Button."
+  },
+  "license": "MIT"
+}

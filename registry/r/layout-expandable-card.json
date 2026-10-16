@@ -1,0 +1,60 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "layout/expandable-card",
+  "type": "component",
+  "title": "Expandable card",
+  "description": "A card that opens into its details in place.",
+  "category": "layout",
+  "files": [
+    {
+      "path": "components/layout/expandable-card/ExpandableCard.tsx",
+      "kind": "source",
+      "content": "import { AnimatePresence, motion } from 'motion/react';\nimport { useId, type ReactNode } from 'react';\nimport { IconChevronDown } from '../../../icons/chevron-down';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { useReducedMotion } from '../../../primitives/use-reduced-motion';\nimport { springs } from '../../../tokens/tokens';\nimport './expandable-card.css';\n\nexport interface ExpandableCardProps {\n  title: string;\n  /** Always visible under the title. */\n  summary?: ReactNode;\n  /** Revealed when the card opens. */\n  children: ReactNode;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  /** Heading level of the title, to fit the page outline. */\n  headingLevel?: 2 | 3 | 4;\n  className?: string;\n}\n\n/**\n * A card that opens into its details in place. The card's size animates with a spring\n * (motion's layout animation), the heading stays where it is, and focus never moves:\n * the toggle you pressed is still focused when the card has opened.\n */\nexport function ExpandableCard({\n  title,\n  summary,\n  children,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  headingLevel = 3,\n  className,\n}: ExpandableCardProps) {\n  const [open, setOpen] = useControllableState({\n    value: openProp,\n    defaultValue: defaultOpen,\n    onChange: onOpenChange,\n  });\n  const reduced = useReducedMotion();\n  const id = useId();\n  const Heading = `h${headingLevel}` as const;\n  const transition = reduced ? { duration: 0 } : { type: 'spring' as const, ...springs.mooring };\n\n  return (\n    <motion.article\n      layout\n      transition={transition}\n      className={['atl-expand', className].filter(Boolean).join(' ')}\n      data-open={open || undefined}\n      style={{ borderRadius: 12 }}\n    >\n      <motion.div layout=\"position\" transition={transition} className=\"atl-expand__head\">\n        <Heading className=\"atl-expand__title\">\n          <button\n            type=\"button\"\n            className=\"atl-expand__toggle\"\n            aria-expanded={open}\n            aria-controls={`${id}-details`}\n            onClick={() => setOpen((o) => !o)}\n          >\n            {title}\n            <IconChevronDown className=\"atl-expand__chevron\" size={18} />\n          </button>\n        </Heading>\n        {summary ? <div className=\"atl-expand__summary\">{summary}</div> : null}\n      </motion.div>\n      <AnimatePresence initial={false}>\n        {open ? (\n          <motion.div\n            key=\"details\"\n            id={`${id}-details`}\n            className=\"atl-expand__details\"\n            initial={{ opacity: 0, y: -6 }}\n            animate={{ opacity: 1, y: 0 }}\n            exit={{ opacity: 0, transition: { duration: reduced ? 0 : 0.12 } }}\n            transition={reduced ? { duration: 0 } : { duration: 0.24, delay: 0.06 }}\n          >\n            {children}\n          </motion.div>\n        ) : null}\n      </AnimatePresence>\n    </motion.article>\n  );\n}\n"
+    },
+    {
+      "path": "components/layout/expandable-card/expandable-card.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-expand {\n    display: grid;\n    gap: var(--space-s);\n    padding: var(--space-m);\n    overflow: hidden;\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 50%, transparent);\n  }\n\n  .atl-expand[data-open] {\n    background: color-mix(in oklch, var(--shoal), var(--reef) 40%);\n  }\n\n  .atl-expand__head {\n    display: grid;\n    gap: var(--space-2xs);\n  }\n\n  .atl-expand__title {\n    font-size: var(--step-1);\n  }\n\n  .atl-expand__toggle {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    gap: var(--space-s);\n    width: 100%;\n    min-height: var(--target-comfort);\n    padding: 0;\n    border: 0;\n    border-radius: var(--radius-control);\n    background: none;\n    color: var(--ink);\n    font: inherit;\n    font-weight: 650;\n    text-align: left;\n  }\n\n  .atl-expand__chevron {\n    flex: none;\n    color: var(--ink-soft);\n    transition: rotate var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-expand__toggle[aria-expanded='true'] .atl-expand__chevron {\n    rotate: 180deg;\n  }\n\n  .atl-expand__summary {\n    color: var(--ink-soft);\n  }\n\n  .atl-expand__details {\n    font-family: var(--font-prose);\n    line-height: var(--leading-prose);\n  }\n}\n"
+    },
+    {
+      "path": "components/layout/expandable-card/index.ts",
+      "kind": "index",
+      "content": "export { ExpandableCard } from './ExpandableCard';\nexport type { ExpandableCardProps } from './ExpandableCard';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19",
+    "motion": ">=12"
+  },
+  "registryDependencies": [
+    "primitives/use-controllable-state",
+    "primitives/use-reduced-motion",
+    "icons/chevron-down",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move to the card’s toggle."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Open or close the card."
+      }
+    ],
+    "notes": [
+      "A disclosure: the title is a button inside a heading, with `aria-expanded` and `aria-controls`.",
+      "Focus does not move when the card opens or closes.",
+      "Hidden details are removed from the page, so they are not read or reached while closed."
+    ],
+    "reducedMotion": "The card opens and closes at once, without the spring or the fade."
+  },
+  "license": "MIT"
+}

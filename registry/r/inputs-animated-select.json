@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "inputs/animated-select",
+  "type": "component",
+  "title": "Animated select",
+  "description": "A select whose options unroll from the trigger.",
+  "category": "inputs",
+  "files": [
+    {
+      "path": "components/inputs/animated-select/AnimatedSelect.tsx",
+      "kind": "source",
+      "content": "import {\n  useEffect,\n  useLayoutEffect,\n  useRef,\n  useState,\n  type KeyboardEvent,\n  type ReactNode,\n} from 'react';\nimport { IconCheck } from '../../../icons/check';\nimport { IconChevronDown } from '../../../icons/chevron-down';\nimport { describedBy, FieldShell, useFieldIds } from '../../../primitives/field';\nimport { createTypeahead } from '../../../primitives/typeahead';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { useDismiss } from '../../../primitives/use-dismiss';\nimport { usePlacement } from '../../../primitives/use-placement';\nimport { usePopover } from '../../../primitives/use-popover';\nimport './animated-select.css';\n\nexport interface SelectOption {\n  value: string;\n  label: string;\n  description?: string;\n  disabled?: boolean;\n}\n\nexport interface AnimatedSelectProps {\n  label: ReactNode;\n  hideLabel?: boolean;\n  hint?: ReactNode;\n  error?: ReactNode;\n  options: readonly SelectOption[];\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  placeholder?: string;\n  name?: string;\n  required?: boolean;\n  disabled?: boolean;\n  className?: string;\n}\n\n/**\n * A select whose options unroll from the trigger like a chart unfolding. Follows the\n * WAI-ARIA select-only combobox pattern: focus stays on the trigger, the highlighted option\n * is exposed with `aria-activedescendant`, and typing jumps to matching options.\n */\nexport function AnimatedSelect({\n  label,\n  hideLabel,\n  hint,\n  error,\n  options,\n  value,\n  defaultValue = '',\n  onValueChange,\n  placeholder = 'Choose…',\n  name,\n  required,\n  disabled = false,\n  className,\n}: AnimatedSelectProps) {\n  const ids = useFieldIds();\n  const listId = `${ids.inputId}-list`;\n  const [selected, setSelected] = useControllableState({\n    value,\n    defaultValue,\n    onChange: onValueChange,\n  });\n  const [open, setOpen] = useState(false);\n  const [active, setActive] = useState(-1);\n  const triggerRef = useRef<HTMLDivElement>(null);\n  const popoverRef = useRef<HTMLDivElement>(null);\n  const typeahead = useRef(createTypeahead());\n\n  usePopover(popoverRef, open);\n  // The list is at least as wide as the trigger. Set before placement measures it.\n  useLayoutEffect(() => {\n    if (open && popoverRef.current && triggerRef.current) {\n      popoverRef.current.style.minWidth = `${triggerRef.current.offsetWidth}px`;\n    }\n  }, [open]);\n  const placement = usePlacement(triggerRef, popoverRef, open, {\n    side: 'bottom',\n    align: 'start',\n    offset: 4,\n  });\n  useDismiss({\n    open,\n    layerRef: popoverRef,\n    triggerRef,\n    escape: false,\n    focusOut: false,\n    onDismiss: () => setOpen(false),\n  });\n\n  const selectedIndex = options.findIndex((o) => o.value === selected);\n  const selectedOption = options[selectedIndex];\n  const optionId = (index: number) => `${listId}-${index}`;\n  const enabled = (index: number) => Boolean(options[index] && !options[index]!.disabled);\n\n  // Keep the highlighted option in view.\n  useEffect(() => {\n    if (open && active >= 0)\n      document.getElementById(optionId(active))?.scrollIntoView({ block: 'nearest' });\n    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [open, active]);\n\n  const openAt = (index: number) => {\n    if (disabled) return;\n    setActive(index);\n    setOpen(true);\n  };\n\n  const commit = (index: number) => {\n    const option = options[index];\n    if (option && !option.disabled) setSelected(option.value);\n    setOpen(false);\n  };\n\n  /** The next enabled index from `from` in direction `dir`, stopping at the ends. */\n  const step = (from: number, dir: 1 | -1, count = 1) => {\n    let index = from;\n    let moved = 0;\n    let candidate = from;\n    while (moved < count) {\n      candidate += dir;\n      if (candidate < 0 || candidate >= options.length) break;\n      if (enabled(candidate)) {\n        index = candidate;\n        moved += 1;\n      }\n    }\n    return index;\n  };\n  const first = () => step(-1, 1);\n  const last = () => step(options.length, -1);\n\n  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {\n    if (disabled) return;\n    const { key, altKey } = event;\n    if (!open) {\n      if (key === 'ArrowDown' || key === 'ArrowUp' || key === 'Enter' || key === ' ') {\n        event.preventDefault();\n        openAt(selectedIndex >= 0 ? selectedIndex : first());\n      } else if (key === 'Home' || key === 'End') {\n        event.preventDefault();\n        openAt(key === 'Home' ? first() : last());\n      } else {\n        const match = typeahead.current(\n          key,\n          options.map((o) => o.label),\n          selectedIndex,\n        );\n        if (match !== -1 && enabled(match)) {\n          event.preventDefault();\n          openAt(match);\n        }\n      }\n      return;\n    }\n    switch (key) {\n      case 'ArrowDown':\n        event.preventDefault();\n        setActive((i) => step(i, 1));\n        break;\n      case 'ArrowUp':\n        event.preventDefault();\n        if (altKey) commit(active);\n        else setActive((i) => step(i, -1));\n        break;\n      case 'PageDown':\n        event.preventDefault();\n        setActive((i) => step(i, 1, 10));\n        break;\n      case 'PageUp':\n        event.preventDefault();\n        setActive((i) => step(i, -1, 10));\n        break;\n      case 'Home':\n        event.preventDefault();\n        setActive(first());\n        break;\n      case 'End':\n        event.preventDefault();\n        setActive(last());\n        break;\n      case 'Enter':\n      case ' ':\n        event.preventDefault();\n        commit(active);\n        break;\n      case 'Escape':\n        event.preventDefault();\n        event.stopPropagation();\n        setOpen(false);\n        break;\n      case 'Tab':\n        commit(active);\n        break;\n      default: {\n        const match = typeahead.current(\n          key,\n          options.map((o) => o.label),\n          active,\n        );\n        if (match !== -1 && enabled(match)) {\n          event.preventDefault();\n          setActive(match);\n        }\n      }\n    }\n  };\n\n  return (\n    <FieldShell\n      ids={ids}\n      label={label}\n      hideLabel={hideLabel}\n      hint={hint}\n      error={error}\n      required={required}\n      labelAs=\"span\"\n      className={['atl-select', className].filter(Boolean).join(' ')}\n    >\n      <div\n        ref={triggerRef}\n        id={ids.inputId}\n        role=\"combobox\"\n        tabIndex={disabled ? -1 : 0}\n        className=\"atl-control-box atl-select__trigger\"\n        aria-labelledby={ids.labelId}\n        aria-describedby={describedBy(ids, hint, error)}\n        aria-haspopup=\"listbox\"\n        aria-expanded={open}\n        aria-controls={listId}\n        aria-activedescendant={open && active >= 0 ? optionId(active) : undefined}\n        aria-invalid={error ? true : undefined}\n        aria-required={required || undefined}\n        aria-disabled={disabled || undefined}\n        data-open={open || undefined}\n        onClick={() =>\n          open ? setOpen(false) : openAt(selectedIndex >= 0 ? selectedIndex : first())\n        }\n        onKeyDown={onKeyDown}\n      >\n        <span className=\"atl-select__value\" data-placeholder={selectedOption ? undefined : ''}>\n          {selectedOption ? selectedOption.label : placeholder}\n        </span>\n        <IconChevronDown className=\"atl-select__chevron\" size={18} />\n      </div>\n      <div\n        ref={popoverRef}\n        popover=\"manual\"\n        className=\"atl-select__popover\"\n        data-side={placement?.side ?? 'bottom'}\n        style={\n          placement ? { left: placement.x, top: placement.y } : { left: 0, top: 0, opacity: 0 }\n        }\n      >\n        <div id={listId} role=\"listbox\" aria-labelledby={ids.labelId} className=\"atl-select__list\">\n          {options.map((option, index) => (\n            // Options are highlighted through aria-activedescendant from the combobox, which\n            // keeps focus (WAI-ARIA select-only combobox), so they need no key handlers.\n            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus\n            <div\n              key={option.value}\n              id={optionId(index)}\n              role=\"option\"\n              aria-selected={option.value === selected}\n              aria-disabled={option.disabled || undefined}\n              data-active={index === active || undefined}\n              className=\"atl-select__option\"\n              style={{ '--i': index } as React.CSSProperties}\n              onPointerMove={() => {\n                if (!option.disabled && active !== index) setActive(index);\n              }}\n              onPointerDown={(event) => event.preventDefault()}\n              onClick={() => {\n                if (option.disabled) return;\n                commit(index);\n                triggerRef.current?.focus();\n              }}\n            >\n              <span className=\"atl-select__check\" aria-hidden=\"true\">\n                {option.value === selected ? <IconCheck size={16} /> : null}\n              </span>\n              <span className=\"atl-select__text\">\n                <span>{option.label}</span>\n                {option.description ? (\n                  <span className=\"atl-select__description\">{option.description}</span>\n                ) : null}\n              </span>\n            </div>\n          ))}\n        </div>\n      </div>\n      {name ? <input type=\"hidden\" name={name} value={selected} /> : null}\n    </FieldShell>\n  );\n}\n"
+    },
+    {
+      "path": "components/inputs/animated-select/animated-select.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-select__trigger {\n    gap: var(--space-xs);\n    padding-inline: var(--space-s) var(--space-xs);\n    cursor: pointer;\n    user-select: none;\n  }\n\n  .atl-select__trigger:focus-visible {\n    outline: none;\n  }\n\n  .atl-select__trigger[aria-disabled='true'] {\n    cursor: not-allowed;\n    opacity: 0.55;\n  }\n\n  .atl-select__value {\n    flex: 1;\n    min-width: 0;\n    overflow: hidden;\n    text-overflow: ellipsis;\n    white-space: nowrap;\n  }\n\n  .atl-select__value[data-placeholder] {\n    color: var(--ink-soft);\n  }\n\n  .atl-select__chevron {\n    flex: none;\n    color: var(--ink-soft);\n    transition: rotate var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-select__trigger[data-open] .atl-select__chevron {\n    rotate: 180deg;\n  }\n\n  /* The list sits in the top layer and unrolls from the edge nearest the trigger. */\n  .atl-select__popover {\n    position: fixed;\n    inset: auto;\n    max-height: min(20rem, 60vh);\n    margin: 0;\n    padding: var(--space-2xs);\n    overflow-y: auto;\n    overscroll-behavior: contain;\n    border: 0;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    color: var(--ink);\n    box-shadow: var(--elev-overlay);\n    clip-path: inset(0 round var(--radius-panel));\n    transition:\n      clip-path var(--dur-glide) var(--ease-drift),\n      opacity var(--dur-step) var(--ease-anchor);\n  }\n\n  @starting-style {\n    .atl-select__popover:popover-open[data-side='bottom'] {\n      clip-path: inset(0 0 100% 0 round var(--radius-panel));\n    }\n    .atl-select__popover:popover-open[data-side='top'] {\n      clip-path: inset(100% 0 0 0 round var(--radius-panel));\n    }\n  }\n\n  .atl-select__option {\n    display: flex;\n    align-items: center;\n    gap: var(--space-xs);\n    min-height: var(--target-comfort);\n    padding: var(--space-2xs) var(--space-s) var(--space-2xs) var(--space-xs);\n    border-radius: var(--radius-control);\n    cursor: pointer;\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      translate var(--dur-step) var(--ease-anchor);\n    transition-delay: calc(min(var(--i), 8) * 18ms);\n  }\n\n  @starting-style {\n    .atl-select__popover:popover-open .atl-select__option {\n      opacity: 0;\n      translate: 0 -4px;\n    }\n  }\n\n  .atl-select__option[data-active] {\n    background: var(--reef);\n    box-shadow: inset 3px 0 0 var(--chart-magenta);\n  }\n\n  .atl-select__option[aria-selected='true'] {\n    font-weight: 600;\n  }\n\n  .atl-select__option[aria-disabled='true'] {\n    color: var(--ink-soft);\n    cursor: not-allowed;\n  }\n\n  .atl-select__check {\n    display: grid;\n    place-items: center;\n    flex: none;\n    width: 18px;\n  }\n\n  .atl-select__text {\n    display: grid;\n  }\n\n  .atl-select__description {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n    font-weight: 400;\n  }\n\n  @media (forced-colors: active) {\n    .atl-select__popover {\n      border: 1px solid CanvasText;\n    }\n    .atl-select__option[data-active] {\n      outline: 2px solid Highlight;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/inputs/animated-select/index.ts",
+      "kind": "index",
+      "content": "export { AnimatedSelect } from './AnimatedSelect';\nexport type { AnimatedSelectProps, SelectOption } from './AnimatedSelect';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/field",
+    "primitives/typeahead",
+    "primitives/use-controllable-state",
+    "primitives/use-dismiss",
+    "primitives/use-placement",
+    "primitives/use-popover",
+    "icons/check",
+    "icons/chevron-down",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "ArrowDown",
+          "ArrowUp"
+        ],
+        "action": "Open the list on the selected option; when open, move the highlight (stops at the ends)."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Open the list, or choose the highlighted option and close."
+      },
+      {
+        "keys": [
+          "Home",
+          "End"
+        ],
+        "action": "Highlight the first or last option (opening the list if needed)."
+      },
+      {
+        "keys": [
+          "PageUp",
+          "PageDown"
+        ],
+        "action": "Move the highlight ten options."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close without changing the choice."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Choose the highlighted option, close and move on."
+      },
+      {
+        "keys": [
+          "a–z"
+        ],
+        "action": "Highlight the next option starting with those letters."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA select-only combobox pattern: a `combobox` with `aria-haspopup=\"listbox\"`, `aria-expanded` and `aria-controls`, and a `listbox` of `option`s with `aria-selected`.",
+      "Focus stays on the combobox; the highlighted option is exposed with `aria-activedescendant`.",
+      "The label, hint and error are wired with `aria-labelledby` and `aria-describedby`; errors set `aria-invalid`.",
+      "The selected option is marked with a tick and bold text as well as by state.",
+      "Options are at least 44 px tall."
+    ],
+    "reducedMotion": "The list appears in place without unrolling, and options appear together."
+  },
+  "license": "MIT"
+}

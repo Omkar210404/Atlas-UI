@@ -1,0 +1,22 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "motion/tween",
+  "type": "primitive",
+  "title": "tween",
+  "files": [
+    {
+      "path": "motion/tween.ts",
+      "kind": "source",
+      "content": "import { durations, easings } from '../tokens/tokens';\nimport { prefersReducedMotion } from '../primitives/use-reduced-motion';\n\nexport type Easing = (t: number) => number;\n\n/** CSS-equivalent cubic-bezier easing, solved with Newton-Raphson and a bisection fallback. */\nexport function cubicBezier(x1: number, y1: number, x2: number, y2: number): Easing {\n  const cx = 3 * x1;\n  const bx = 3 * (x2 - x1) - cx;\n  const ax = 1 - cx - bx;\n  const cy = 3 * y1;\n  const by = 3 * (y2 - y1) - cy;\n  const ay = 1 - cy - by;\n  const sampleX = (t: number) => ((ax * t + bx) * t + cx) * t;\n  const sampleY = (t: number) => ((ay * t + by) * t + cy) * t;\n  const slopeX = (t: number) => (3 * ax * t + 2 * bx) * t + cx;\n\n  const solve = (x: number) => {\n    let t = x;\n    for (let i = 0; i < 8; i++) {\n      const error = sampleX(t) - x;\n      if (Math.abs(error) < 1e-6) return t;\n      const slope = slopeX(t);\n      if (Math.abs(slope) < 1e-6) break;\n      t -= error / slope;\n    }\n    let lo = 0;\n    let hi = 1;\n    t = x;\n    while (lo < hi) {\n      const value = sampleX(t);\n      if (Math.abs(value - x) < 1e-6) return t;\n      if (x > value) lo = t;\n      else hi = t;\n      t = (lo + hi) / 2;\n      if (hi - lo < 1e-7) break;\n    }\n    return t;\n  };\n\n  return (x) => (x <= 0 ? 0 : x >= 1 ? 1 : sampleY(solve(x)));\n}\n\n/** The named easings from the token file, as functions. */\nexport const ease = {\n  anchor: cubicBezier(...easings.anchor),\n  drift: cubicBezier(...easings.drift),\n  ebb: cubicBezier(...easings.ebb),\n};\n\nexport { durations };\n\ninterface TweenOptions {\n  duration: number;\n  ease?: Easing;\n  onUpdate: (progress: number) => void;\n  onComplete?: () => void;\n}\n\n/**\n * Runs `onUpdate` with eased progress from 0 to 1 on animation frames.\n * Under reduced motion it jumps straight to 1. Returns a function that cancels it.\n */\nexport function tween({ duration, ease: easing = ease.drift, onUpdate, onComplete }: TweenOptions) {\n  if (duration <= 0 || prefersReducedMotion()) {\n    onUpdate(1);\n    onComplete?.();\n    return () => {};\n  }\n  let frame = 0;\n  let start: number | null = null;\n  const step = (now: number) => {\n    start ??= now;\n    const t = Math.min((now - start) / duration, 1);\n    onUpdate(easing(t));\n    if (t < 1) frame = requestAnimationFrame(step);\n    else onComplete?.();\n  };\n  frame = requestAnimationFrame(step);\n  return () => cancelAnimationFrame(frame);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens/tokens",
+    "primitives/use-reduced-motion"
+  ],
+  "license": "MIT"
+}

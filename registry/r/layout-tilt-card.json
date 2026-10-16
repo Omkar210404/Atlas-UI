@@ -1,0 +1,50 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "layout/tilt-card",
+  "type": "component",
+  "title": "Tilt card",
+  "description": "A card that tilts toward the pointer.",
+  "category": "layout",
+  "files": [
+    {
+      "path": "components/layout/tilt-card/TiltCard.tsx",
+      "kind": "source",
+      "content": "import { useRef, type PointerEvent, type ReactNode } from 'react';\nimport { useReducedMotion } from '../../../primitives/use-reduced-motion';\nimport './tilt-card.css';\n\nexport interface TiltCardProps {\n  children: ReactNode;\n  /** Largest tilt in degrees, at the card's edge. */\n  maxTilt?: number;\n  /** Show the contour sheen that follows the pointer. */\n  sheen?: boolean;\n  className?: string;\n}\n\n/**\n * A card that tilts toward the pointer, with a contour-line sheen that follows it. Tilt\n * angles are registered CSS properties, so the browser eases them; no animation loop runs.\n * Keyboard focus inside the card lifts it slightly instead.\n */\nexport function TiltCard({ children, maxTilt = 8, sheen = true, className }: TiltCardProps) {\n  const ref = useRef<HTMLDivElement>(null);\n  const reduced = useReducedMotion();\n\n  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {\n    if (reduced || event.pointerType === 'touch') return;\n    const el = ref.current;\n    if (!el) return;\n    const rect = el.getBoundingClientRect();\n    const px = (event.clientX - rect.left) / rect.width;\n    const py = (event.clientY - rect.top) / rect.height;\n    el.style.setProperty('--atl-tilt-x', `${((px - 0.5) * 2 * maxTilt).toFixed(2)}deg`);\n    el.style.setProperty('--atl-tilt-y', `${((0.5 - py) * 2 * maxTilt).toFixed(2)}deg`);\n    el.style.setProperty('--atl-sheen-x', `${(px * 100).toFixed(1)}%`);\n    el.style.setProperty('--atl-sheen-y', `${(py * 100).toFixed(1)}%`);\n    el.dataset.active = '';\n  };\n\n  const onPointerLeave = () => {\n    const el = ref.current;\n    if (!el) return;\n    el.style.setProperty('--atl-tilt-x', '0deg');\n    el.style.setProperty('--atl-tilt-y', '0deg');\n    delete el.dataset.active;\n  };\n\n  return (\n    <div className={['atl-tilt', className].filter(Boolean).join(' ')}>\n      <div\n        ref={ref}\n        className=\"atl-tilt__card\"\n        data-sheen={sheen && !reduced ? '' : undefined}\n        onPointerMove={onPointerMove}\n        onPointerLeave={onPointerLeave}\n      >\n        {children}\n      </div>\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/layout/tilt-card/tilt-card.css",
+      "kind": "style",
+      "content": "@property --atl-tilt-x {\n  syntax: '<angle>';\n  inherits: false;\n  initial-value: 0deg;\n}\n\n@property --atl-tilt-y {\n  syntax: '<angle>';\n  inherits: false;\n  initial-value: 0deg;\n}\n\n@layer atlas.components {\n  .atl-tilt {\n    perspective: 900px;\n  }\n\n  .atl-tilt__card {\n    position: relative;\n    padding: var(--space-l);\n    overflow: hidden;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: var(--elev-1);\n    transform: rotateX(var(--atl-tilt-y)) rotateY(var(--atl-tilt-x));\n    transform-style: preserve-3d;\n    transition:\n      --atl-tilt-x var(--dur-glide) var(--ease-drift),\n      --atl-tilt-y var(--dur-glide) var(--ease-drift),\n      translate var(--dur-step) var(--ease-anchor),\n      box-shadow var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-tilt__card[data-active] {\n    transition:\n      --atl-tilt-x 120ms linear,\n      --atl-tilt-y 120ms linear;\n  }\n\n  /* Keyboard focus lifts the card a little instead of tilting it. */\n  .atl-tilt__card:has(:focus-visible) {\n    translate: 0 -3px;\n    box-shadow:\n      var(--elev-2),\n      0 10px 24px -12px var(--shadow-tint);\n  }\n\n  /* The sheen: contour rings centred on the pointer. */\n  .atl-tilt__card[data-sheen]::after {\n    content: '';\n    position: absolute;\n    inset: 0;\n    background: repeating-radial-gradient(\n      circle at var(--atl-sheen-x, 50%) var(--atl-sheen-y, 50%),\n      transparent 0 14px,\n      color-mix(in oklch, var(--ink) 9%, transparent) 14px 15px\n    );\n    mask-image: radial-gradient(\n      circle at var(--atl-sheen-x, 50%) var(--atl-sheen-y, 50%),\n      black,\n      transparent 60%\n    );\n    opacity: 0;\n    pointer-events: none;\n    transition: opacity var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-tilt__card[data-sheen][data-active]::after {\n    opacity: 1;\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-tilt__card {\n      transform: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-tilt__card {\n    transform: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/layout/tilt-card/index.ts",
+      "kind": "index",
+      "content": "export { TiltCard } from './TiltCard';\nexport type { TiltCardProps } from './TiltCard';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move to the controls inside; the card lifts while one is focused."
+      }
+    ],
+    "notes": [
+      "The card is a plain container; it adds no role and no Tab stop of its own.",
+      "Tilt is pointer-only and never needed to read or use the content.",
+      "The sheen is decorative and ignores pointer events."
+    ],
+    "reducedMotion": "The card stays flat; there is no tilt and no sheen."
+  },
+  "license": "MIT"
+}

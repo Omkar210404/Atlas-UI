@@ -1,0 +1,71 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "overlays/popover",
+  "type": "component",
+  "title": "Popover",
+  "description": "Anchored content that flips and shifts to stay visible.",
+  "category": "overlays",
+  "files": [
+    {
+      "path": "components/overlays/popover/Popover.tsx",
+      "kind": "source",
+      "content": "import { useId, useLayoutEffect, useRef, type ReactNode } from 'react';\nimport { focusables } from '../../../primitives/focus';\nimport type { Align, Side } from '../../../primitives/place';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { useDismiss } from '../../../primitives/use-dismiss';\nimport { usePlacement } from '../../../primitives/use-placement';\nimport { usePopover } from '../../../primitives/use-popover';\nimport { Button, type ButtonProps } from '../../actions/button/Button';\nimport './popover.css';\n\nexport interface PopoverProps {\n  /** The trigger button's label. */\n  label: ReactNode;\n  /** Extra props for the trigger button, such as `variant` or `icon`. */\n  triggerProps?: Omit<ButtonProps, 'children' | 'onClick'>;\n  /** Names the popover. */\n  title: ReactNode;\n  children: ReactNode;\n  side?: Side;\n  align?: Align;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n}\n\n/**\n * Content anchored to a button that stays visible near the viewport edge: it flips to the\n * other side when there is no room and shifts along the edge, and its arrow keeps pointing\n * at the button. A non-modal dialog in the top layer.\n */\nexport function Popover({\n  label,\n  triggerProps,\n  title,\n  children,\n  side = 'bottom',\n  align = 'center',\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n}: PopoverProps) {\n  const [open, setOpen] = useControllableState({\n    value: openProp,\n    defaultValue: defaultOpen,\n    onChange: onOpenChange,\n  });\n  const triggerRef = useRef<HTMLButtonElement>(null);\n  const panelRef = useRef<HTMLDivElement>(null);\n  const id = useId();\n\n  usePopover(panelRef, open);\n  const placement = usePlacement(triggerRef, panelRef, open, {\n    side,\n    align,\n    offset: 12,\n    padding: 12,\n  });\n\n  const close = (refocus: boolean) => {\n    setOpen(false);\n    if (refocus) triggerRef.current?.focus();\n  };\n\n  useDismiss({\n    open,\n    layerRef: panelRef,\n    triggerRef,\n    onDismiss: (reason) => close(reason === 'escape'),\n  });\n\n  // Move focus into the popover when it opens.\n  useLayoutEffect(() => {\n    if (!open || !panelRef.current) return;\n    (focusables(panelRef.current)[0] ?? panelRef.current).focus({ preventScroll: true });\n  }, [open]);\n\n  return (\n    <>\n      <Button\n        {...triggerProps}\n        ref={triggerRef}\n        aria-haspopup=\"dialog\"\n        aria-expanded={open}\n        aria-controls={`${id}-panel`}\n        onClick={() => setOpen((o) => !o)}\n      >\n        {label}\n      </Button>\n      <div\n        ref={panelRef}\n        id={`${id}-panel`}\n        popover=\"manual\"\n        role=\"dialog\"\n        aria-labelledby={`${id}-title`}\n        tabIndex={-1}\n        className=\"atl-popover\"\n        data-side={placement?.side ?? side}\n        style={\n          placement\n            ? ({\n                left: placement.x,\n                top: placement.y,\n                '--atl-arrow': `${placement.arrow}px`,\n              } as React.CSSProperties)\n            : { left: 0, top: 0, opacity: 0 }\n        }\n      >\n        <span className=\"atl-popover__arrow\" aria-hidden=\"true\" />\n        <h3 id={`${id}-title`} className=\"atl-popover__title\">\n          {title}\n        </h3>\n        <div className=\"atl-popover__body\">{children}</div>\n      </div>\n    </>\n  );\n}\n"
+    },
+    {
+      "path": "components/overlays/popover/popover.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-popover {\n    position: fixed;\n    inset: auto;\n    width: max-content;\n    max-width: min(20rem, calc(100vw - 24px));\n    margin: 0;\n    padding: var(--space-m);\n    border: 0;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    color: var(--ink);\n    box-shadow: var(--elev-overlay);\n    overflow: visible;\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      translate var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-popover:focus-visible {\n    outline: var(--focus-ring);\n    outline-offset: 2px;\n  }\n\n  @starting-style {\n    .atl-popover:popover-open[data-side='bottom'] {\n      opacity: 0;\n      translate: 0 -6px;\n    }\n    .atl-popover:popover-open[data-side='top'] {\n      opacity: 0;\n      translate: 0 6px;\n    }\n    .atl-popover:popover-open[data-side='left'] {\n      opacity: 0;\n      translate: 6px 0;\n    }\n    .atl-popover:popover-open[data-side='right'] {\n      opacity: 0;\n      translate: -6px 0;\n    }\n  }\n\n  /* The arrow: a rotated square on the edge facing the anchor, at the anchor's centre. */\n  .atl-popover__arrow {\n    position: absolute;\n    width: 12px;\n    height: 12px;\n    background: var(--shoal);\n    rotate: 45deg;\n  }\n\n  .atl-popover[data-side='bottom'] .atl-popover__arrow {\n    top: -6px;\n    left: calc(var(--atl-arrow, 50%) - 6px);\n    box-shadow: -1px -1px 0 color-mix(in oklch, var(--edge) 60%, transparent);\n  }\n\n  .atl-popover[data-side='top'] .atl-popover__arrow {\n    bottom: -6px;\n    left: calc(var(--atl-arrow, 50%) - 6px);\n    box-shadow: 1px 1px 0 color-mix(in oklch, var(--edge) 60%, transparent);\n  }\n\n  .atl-popover[data-side='left'] .atl-popover__arrow {\n    right: -6px;\n    top: calc(var(--atl-arrow, 50%) - 6px);\n    box-shadow: 1px -1px 0 color-mix(in oklch, var(--edge) 60%, transparent);\n  }\n\n  .atl-popover[data-side='right'] .atl-popover__arrow {\n    left: -6px;\n    top: calc(var(--atl-arrow, 50%) - 6px);\n    box-shadow: -1px 1px 0 color-mix(in oklch, var(--edge) 60%, transparent);\n  }\n\n  .atl-popover__title {\n    margin-bottom: var(--space-2xs);\n    font-size: var(--step-0);\n    font-weight: 650;\n  }\n\n  .atl-popover__body {\n    font-family: var(--font-prose);\n    line-height: var(--leading-prose);\n  }\n\n  @media (forced-colors: active) {\n    .atl-popover {\n      border: 1px solid CanvasText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/overlays/popover/index.ts",
+      "kind": "index",
+      "content": "export { Popover } from './Popover';\nexport type { PopoverProps } from './Popover';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/place",
+    "primitives/use-placement",
+    "primitives/use-popover",
+    "primitives/use-dismiss",
+    "primitives/focus",
+    "primitives/use-controllable-state",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Open or close the popover from its button."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move through the popover’s content; leaving it closes it."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close the popover and return focus to its button."
+      }
+    ],
+    "notes": [
+      "The button exposes `aria-haspopup=\"dialog\"`, `aria-expanded` and `aria-controls`.",
+      "The panel is a non-modal `dialog` labelled by its title. The page stays usable while it is open.",
+      "Focus moves into the popover when it opens and back to the button when Escape closes it.",
+      "It closes on a click outside and when focus leaves it, so it never lingers unseen.",
+      "It sits in the top layer through the Popover API, so no container can clip it."
+    ],
+    "reducedMotion": "The popover appears without its short slide from the anchor."
+  },
+  "license": "MIT"
+}

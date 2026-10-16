@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/chevron-down",
+  "type": "icon",
+  "title": "chevron-down",
+  "files": [
+    {
+      "path": "icons/chevron-down.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconChevronDown = createIcon('IconChevronDown', <path d=\"m5 8 5 5 5-5\" />);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

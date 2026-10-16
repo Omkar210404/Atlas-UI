@@ -1,0 +1,67 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "navigation/breadcrumb-trail",
+  "type": "component",
+  "title": "Breadcrumb trail",
+  "description": "The path to the current page, folding its middle when space runs out.",
+  "category": "navigation",
+  "files": [
+    {
+      "path": "components/navigation/breadcrumb-trail/BreadcrumbTrail.tsx",
+      "kind": "source",
+      "content": "import { useId, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';\nimport { IconMore } from '../../../icons/more';\nimport { useDismiss } from '../../../primitives/use-dismiss';\nimport { usePlacement } from '../../../primitives/use-placement';\nimport './breadcrumb-trail.css';\n\nexport interface Crumb {\n  label: string;\n  href: string;\n}\n\nexport interface BreadcrumbTrailProps {\n  /** The path from the top level to the current page. The last crumb is the current page. */\n  items: readonly Crumb[];\n  /** Accessible name of the navigation landmark. */\n  label?: string;\n  /**\n   * Called when a crumb is clicked. Call `event.preventDefault()` to handle navigation\n   * yourself, for example in a client-side router.\n   */\n  onNavigate?: (crumb: Crumb, event: MouseEvent<HTMLAnchorElement>) => void;\n  className?: string;\n}\n\nfunction Separator() {\n  return (\n    <svg className=\"atl-crumbs__sep\" viewBox=\"0 0 8 16\" width=\"8\" height=\"16\" aria-hidden=\"true\">\n      <path d=\"M6 2.5 2 13.5\" stroke=\"currentColor\" strokeWidth=\"1.25\" strokeLinecap=\"round\" />\n    </svg>\n  );\n}\n\n/**\n * How many crumbs after the first must be hidden for the trail to fit.\n * The first and last crumbs always stay visible.\n */\nexport function crumbsToHide(widths: number[], overflowWidth: number, available: number): number {\n  const total = widths.reduce((sum, w) => sum + w, 0);\n  if (total <= available) return 0;\n  const hideable = Math.max(widths.length - 2, 0);\n  let width = total + overflowWidth;\n  for (let hidden = 1; hidden <= hideable; hidden++) {\n    width -= widths[hidden] ?? 0;\n    if (width <= available) return hidden;\n  }\n  return hideable;\n}\n\nexport function BreadcrumbTrail({\n  items,\n  label = 'Breadcrumb',\n  onNavigate,\n  className,\n}: BreadcrumbTrailProps) {\n  const navRef = useRef<HTMLElement>(null);\n  const measureRef = useRef<HTMLOListElement>(null);\n  const triggerRef = useRef<HTMLButtonElement>(null);\n  const menuRef = useRef<HTMLUListElement>(null);\n  const [hidden, setHidden] = useState(0);\n  const [open, setOpen] = useState(false);\n  const menuId = useId();\n\n  // Measure natural widths from an invisible copy, then hide middle crumbs until it fits.\n  useLayoutEffect(() => {\n    const nav = navRef.current;\n    const measure = measureRef.current;\n    if (!nav || !measure) return;\n    const update = () => {\n      const entries = Array.from(measure.children) as HTMLElement[];\n      const overflow = entries.pop();\n      const widths = entries.map((el) => el.getBoundingClientRect().width);\n      const next = crumbsToHide(\n        widths,\n        overflow?.getBoundingClientRect().width ?? 0,\n        nav.clientWidth,\n      );\n      setHidden(next);\n    };\n    update();\n    const observer = new ResizeObserver(update);\n    observer.observe(nav);\n    observer.observe(measure);\n    return () => observer.disconnect();\n  }, [items]);\n\n  useDismiss({\n    open,\n    layerRef: menuRef,\n    triggerRef,\n    onDismiss: (reason) => {\n      setOpen(false);\n      if (reason === 'escape') triggerRef.current?.focus();\n    },\n  });\n  const placement = usePlacement(triggerRef, menuRef, open, { side: 'bottom', align: 'start' });\n\n  const collapsed = items.slice(1, 1 + hidden);\n  const lastIndex = items.length - 1;\n\n  const link = (crumb: Crumb, index: number, extra?: string) => (\n    <a\n      className={['atl-crumbs__link', extra].filter(Boolean).join(' ')}\n      href={crumb.href}\n      aria-current={index === lastIndex ? 'page' : undefined}\n      onClick={(event) => {\n        setOpen(false);\n        onNavigate?.(crumb, event);\n      }}\n    >\n      {crumb.label}\n    </a>\n  );\n\n  const renderItems = (forMeasure: boolean): ReactNode[] =>\n    items.flatMap((crumb, index) => {\n      if (!forMeasure && index >= 1 && index <= hidden) {\n        if (index !== 1) return [];\n        return [\n          <li key=\"overflow\" className=\"atl-crumbs__item\">\n            <button\n              ref={triggerRef}\n              type=\"button\"\n              className=\"atl-crumbs__more\"\n              aria-expanded={open}\n              aria-controls={menuId}\n              aria-label={`Show ${collapsed.length} hidden level${collapsed.length === 1 ? '' : 's'}`}\n              onClick={() => setOpen((o) => !o)}\n            >\n              <IconMore size={18} />\n            </button>\n            <Separator />\n          </li>,\n        ];\n      }\n      return [\n        <li key={`${index}-${crumb.href}`} className=\"atl-crumbs__item\">\n          {forMeasure ? (\n            <span\n              className=\"atl-crumbs__link\"\n              aria-current={index === lastIndex ? 'page' : undefined}\n            >\n              {crumb.label}\n            </span>\n          ) : (\n            link(crumb, index)\n          )}\n          {index < lastIndex ? <Separator /> : null}\n        </li>,\n      ];\n    });\n\n  return (\n    <nav\n      ref={navRef}\n      aria-label={label}\n      className={['atl-crumbs', className].filter(Boolean).join(' ')}\n    >\n      <ol className=\"atl-crumbs__list\">{renderItems(false)}</ol>\n\n      <ol\n        ref={measureRef}\n        className=\"atl-crumbs__list atl-crumbs__measure\"\n        aria-hidden=\"true\"\n        inert\n      >\n        {renderItems(true)}\n        <li className=\"atl-crumbs__item\">\n          <span className=\"atl-crumbs__more\">\n            <IconMore size={18} />\n          </span>\n          <Separator />\n        </li>\n      </ol>\n\n      {collapsed.length > 0 ? (\n        <ul\n          ref={menuRef}\n          id={menuId}\n          className=\"atl-crumbs__menu\"\n          hidden={!open}\n          style={\n            placement\n              ? { left: placement.x, top: placement.y }\n              : { left: -9999, top: 0, visibility: 'hidden' }\n          }\n        >\n          {collapsed.map((crumb, i) => (\n            <li key={crumb.href}>{link(crumb, i + 1, 'atl-crumbs__menu-link')}</li>\n          ))}\n        </ul>\n      ) : null}\n    </nav>\n  );\n}\n"
+    },
+    {
+      "path": "components/navigation/breadcrumb-trail/breadcrumb-trail.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-crumbs {\n    position: relative;\n    min-width: 0;\n  }\n\n  .atl-crumbs__list {\n    display: flex;\n    align-items: center;\n    flex-wrap: nowrap;\n    margin: 0;\n    padding: 0;\n    list-style: none;\n    white-space: nowrap;\n  }\n\n  .atl-crumbs__measure {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: max-content;\n    visibility: hidden;\n    pointer-events: none;\n  }\n\n  .atl-crumbs__item {\n    display: flex;\n    align-items: center;\n    flex: none;\n    transition:\n      opacity var(--dur-glide) var(--ease-drift),\n      translate var(--dur-glide) var(--ease-drift);\n  }\n\n  /* A newly plotted crumb slides in from the direction of travel. */\n  @starting-style {\n    .atl-crumbs__list:not(.atl-crumbs__measure) .atl-crumbs__item:last-child {\n      opacity: 0;\n      translate: -8px 0;\n    }\n  }\n\n  .atl-crumbs__link {\n    display: inline-flex;\n    align-items: center;\n    min-height: var(--target-min);\n    padding: var(--space-3xs) var(--space-2xs);\n    border-radius: var(--radius-control);\n    color: var(--ink-soft);\n    font-size: var(--step-0);\n    text-decoration: none;\n    transition:\n      color var(--dur-tick) var(--ease-anchor),\n      background-color var(--dur-tick) var(--ease-anchor);\n  }\n\n  a.atl-crumbs__link:hover {\n    color: var(--ink);\n    text-decoration: underline;\n    text-decoration-color: var(--isobath);\n  }\n\n  /* The current position: a magenta mark plus weight, so it is not colour alone. */\n  .atl-crumbs__link[aria-current='page'] {\n    gap: var(--space-xs);\n    color: var(--ink);\n    font-weight: 600;\n  }\n\n  .atl-crumbs__link[aria-current='page']::before {\n    content: '';\n    flex: none;\n    width: 7px;\n    height: 7px;\n    border-radius: 50%;\n    background: var(--chart-magenta);\n    box-shadow: 0 0 0 3px var(--magenta-wash);\n  }\n\n  .atl-crumbs__sep {\n    flex: none;\n    margin-inline: var(--space-3xs);\n    color: var(--isobath);\n  }\n\n  .atl-crumbs__more {\n    display: inline-grid;\n    place-items: center;\n    width: var(--target-min);\n    height: var(--target-min);\n    min-width: 32px;\n    min-height: 32px;\n    padding: 0;\n    border: 0;\n    border-radius: var(--radius-control);\n    background: var(--ink-wash);\n    color: var(--ink-soft);\n  }\n\n  button.atl-crumbs__more:hover,\n  button.atl-crumbs__more[aria-expanded='true'] {\n    background: var(--ink-wash-strong);\n    color: var(--ink);\n  }\n\n  .atl-crumbs__menu {\n    position: fixed;\n    z-index: 40;\n    min-width: 12rem;\n    max-width: min(22rem, calc(100vw - 16px));\n    margin: 0;\n    padding: var(--space-2xs);\n    list-style: none;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: var(--elev-overlay);\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      translate var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-crumbs__menu[hidden] {\n    display: none;\n  }\n\n  @starting-style {\n    .atl-crumbs__menu:not([hidden]) {\n      opacity: 0;\n      translate: 0 -4px;\n    }\n  }\n\n  .atl-crumbs__menu-link {\n    display: flex;\n    width: 100%;\n    min-height: var(--target-comfort);\n    padding-inline: var(--space-s);\n    white-space: normal;\n  }\n\n  .atl-crumbs__menu-link:hover {\n    background: var(--reef);\n  }\n\n  @media (forced-colors: active) {\n    .atl-crumbs__link[aria-current='page']::before {\n      background: Highlight;\n    }\n    .atl-crumbs__menu {\n      border: 1px solid CanvasText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/navigation/breadcrumb-trail/index.ts",
+      "kind": "index",
+      "content": "export { BreadcrumbTrail, crumbsToHide } from './BreadcrumbTrail';\nexport type { BreadcrumbTrailProps, Crumb } from './BreadcrumbTrail';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/more",
+    "primitives/use-dismiss",
+    "primitives/use-placement",
+    "primitives/place",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move between crumbs and the fold button."
+      },
+      {
+        "keys": [
+          "Enter"
+        ],
+        "action": "Follow a crumb, or open and close the folded levels."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close the folded levels and return focus to the fold button."
+      }
+    ],
+    "notes": [
+      "A `nav` landmark with an accessible name, containing an ordered list of links.",
+      "The current page link has `aria-current=\"page\"` and is marked by weight and a shape, not colour alone.",
+      "The fold button names how many levels it hides and exposes `aria-expanded` and `aria-controls`.",
+      "The folded list closes on Escape, on a click outside, and when focus leaves it.",
+      "Separators are decorative and hidden from assistive technology."
+    ],
+    "reducedMotion": "New crumbs and the folded list appear without sliding."
+  },
+  "license": "MIT"
+}

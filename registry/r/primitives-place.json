@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/place",
+  "type": "primitive",
+  "title": "place",
+  "files": [
+    {
+      "path": "primitives/place.ts",
+      "kind": "source",
+      "content": "export type Side = 'top' | 'bottom' | 'left' | 'right';\nexport type Align = 'start' | 'center' | 'end';\n\nexport interface Rect {\n  x: number;\n  y: number;\n  width: number;\n  height: number;\n}\n\nexport interface PlaceOptions {\n  side?: Side | undefined;\n  align?: Align | undefined;\n  /** Gap between anchor and floating element. */\n  offset?: number | undefined;\n  /** Minimum distance from the viewport edge. */\n  padding?: number | undefined;\n}\n\nexport interface Placement {\n  x: number;\n  y: number;\n  side: Side;\n  /** Where the anchor's centre falls along the floating element's edge, for an arrow. */\n  arrow: number;\n  /** Space available on the chosen side, so the element can cap its size. */\n  available: number;\n}\n\nconst opposite: Record<Side, Side> = { top: 'bottom', bottom: 'top', left: 'right', right: 'left' };\n\nfunction spaceOn(side: Side, anchor: Rect, viewport: Rect, gap: number): number {\n  switch (side) {\n    case 'top':\n      return anchor.y - viewport.y - gap;\n    case 'bottom':\n      return viewport.y + viewport.height - (anchor.y + anchor.height) - gap;\n    case 'left':\n      return anchor.x - viewport.x - gap;\n    case 'right':\n      return viewport.x + viewport.width - (anchor.x + anchor.width) - gap;\n  }\n}\n\nconst clamp = (value: number, min: number, max: number) =>\n  max < min ? min : Math.min(Math.max(value, min), max);\n\n/**\n * Positions a floating box next to an anchor inside a viewport.\n * Flips to the opposite side when the preferred side is too small and the opposite has\n * more room, then shifts along the cross axis to stay `padding` away from the edges.\n */\nexport function place(\n  anchor: Rect,\n  floating: { width: number; height: number },\n  viewport: Rect,\n  { side = 'bottom', align = 'center', offset = 8, padding = 8 }: PlaceOptions = {},\n): Placement {\n  const gap = offset + padding;\n  const vertical = side === 'top' || side === 'bottom';\n  const needed = vertical ? floating.height : floating.width;\n  let chosen = side;\n  const preferredSpace = spaceOn(side, anchor, viewport, gap);\n  const oppositeSpace = spaceOn(opposite[side], anchor, viewport, gap);\n  if (preferredSpace < needed && oppositeSpace > preferredSpace) chosen = opposite[side];\n\n  let x: number;\n  let y: number;\n  if (chosen === 'top' || chosen === 'bottom') {\n    y = chosen === 'top' ? anchor.y - offset - floating.height : anchor.y + anchor.height + offset;\n    const start = anchor.x;\n    const centre = anchor.x + anchor.width / 2 - floating.width / 2;\n    const end = anchor.x + anchor.width - floating.width;\n    x = align === 'start' ? start : align === 'end' ? end : centre;\n    x = clamp(x, viewport.x + padding, viewport.x + viewport.width - padding - floating.width);\n  } else {\n    x = chosen === 'left' ? anchor.x - offset - floating.width : anchor.x + anchor.width + offset;\n    const start = anchor.y;\n    const centre = anchor.y + anchor.height / 2 - floating.height / 2;\n    const end = anchor.y + anchor.height - floating.height;\n    y = align === 'start' ? start : align === 'end' ? end : centre;\n    y = clamp(y, viewport.y + padding, viewport.y + viewport.height - padding - floating.height);\n  }\n\n  const arrow =\n    chosen === 'top' || chosen === 'bottom'\n      ? clamp(anchor.x + anchor.width / 2 - x, 12, floating.width - 12)\n      : clamp(anchor.y + anchor.height / 2 - y, 12, floating.height - 12);\n\n  return {\n    x,\n    y,\n    side: chosen,\n    arrow,\n    available: Math.max(spaceOn(chosen, anchor, viewport, gap), 0),\n  };\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

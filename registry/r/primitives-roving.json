@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/roving",
+  "type": "primitive",
+  "title": "roving",
+  "files": [
+    {
+      "path": "primitives/roving.ts",
+      "kind": "source",
+      "content": "export type Orientation = 'horizontal' | 'vertical' | 'both';\n\ninterface RovingOptions {\n  orientation: Orientation;\n  loop?: boolean;\n  /** Reverses Left/Right in right-to-left layouts. */\n  rtl?: boolean;\n}\n\n/**\n * Maps a key press to the next index in a roving-tabindex group, or null if the key\n * is not a navigation key for this orientation. Pure, so it is easy to test.\n */\nexport function rovingIndex(\n  key: string,\n  index: number,\n  count: number,\n  { orientation, loop = true, rtl = false }: RovingOptions,\n): number | null {\n  if (count <= 0) return null;\n  const horizontal = orientation !== 'vertical';\n  const vertical = orientation !== 'horizontal';\n  let delta = 0;\n  if (horizontal && key === 'ArrowRight') delta = rtl ? -1 : 1;\n  else if (horizontal && key === 'ArrowLeft') delta = rtl ? 1 : -1;\n  else if (vertical && key === 'ArrowDown') delta = 1;\n  else if (vertical && key === 'ArrowUp') delta = -1;\n  else if (key === 'Home') return 0;\n  else if (key === 'End') return count - 1;\n  else return null;\n\n  const next = index + delta;\n  if (loop) return (next + count) % count;\n  return Math.min(Math.max(next, 0), count - 1);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

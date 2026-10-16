@@ -1,0 +1,72 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "spatial/carousel-3d",
+  "type": "component",
+  "title": "3D carousel",
+  "description": "A ring of slides you rotate by key or button.",
+  "category": "spatial",
+  "files": [
+    {
+      "path": "components/spatial/carousel-3d/Carousel3D.tsx",
+      "kind": "source",
+      "content": "import { useId, useState, type KeyboardEvent, type ReactNode } from 'react';\nimport { IconChevronRight } from '../../../icons/chevron-right';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { Button } from '../../actions/button/Button';\nimport './carousel-3d.css';\n\nexport interface CarouselSlide {\n  id: string;\n  /** Names the slide for the slide picker and for assistive technology. */\n  label: string;\n  content: ReactNode;\n}\n\nexport interface Carousel3DProps {\n  /** Names the carousel, for example \"Harbour guides\". */\n  label: string;\n  slides: readonly CarouselSlide[];\n  index?: number;\n  defaultIndex?: number;\n  onIndexChange?: (index: number) => void;\n  className?: string;\n}\n\n/**\n * A ring of slides in CSS 3D that you turn with buttons, the arrow keys or the slide picker.\n * Follows the WAI-ARIA carousel pattern. It never turns by itself, so there is nothing to\n * pause. No WebGL.\n */\nexport function Carousel3D({\n  label,\n  slides,\n  index,\n  defaultIndex = 0,\n  onIndexChange,\n  className,\n}: Carousel3DProps) {\n  const [current, setCurrent] = useControllableState({\n    value: index,\n    defaultValue: defaultIndex,\n    onChange: onIndexChange,\n  });\n  // A running count of turns, so the ring always takes the short way round.\n  const [turns, setTurns] = useState(current);\n  const id = useId();\n  const n = slides.length;\n  // Announce slide changes only after the first one the person makes.\n  const [live, setLive] = useState(false);\n\n  const go = (step: number) => {\n    setLive(true);\n    setTurns((t) => t + step);\n    setCurrent((c) => (((c + step) % n) + n) % n);\n  };\n  const goTo = (target: number) => {\n    const forward = (((target - current) % n) + n) % n;\n    go(forward <= n / 2 ? forward : forward - n);\n  };\n\n  const onKeyDown = (event: KeyboardEvent<HTMLElement>) => {\n    if (event.key === 'ArrowRight') {\n      event.preventDefault();\n      go(1);\n    } else if (event.key === 'ArrowLeft') {\n      event.preventDefault();\n      go(-1);\n    }\n  };\n\n  const angle = 360 / n;\n\n  return (\n    // Arrow keys turn the ring while focus is anywhere inside the carousel region.\n    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions\n    <section\n      className={['atl-carousel', className].filter(Boolean).join(' ')}\n      aria-roledescription=\"carousel\"\n      aria-label={label}\n      onKeyDown={onKeyDown}\n      style={{ '--atl-n': n, '--atl-turn': turns } as React.CSSProperties}\n    >\n      <div className=\"atl-carousel__controls\">\n        <Button\n          size=\"s\"\n          icon={<IconChevronRight style={{ rotate: '180deg' }} />}\n          aria-label=\"Previous slide\"\n          aria-controls={`${id}-ring`}\n          onClick={() => go(-1)}\n        />\n        <div className=\"atl-carousel__picker\" role=\"group\" aria-label=\"Choose a slide\">\n          {slides.map((slide, i) => (\n            <button\n              key={slide.id}\n              type=\"button\"\n              className=\"atl-carousel__dot\"\n              aria-label={slide.label}\n              aria-current={i === current ? 'true' : undefined}\n              aria-controls={`${id}-ring`}\n              onClick={() => goTo(i)}\n            />\n          ))}\n        </div>\n        <Button\n          size=\"s\"\n          icon={<IconChevronRight />}\n          aria-label=\"Next slide\"\n          aria-controls={`${id}-ring`}\n          onClick={() => go(1)}\n        />\n      </div>\n      <div className=\"atl-carousel__viewport\">\n        <div\n          id={`${id}-ring`}\n          className=\"atl-carousel__ring\"\n          aria-live={live ? 'polite' : 'off'}\n          aria-atomic=\"false\"\n        >\n          {slides.map((slide, i) => {\n            const active = i === current;\n            return (\n              <div\n                key={slide.id}\n                className=\"atl-carousel__slide\"\n                role=\"group\"\n                aria-roledescription=\"slide\"\n                aria-label={`${i + 1} of ${n}: ${slide.label}`}\n                aria-hidden={active ? undefined : true}\n                inert={!active}\n                data-active={active || undefined}\n                style={\n                  {\n                    '--atl-i': i,\n                    transform: `rotateY(${i * angle}deg) translateZ(var(--atl-radius))`,\n                  } as React.CSSProperties\n                }\n              >\n                {slide.content}\n              </div>\n            );\n          })}\n        </div>\n      </div>\n    </section>\n  );\n}\n"
+    },
+    {
+      "path": "components/spatial/carousel-3d/carousel-3d.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-carousel {\n    --atl-slide-w: 15rem;\n    --atl-radius: calc(var(--atl-slide-w) * 0.5 / tan(180deg / var(--atl-n)) + 1.5rem);\n    display: grid;\n    gap: var(--space-m);\n    width: 100%;\n  }\n\n  .atl-carousel__viewport {\n    height: 15rem;\n    perspective: 1100px;\n    overflow: hidden;\n  }\n\n  .atl-carousel__ring {\n    position: relative;\n    width: var(--atl-slide-w);\n    height: 100%;\n    margin: 0 auto;\n    transform-style: preserve-3d;\n    transform: translateZ(calc(-1 * var(--atl-radius)))\n      rotateY(calc(var(--atl-turn) * -360deg / var(--atl-n)));\n    transition: transform var(--dur-voyage) var(--ease-drift);\n  }\n\n  .atl-carousel__slide {\n    position: absolute;\n    inset: 0;\n    display: grid;\n    padding: var(--space-m);\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);\n    backface-visibility: hidden;\n    opacity: 0.45;\n    transition: opacity var(--dur-glide) var(--ease-anchor);\n  }\n\n  .atl-carousel__slide[data-active] {\n    opacity: 1;\n    box-shadow:\n      inset 0 0 0 1px var(--edge),\n      0 18px 40px -20px var(--shadow-tint);\n  }\n\n  .atl-carousel__controls {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    gap: var(--space-s);\n  }\n\n  .atl-carousel__picker {\n    display: flex;\n    gap: 2px;\n  }\n\n  /* A 24px target around a small dot. */\n  .atl-carousel__dot {\n    display: grid;\n    place-items: center;\n    width: 24px;\n    height: 24px;\n    padding: 0;\n    border: 0;\n    border-radius: 50%;\n    background: none;\n  }\n\n  .atl-carousel__dot::after {\n    content: '';\n    width: 8px;\n    height: 8px;\n    border-radius: 50%;\n    box-shadow: inset 0 0 0 1.5px var(--ink-soft);\n  }\n\n  .atl-carousel__dot[aria-current='true']::after {\n    width: 10px;\n    height: 10px;\n    background: var(--chart-magenta);\n    box-shadow: none;\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-carousel__ring {\n      transition: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-carousel__ring {\n    transition: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/spatial/carousel-3d/index.ts",
+      "kind": "index",
+      "content": "export { Carousel3D } from './Carousel3D';\nexport type { Carousel3DProps, CarouselSlide } from './Carousel3D';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/use-controllable-state",
+    "icons/chevron-right",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "ArrowRight"
+        ],
+        "action": "With focus in the carousel, turn to the next slide."
+      },
+      {
+        "keys": [
+          "ArrowLeft"
+        ],
+        "action": "With focus in the carousel, turn to the previous slide."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move between the controls and into the current slide."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Use the focused control or picker dot."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA carousel pattern: a labelled region with `aria-roledescription=\"carousel\"`, slides as groups with `aria-roledescription=\"slide\"` and labels like “2 of 6: Fowey”.",
+      "Only the current slide can be reached; the others are `inert` and hidden from assistive technology.",
+      "Once you start turning it, slide changes are announced politely.",
+      "Picker dots have 24 px targets and names; the current one is marked with `aria-current`."
+    ],
+    "reducedMotion": "The ring jumps to the chosen slide without turning."
+  },
+  "license": "MIT"
+}

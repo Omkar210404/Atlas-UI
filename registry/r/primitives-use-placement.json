@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-placement",
+  "type": "primitive",
+  "title": "use-placement",
+  "files": [
+    {
+      "path": "primitives/use-placement.ts",
+      "kind": "source",
+      "content": "import { useLayoutEffect, useState, type RefObject } from 'react';\nimport { place, type Placement, type PlaceOptions } from './place';\n\n/**\n * Keeps a fixed-position floating element next to its anchor while open, re-placing it\n * on resize and on scroll of any ancestor. The floating element should use\n * `position: fixed` (popovers in the top layer already do).\n */\nexport function usePlacement(\n  anchorRef: RefObject<HTMLElement | null>,\n  floatingRef: RefObject<HTMLElement | null>,\n  open: boolean,\n  options: PlaceOptions = {},\n): Placement | null {\n  const [placement, setPlacement] = useState<Placement | null>(null);\n  const { side, align, offset, padding } = options;\n\n  useLayoutEffect(() => {\n    if (!open) return;\n    let frame = 0;\n    const update = () => {\n      const anchor = anchorRef.current;\n      const floating = floatingRef.current;\n      if (!anchor || !floating) return;\n      const viewport = window.visualViewport;\n      setPlacement(\n        place(\n          anchor.getBoundingClientRect(),\n          { width: floating.offsetWidth, height: floating.offsetHeight },\n          {\n            x: 0,\n            y: 0,\n            width: viewport?.width ?? window.innerWidth,\n            height: viewport?.height ?? window.innerHeight,\n          },\n          { side, align, offset, padding },\n        ),\n      );\n    };\n    const schedule = () => {\n      cancelAnimationFrame(frame);\n      frame = requestAnimationFrame(update);\n    };\n    update();\n    const resize = new ResizeObserver(schedule);\n    if (floatingRef.current) resize.observe(floatingRef.current);\n    if (anchorRef.current) resize.observe(anchorRef.current);\n    window.addEventListener('scroll', schedule, true);\n    window.addEventListener('resize', schedule);\n    return () => {\n      cancelAnimationFrame(frame);\n      resize.disconnect();\n      window.removeEventListener('scroll', schedule, true);\n      window.removeEventListener('resize', schedule);\n    };\n  }, [open, anchorRef, floatingRef, side, align, offset, padding]);\n\n  return open ? placement : null;\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/place"
+  ],
+  "license": "MIT"
+}

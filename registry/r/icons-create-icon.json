@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/create-icon",
+  "type": "icon",
+  "title": "create-icon",
+  "files": [
+    {
+      "path": "icons/create-icon.tsx",
+      "kind": "source",
+      "content": "import type { ReactNode, SVGProps } from 'react';\n\nexport interface IconProps extends Omit<SVGProps<SVGSVGElement>, 'children'> {\n  /** Rendered size in px. The artwork is drawn on a 20px grid with a 1.5px stroke. */\n  size?: number;\n  /** Gives the icon an accessible name. Without it the icon is decorative and hidden. */\n  title?: string;\n}\n\nexport type Icon = ((props: IconProps) => ReactNode) & { displayName: string };\n\nexport function createIcon(displayName: string, artwork: ReactNode): Icon {\n  function IconComponent({ size = 20, title, ...rest }: IconProps) {\n    return (\n      <svg\n        width={size}\n        height={size}\n        viewBox=\"0 0 20 20\"\n        fill=\"none\"\n        stroke=\"currentColor\"\n        strokeWidth={1.5}\n        strokeLinecap=\"round\"\n        strokeLinejoin=\"round\"\n        focusable=\"false\"\n        aria-hidden={title ? undefined : true}\n        role={title ? 'img' : undefined}\n        {...rest}\n      >\n        {title ? <title>{title}</title> : null}\n        {artwork}\n      </svg>\n    );\n  }\n  IconComponent.displayName = displayName;\n  return IconComponent;\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

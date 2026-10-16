@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-latest",
+  "type": "primitive",
+  "title": "use-latest",
+  "files": [
+    {
+      "path": "primitives/use-latest.ts",
+      "kind": "source",
+      "content": "import { useLayoutEffect, useRef, type RefObject } from 'react';\n\n/**\n * A ref that always holds the latest value, updated after render. Lets effects and event\n * handlers call the newest callback without re-subscribing when it changes.\n */\nexport function useLatest<T>(value: T): RefObject<T> {\n  const ref = useRef(value);\n  useLayoutEffect(() => {\n    ref.current = value;\n  });\n  return ref;\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/enter-key",
+  "type": "icon",
+  "title": "enter-key",
+  "files": [
+    {
+      "path": "icons/enter-key.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconEnterKey = createIcon(\n  'IconEnterKey',\n  <path d=\"M15.5 4.5V10a2 2 0 0 1-2 2H5m3-3-3 3 3 3\" />,\n);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

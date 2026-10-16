@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/chevron-right",
+  "type": "icon",
+  "title": "chevron-right",
+  "files": [
+    {
+      "path": "icons/chevron-right.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconChevronRight = createIcon('IconChevronRight', <path d=\"m8 5 5 5-5 5\" />);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

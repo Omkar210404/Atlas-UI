@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/announce",
+  "type": "primitive",
+  "title": "announce",
+  "files": [
+    {
+      "path": "primitives/announce.ts",
+      "kind": "source",
+      "content": "export type Politeness = 'polite' | 'assertive';\n\nconst regions = new Map<Politeness, HTMLElement>();\n\nfunction region(politeness: Politeness): HTMLElement {\n  let el = regions.get(politeness);\n  if (el && el.isConnected) return el;\n  el = document.createElement('div');\n  el.setAttribute('aria-live', politeness);\n  el.setAttribute('aria-atomic', 'true');\n  el.dataset.atlasAnnouncer = politeness;\n  el.className = 'atl-visually-hidden';\n  document.body.append(el);\n  regions.set(politeness, el);\n  return el;\n}\n\n/**\n * Announces a message to screen readers through a shared live region.\n * The region is cleared first so repeating the same message is announced again.\n */\nexport function announce(message: string, politeness: Politeness = 'polite'): void {\n  const el = region(politeness);\n  el.textContent = '';\n  window.setTimeout(() => {\n    el.textContent = message;\n  }, 60);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

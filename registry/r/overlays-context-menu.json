@@ -1,0 +1,89 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "overlays/context-menu",
+  "type": "component",
+  "title": "Context menu",
+  "description": "Right-click and keyboard menus with submenus.",
+  "category": "overlays",
+  "files": [
+    {
+      "path": "components/overlays/context-menu/ContextMenu.tsx",
+      "kind": "source",
+      "content": "import {\n  useId,\n  useRef,\n  useState,\n  type KeyboardEvent,\n  type MouseEvent,\n  type ReactNode,\n} from 'react';\nimport { MenuList, type MenuCloseReason, type MenuItem } from '../../../primitives/menu';\nimport { useDismiss } from '../../../primitives/use-dismiss';\nimport { usePlacement } from '../../../primitives/use-placement';\nimport { usePopover } from '../../../primitives/use-popover';\nimport './context-menu.css';\n\nexport interface ContextMenuProps {\n  /** Names the menu and the target area, for example \"Chart actions\". */\n  label: string;\n  items: readonly MenuItem[];\n  /** The area that responds to right-click and to the keyboard shortcut. */\n  children: ReactNode;\n  className?: string;\n}\n\n/**\n * A menu of actions for an area, opened with a right-click (or long-press, where the\n * browser reports it as a context menu), Shift+F10 or the Menu key. Supports submenus.\n */\nexport function ContextMenu({ label, items, children, className }: ContextMenuProps) {\n  const [point, setPoint] = useState<{ x: number; y: number } | null>(null);\n  const targetRef = useRef<HTMLDivElement>(null);\n  const anchorRef = useRef<HTMLSpanElement>(null);\n  const popoverRef = useRef<HTMLDivElement>(null);\n  const id = useId();\n  const open = point !== null;\n\n  usePopover(popoverRef, open);\n  const placement = usePlacement(anchorRef, popoverRef, open, {\n    side: 'bottom',\n    align: 'start',\n    offset: 2,\n  });\n  useDismiss({ open, layerRef: popoverRef, escape: false, onDismiss: () => setPoint(null) });\n\n  const onContextMenu = (event: MouseEvent<HTMLDivElement>) => {\n    event.preventDefault();\n    setPoint({ x: event.clientX, y: event.clientY });\n  };\n\n  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {\n    if (event.target !== event.currentTarget) return;\n    if ((event.key === 'F10' && event.shiftKey) || event.key === 'ContextMenu') {\n      event.preventDefault();\n      const rect = event.currentTarget.getBoundingClientRect();\n      setPoint({ x: rect.left + 16, y: rect.top + 16 });\n    }\n  };\n\n  const close = (reason: MenuCloseReason) => {\n    setPoint(null);\n    if (reason !== 'tab') targetRef.current?.focus();\n  };\n\n  return (\n    // The area must take focus so Shift+F10 and the Menu key can open its menu; it is a\n    // labelled group with a hint that names those keys.\n    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions\n    <div\n      ref={targetRef}\n      role=\"group\"\n      aria-label={label}\n      aria-describedby={`${id}-hint`}\n      // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex\n      tabIndex={0}\n      className={['atl-context', className].filter(Boolean).join(' ')}\n      data-open={open || undefined}\n      onContextMenu={onContextMenu}\n      onKeyDown={onKeyDown}\n    >\n      <span id={`${id}-hint`} className=\"atl-visually-hidden\">\n        Press Shift+F10 or the Menu key for actions.\n      </span>\n      {children}\n      {open ? (\n        <>\n          <span\n            ref={anchorRef}\n            className=\"atl-context__anchor\"\n            style={{ left: point.x, top: point.y }}\n          />\n          <div\n            ref={popoverRef}\n            popover=\"manual\"\n            className=\"atl-menu-popover\"\n            style={\n              placement ? { left: placement.x, top: placement.y } : { left: 0, top: 0, opacity: 0 }\n            }\n          >\n            <MenuList items={items} label={label} onSelect={() => {}} onClose={close} />\n          </div>\n        </>\n      ) : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/overlays/context-menu/context-menu.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-context {\n    position: relative;\n    border-radius: var(--radius-panel);\n  }\n\n  .atl-context[data-open] {\n    box-shadow: 0 0 0 2px var(--magenta-wash);\n  }\n\n  /* A zero-size point the menu is placed against. */\n  .atl-context__anchor {\n    position: fixed;\n    width: 0;\n    height: 0;\n    pointer-events: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/overlays/context-menu/index.ts",
+      "kind": "index",
+      "content": "export { ContextMenu } from './ContextMenu';\nexport type { ContextMenuProps } from './ContextMenu';\nexport type { MenuItem } from '../../../primitives/menu';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/menu",
+    "primitives/typeahead",
+    "primitives/use-dismiss",
+    "primitives/use-placement",
+    "primitives/use-popover",
+    "icons/chevron-right",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Shift+F10",
+          "ContextMenu"
+        ],
+        "action": "With the area focused, open the menu."
+      },
+      {
+        "keys": [
+          "ArrowDown",
+          "ArrowUp"
+        ],
+        "action": "Move between items (wraps)."
+      },
+      {
+        "keys": [
+          "ArrowRight"
+        ],
+        "action": "Open the focused item’s submenu."
+      },
+      {
+        "keys": [
+          "ArrowLeft"
+        ],
+        "action": "Close the submenu and return to its item."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Activate the item, or open its submenu."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close the current menu level."
+      }
+    ],
+    "notes": [
+      "The target area is a focusable, labelled `group`, described by a hidden hint that names the keyboard shortcut.",
+      "The menu follows the WAI-ARIA menu pattern; items with submenus expose `aria-haspopup=\"menu\"` and `aria-expanded`.",
+      "Choosing an item, or pressing Escape, returns focus to the target area.",
+      "Escape and ArrowLeft close one level at a time, so you never lose your place."
+    ],
+    "reducedMotion": "Menus appear without their short drop."
+  },
+  "license": "MIT"
+}

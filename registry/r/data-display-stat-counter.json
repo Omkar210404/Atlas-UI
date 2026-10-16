@@ -1,0 +1,43 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "data-display/stat-counter",
+  "type": "component",
+  "title": "Animated stat counter",
+  "description": "A figure that rolls to its new value.",
+  "category": "data-display",
+  "files": [
+    {
+      "path": "components/data-display/stat-counter/StatCounter.tsx",
+      "kind": "source",
+      "content": "import { useEffect, useState } from 'react';\nimport { prefersReducedMotion } from '../../../primitives/use-reduced-motion';\nimport './stat-counter.css';\n\nexport interface StatCounterProps {\n  /** What the number counts, shown under it: \"Nautical miles logged\". */\n  label: string;\n  value: number;\n  /** Formats the number, for example with units or separators. Digits roll; other characters do not. */\n  format?: (value: number) => string;\n  /** A short line under the label, such as the comparison period. */\n  detail?: string;\n  className?: string;\n}\n\nconst defaultFormat = (v: number) => v.toLocaleString('en-GB');\n\n/**\n * A figure that rolls to its new value, digit by digit, like an odometer. Only the final\n * value is exposed to assistive technology, so nothing is read out mid-roll.\n */\nexport function StatCounter({\n  label,\n  value,\n  format = defaultFormat,\n  detail,\n  className,\n}: StatCounterProps) {\n  const text = format(value);\n  // Start at zero on first paint, then roll to the value; later changes roll from the last value.\n  const [rolled, setRolled] = useState(() => prefersReducedMotion());\n  useEffect(() => {\n    if (rolled) return;\n    const frame = requestAnimationFrame(() => setRolled(true));\n    return () => cancelAnimationFrame(frame);\n  }, [rolled]);\n  const shown = rolled ? text : text.replace(/\\d/g, '0');\n\n  return (\n    <div className={['atl-stat', className].filter(Boolean).join(' ')}>\n      <p className=\"atl-stat__value\">\n        <span className=\"atl-visually-hidden\">{text}</span>\n        <span className=\"atl-stat__digits\" aria-hidden=\"true\">\n          {shown.split('').map((char, i) => {\n            const digit = /\\d/.test(char) ? Number(char) : null;\n            return digit === null ? (\n              <span key={`${i}-${char}`} className=\"atl-stat__char\">\n                {char}\n              </span>\n            ) : (\n              <span\n                key={i}\n                className=\"atl-stat__wheel\"\n                style={{ '--d': digit, '--i': i } as React.CSSProperties}\n              >\n                <span className=\"atl-stat__strip\">\n                  {Array.from({ length: 10 }, (_, n) => (\n                    <span key={n}>{n}</span>\n                  ))}\n                </span>\n                {/* Sizes the wheel to one digit. */}\n                <span className=\"atl-stat__sizer\">0</span>\n              </span>\n            );\n          })}\n        </span>\n      </p>\n      <p className=\"atl-stat__label\">{label}</p>\n      {detail ? <p className=\"atl-stat__detail\">{detail}</p> : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/data-display/stat-counter/stat-counter.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-stat {\n    display: grid;\n    gap: var(--space-3xs);\n  }\n\n  .atl-stat__value {\n    font-size: var(--step-5);\n    font-weight: 650;\n    line-height: 1;\n    letter-spacing: -0.02em;\n    font-variant-numeric: tabular-nums;\n  }\n\n  .atl-stat__digits {\n    display: inline-flex;\n    align-items: baseline;\n  }\n\n  /* Each digit is a strip of 0–9 behind a one-digit window; --d picks the row. */\n  .atl-stat__wheel {\n    position: relative;\n    display: inline-block;\n    height: 1em;\n    overflow: hidden;\n    line-height: 1;\n  }\n\n  .atl-stat__sizer {\n    visibility: hidden;\n  }\n\n  .atl-stat__strip {\n    position: absolute;\n    top: 0;\n    left: 0;\n    display: flex;\n    flex-direction: column;\n    translate: 0 calc(var(--d) * -1em);\n    transition: translate calc(var(--dur-voyage) * 1.4) var(--ease-drift);\n    transition-delay: calc(var(--i) * 40ms);\n  }\n\n  .atl-stat__strip > span {\n    height: 1em;\n    line-height: 1;\n  }\n\n  .atl-stat__label {\n    font-weight: 600;\n  }\n\n  .atl-stat__detail {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n  }\n}\n"
+    },
+    {
+      "path": "components/data-display/stat-counter/index.ts",
+      "kind": "index",
+      "content": "export { StatCounter } from './StatCounter';\nexport type { StatCounterProps } from './StatCounter';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "Only the final value is exposed to assistive technology, as plain text; the rolling digits are hidden from it.",
+      "It is not a live region, so changes are not announced by themselves; announce important changes separately.",
+      "The label is visible text beneath the number."
+    ],
+    "reducedMotion": "The value appears at once, with no roll."
+  },
+  "license": "MIT"
+}

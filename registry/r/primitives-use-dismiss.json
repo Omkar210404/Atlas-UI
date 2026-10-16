@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/use-dismiss",
+  "type": "primitive",
+  "title": "use-dismiss",
+  "files": [
+    {
+      "path": "primitives/use-dismiss.ts",
+      "kind": "source",
+      "content": "import { useEffect, type RefObject } from 'react';\nimport { useLatest } from './use-latest';\n\ninterface DismissOptions {\n  open: boolean;\n  onDismiss: (reason: 'escape' | 'outside' | 'focus-out') => void;\n  /** The layer that should stay open while interacted with. */\n  layerRef: RefObject<HTMLElement | null>;\n  /** The trigger: clicks on it are not \"outside\" (the trigger toggles on its own). */\n  triggerRef?: RefObject<HTMLElement | null>;\n  escape?: boolean;\n  outside?: boolean;\n  focusOut?: boolean;\n}\n\n/**\n * Closes a non-modal layer on Escape, a pointer press outside it, or focus leaving it.\n * Escape is consumed with preventDefault so outer handlers (for example the site's\n * \"Escape zooms out\") can ignore it by checking `event.defaultPrevented`.\n */\nexport function useDismiss({\n  open,\n  onDismiss,\n  layerRef,\n  triggerRef,\n  escape = true,\n  outside = true,\n  focusOut = true,\n}: DismissOptions): void {\n  const dismiss = useLatest(onDismiss);\n\n  useEffect(() => {\n    if (!open) return;\n    const inside = (target: EventTarget | null) =>\n      target instanceof Node &&\n      Boolean(layerRef.current?.contains(target) || triggerRef?.current?.contains(target));\n\n    const onKeyDown = (event: KeyboardEvent) => {\n      if (!escape || event.key !== 'Escape' || event.defaultPrevented) return;\n      event.preventDefault();\n      dismiss.current('escape');\n    };\n    const onPointerDown = (event: PointerEvent) => {\n      if (outside && !inside(event.target)) dismiss.current('outside');\n    };\n    const onFocusIn = (event: FocusEvent) => {\n      if (focusOut && !inside(event.target)) dismiss.current('focus-out');\n    };\n\n    document.addEventListener('keydown', onKeyDown);\n    document.addEventListener('pointerdown', onPointerDown, true);\n    document.addEventListener('focusin', onFocusIn);\n    return () => {\n      document.removeEventListener('keydown', onKeyDown);\n      document.removeEventListener('pointerdown', onPointerDown, true);\n      document.removeEventListener('focusin', onFocusIn);\n    };\n  }, [open, escape, outside, focusOut, layerRef, triggerRef, dismiss]);\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-latest"
+  ],
+  "license": "MIT"
+}

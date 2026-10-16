@@ -1,0 +1,70 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "feedback/toast-stack",
+  "type": "component",
+  "title": "Toast stack",
+  "description": "Brief messages that stack, pause and dismiss.",
+  "category": "feedback",
+  "files": [
+    {
+      "path": "components/feedback/toast-stack/ToastStack.tsx",
+      "kind": "source",
+      "content": "import {\n  createContext,\n  useCallback,\n  useContext,\n  useEffect,\n  useLayoutEffect,\n  useMemo,\n  useRef,\n  useState,\n  type PointerEvent,\n  type ReactNode,\n} from 'react';\nimport { IconAlert } from '../../../icons/alert';\nimport { IconBell } from '../../../icons/bell';\nimport { IconCheck } from '../../../icons/check';\nimport { IconClose } from '../../../icons/close';\nimport { announce } from '../../../primitives/announce';\nimport { Button } from '../../actions/button/Button';\nimport './toast-stack.css';\n\nexport type ToastTone = 'info' | 'success' | 'warning' | 'error';\n\nexport interface ToastOptions {\n  title: string;\n  description?: string;\n  tone?: ToastTone;\n  /** Milliseconds before it dismisses itself. Errors default to longer. `0` keeps it until closed. */\n  duration?: number;\n  action?: { label: string; onAction: () => void };\n}\n\ninterface ToastRecord extends ToastOptions {\n  id: string;\n}\n\ninterface ToastApi {\n  toast: (options: ToastOptions) => string;\n  dismiss: (id: string) => void;\n}\n\nconst ToastContext = createContext<ToastApi | null>(null);\n\n/** Show and dismiss toasts from anywhere inside a `ToastProvider`. */\nexport function useToast(): ToastApi {\n  const api = useContext(ToastContext);\n  if (!api) throw new Error('useToast must be used inside <ToastProvider>.');\n  return api;\n}\n\nexport interface ToastProviderProps {\n  children: ReactNode;\n  /** `fixed` pins the stack to the viewport corner; `contained` keeps it inside the nearest positioned box. */\n  placement?: 'fixed' | 'contained';\n  /** Names the notifications region. */\n  label?: string;\n  /** Toasts kept at once; the oldest are removed first. */\n  max?: number;\n}\n\nlet counter = 0;\n\n/**\n * Holds the toast stack. Toasts are announced through a live region as they arrive; the\n * visible stack is a labelled region you can reach with F8.\n */\nexport function ToastProvider({\n  children,\n  placement = 'fixed',\n  label = 'Notifications',\n  max = 4,\n}: ToastProviderProps) {\n  const [toasts, setToasts] = useState<ToastRecord[]>([]);\n  const [paused, setPaused] = useState(false);\n  const regionRef = useRef<HTMLElement>(null);\n  const listRef = useRef<HTMLOListElement>(null);\n\n  const dismiss = useCallback(\n    (id: string) => setToasts((list) => list.filter((t) => t.id !== id)),\n    [],\n  );\n\n  const toast = useCallback(\n    (options: ToastOptions) => {\n      counter += 1;\n      const id = `toast-${counter}`;\n      setToasts((list) => [...list, { ...options, id }].slice(-max));\n      const text = options.description ? `${options.title}. ${options.description}` : options.title;\n      announce(text, options.tone === 'error' ? 'assertive' : 'polite');\n      return id;\n    },\n    [max],\n  );\n\n  // F8 moves focus to the notifications, a common convention for landmark regions.\n  useEffect(() => {\n    const onKeyDown = (event: KeyboardEvent) => {\n      if (event.key === 'F8' && toasts.length > 0) {\n        event.preventDefault();\n        regionRef.current?.querySelector<HTMLElement>('.atl-toast')?.focus();\n      }\n    };\n    document.addEventListener('keydown', onKeyDown);\n    return () => document.removeEventListener('keydown', onKeyDown);\n  }, [toasts.length]);\n\n  // Measure each toast so the expanded stack can lay them out with their real heights.\n  useLayoutEffect(() => {\n    const list = listRef.current;\n    if (!list) return;\n    const items = Array.from(list.children) as HTMLElement[];\n    let offset = 0;\n    for (let i = items.length - 1; i >= 0; i--) {\n      const item = items[i]!;\n      item.style.setProperty('--atl-toast-offset', `${offset}px`);\n      item.style.setProperty('--atl-toast-i', String(items.length - 1 - i));\n      offset += item.offsetHeight + 8;\n    }\n    list.style.setProperty('--atl-toast-total', `${Math.max(offset - 8, 0)}px`);\n    list.style.setProperty('--atl-toast-front', `${items.at(-1)?.offsetHeight ?? 0}px`);\n  }, [toasts]);\n\n  const api = useMemo(() => ({ toast, dismiss }), [toast, dismiss]);\n\n  return (\n    <ToastContext.Provider value={api}>\n      {children}\n      <section\n        ref={regionRef}\n        aria-label={label}\n        className=\"atl-toasts\"\n        data-placement={placement}\n        data-expanded={paused || undefined}\n        data-empty={toasts.length === 0 || undefined}\n        onPointerEnter={() => setPaused(true)}\n        onPointerLeave={() => {\n          if (!regionRef.current?.contains(document.activeElement)) setPaused(false);\n        }}\n        onFocus={() => setPaused(true)}\n        onBlur={(event) => {\n          if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);\n        }}\n      >\n        <ol ref={listRef} className=\"atl-toasts__list\">\n          {toasts.map((t) => (\n            <Toast key={t.id} toast={t} paused={paused} onDismiss={() => dismiss(t.id)} />\n          ))}\n        </ol>\n      </section>\n    </ToastContext.Provider>\n  );\n}\n\nconst icons: Record<ToastTone, ReactNode> = {\n  info: <IconBell />,\n  success: <IconCheck />,\n  warning: <IconAlert />,\n  error: <IconAlert />,\n};\n\nfunction Toast({\n  toast,\n  paused,\n  onDismiss,\n}: {\n  toast: ToastRecord;\n  paused: boolean;\n  onDismiss: () => void;\n}) {\n  const tone = toast.tone ?? 'info';\n  const duration = toast.duration ?? (tone === 'error' ? 9000 : 5000);\n  const remaining = useRef(duration);\n  const [drag, setDrag] = useState(0);\n  const start = useRef<number | null>(null);\n\n  // Count down only while the stack is not paused; resume from where it stopped.\n  useEffect(() => {\n    if (paused || duration === 0) return;\n    const began = performance.now();\n    const timer = window.setTimeout(onDismiss, remaining.current);\n    return () => {\n      window.clearTimeout(timer);\n      remaining.current -= performance.now() - began;\n    };\n  }, [paused, duration, onDismiss]);\n\n  const onPointerDown = (event: PointerEvent<HTMLLIElement>) => {\n    if ((event.target as HTMLElement).closest('button')) return;\n    start.current = event.clientX;\n    event.currentTarget.setPointerCapture(event.pointerId);\n  };\n  const onPointerMove = (event: PointerEvent<HTMLLIElement>) => {\n    if (start.current === null) return;\n    setDrag(Math.max(0, event.clientX - start.current));\n  };\n  const onPointerUp = () => {\n    if (start.current === null) return;\n    start.current = null;\n    if (drag > 80) onDismiss();\n    else setDrag(0);\n  };\n\n  return (\n    <li\n      className=\"atl-toast\"\n      data-tone={tone}\n      data-dragging={drag > 0 || undefined}\n      tabIndex={-1}\n      style={{ '--atl-toast-drag': `${drag}px` } as React.CSSProperties}\n      onPointerDown={onPointerDown}\n      onPointerMove={onPointerMove}\n      onPointerUp={onPointerUp}\n      onPointerCancel={onPointerUp}\n    >\n      <span className=\"atl-toast__icon\" aria-hidden=\"true\">\n        {icons[tone]}\n      </span>\n      <div className=\"atl-toast__text\">\n        <p className=\"atl-toast__title\">{toast.title}</p>\n        {toast.description ? <p className=\"atl-toast__description\">{toast.description}</p> : null}\n      </div>\n      {toast.action ? (\n        <Button\n          size=\"s\"\n          onClick={() => {\n            toast.action!.onAction();\n            onDismiss();\n          }}\n        >\n          {toast.action.label}\n        </Button>\n      ) : null}\n      <Button\n        variant=\"quiet\"\n        size=\"s\"\n        icon={<IconClose />}\n        aria-label={`Dismiss: ${toast.title}`}\n        onClick={onDismiss}\n      />\n    </li>\n  );\n}\n"
+    },
+    {
+      "path": "components/feedback/toast-stack/toast-stack.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-toasts {\n    z-index: 50;\n    width: min(24rem, calc(100% - 2 * var(--space-m)));\n    pointer-events: none;\n  }\n\n  .atl-toasts[data-placement='fixed'] {\n    position: fixed;\n    right: var(--space-m);\n    bottom: calc(var(--space-m) + env(safe-area-inset-bottom));\n  }\n\n  .atl-toasts[data-placement='contained'] {\n    position: absolute;\n    right: var(--space-m);\n    bottom: var(--space-m);\n  }\n\n  .atl-toasts__list {\n    position: relative;\n    height: var(--atl-toast-front, 0px);\n    margin: 0;\n    padding: 0;\n    list-style: none;\n    transition: height var(--dur-glide) var(--ease-drift);\n  }\n\n  .atl-toasts[data-expanded] .atl-toasts__list {\n    height: var(--atl-toast-total, 0px);\n  }\n\n  /*\n   * Collapsed: the newest toast at the front, older ones fanned behind it.\n   * Expanded (hover or focus): each toast at its measured offset, fully readable.\n   */\n  .atl-toast {\n    --atl-toast-i: 0;\n    --atl-toast-offset: 0px;\n    --atl-toast-drag: 0px;\n    position: absolute;\n    right: 0;\n    bottom: 0;\n    left: 0;\n    display: flex;\n    align-items: flex-start;\n    gap: var(--space-s);\n    padding: var(--space-s) var(--space-2xs) var(--space-s) var(--space-m);\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    color: var(--ink);\n    box-shadow: var(--elev-overlay);\n    pointer-events: auto;\n    touch-action: pan-y;\n    translate: var(--atl-toast-drag) calc(var(--atl-toast-i) * -10px);\n    scale: calc(1 - var(--atl-toast-i) * 0.05);\n    transform-origin: 50% 0;\n    opacity: calc(1 - var(--atl-toast-drag) / 160px);\n    transition:\n      translate var(--dur-glide) var(--ease-drift),\n      scale var(--dur-glide) var(--ease-drift),\n      opacity var(--dur-glide) var(--ease-anchor);\n  }\n\n  .atl-toast:nth-last-child(n + 4) {\n    opacity: 0;\n    visibility: hidden;\n  }\n\n  .atl-toasts[data-expanded] .atl-toast {\n    translate: var(--atl-toast-drag) calc(-1 * var(--atl-toast-offset));\n    scale: 1;\n    visibility: visible;\n    opacity: calc(1 - var(--atl-toast-drag) / 160px);\n  }\n\n  .atl-toast[data-dragging] {\n    transition: none;\n  }\n\n  @starting-style {\n    .atl-toast {\n      translate: 0 24px;\n      opacity: 0;\n    }\n  }\n\n  .atl-toast:focus-visible {\n    outline: var(--focus-ring);\n    outline-offset: var(--focus-offset);\n  }\n\n  /* The tone is carried by a shaped icon and an edge, not by colour alone. */\n  .atl-toast::before {\n    content: '';\n    position: absolute;\n    top: var(--space-s);\n    bottom: var(--space-s);\n    left: 0;\n    width: 3px;\n    border-radius: 0 3px 3px 0;\n    background: var(--atl-toast-tone, var(--isobath));\n  }\n\n  .atl-toast[data-tone='success'] {\n    --atl-toast-tone: var(--starboard);\n  }\n  .atl-toast[data-tone='warning'] {\n    --atl-toast-tone: var(--caution);\n  }\n  .atl-toast[data-tone='error'] {\n    --atl-toast-tone: var(--port);\n  }\n\n  .atl-toast__icon {\n    display: grid;\n    place-items: center;\n    flex: none;\n    margin-top: 2px;\n    color: var(--atl-toast-tone, var(--ink-soft));\n  }\n\n  .atl-toast__text {\n    flex: 1;\n    min-width: 0;\n  }\n\n  .atl-toast__title {\n    font-weight: 600;\n  }\n\n  .atl-toast__description {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n  }\n\n  @media (forced-colors: active) {\n    .atl-toast {\n      border: 1px solid CanvasText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/feedback/toast-stack/index.ts",
+      "kind": "index",
+      "content": "export { ToastProvider, useToast } from './ToastStack';\nexport type { ToastOptions, ToastProviderProps, ToastTone } from './ToastStack';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/announce",
+    "icons/alert",
+    "icons/bell",
+    "icons/check",
+    "icons/close",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "F8"
+        ],
+        "action": "Move focus to the newest notification."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move through toasts’ buttons; the stack stays open and paused while focused."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Use the focused action or close button."
+      }
+    ],
+    "notes": [
+      "Toasts are announced through a live region when they arrive: politely, and assertively for errors.",
+      "The stack is a labelled `region` landmark (“Notifications”) that F8 jumps to.",
+      "Timers pause while the pointer is over the stack or focus is inside it (WCAG 2.2.1), so nothing disappears while you read it.",
+      "Every close button names the toast it closes. Swiping is a shortcut, never the only way (WCAG 2.5.7).",
+      "Tone is shown with an icon and a coloured edge, not colour alone."
+    ],
+    "reducedMotion": "Toasts appear and rearrange without sliding or scaling."
+  },
+  "license": "MIT"
+}

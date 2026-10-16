@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/copy",
+  "type": "icon",
+  "title": "copy",
+  "files": [
+    {
+      "path": "icons/copy.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconCopy = createIcon(\n  'IconCopy',\n  <>\n    <rect x=\"7.25\" y=\"7.25\" width=\"9.25\" height=\"9.25\" rx=\"2\" />\n    <path d=\"M12.75 7.25V5.5a2 2 0 0 0-2-2H5.5a2 2 0 0 0-2 2v5.25a2 2 0 0 0 2 2h1.75\" />\n  </>,\n);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

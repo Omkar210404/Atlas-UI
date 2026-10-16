@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "inputs/otp-input",
+  "type": "component",
+  "title": "OTP input",
+  "description": "One-time codes, drawn as cells, typed as one field.",
+  "category": "inputs",
+  "files": [
+    {
+      "path": "components/inputs/otp-input/OtpInput.tsx",
+      "kind": "source",
+      "content": "import { useRef, useState, type ReactNode } from 'react';\nimport { describedBy, FieldShell, useFieldIds } from '../../../primitives/field';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport './otp-input.css';\n\nexport interface OtpInputProps {\n  label: ReactNode;\n  hint?: ReactNode;\n  error?: ReactNode;\n  /** Number of characters in the code. */\n  length?: number;\n  /** `numeric` accepts digits; `alphanumeric` accepts letters and digits (shown in capitals). */\n  mode?: 'numeric' | 'alphanumeric';\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  /** Called once the code reaches its full length. */\n  onComplete?: (code: string) => void;\n  /** Show dots instead of characters. */\n  mask?: boolean;\n  disabled?: boolean;\n  name?: string;\n  className?: string;\n}\n\nexport function sanitizeCode(\n  raw: string,\n  length: number,\n  mode: 'numeric' | 'alphanumeric',\n): string {\n  const allowed = mode === 'numeric' ? /\\d/ : /[\\dA-Za-z]/;\n  return Array.from(raw)\n    .filter((c) => allowed.test(c))\n    .join('')\n    .toUpperCase()\n    .slice(0, length);\n}\n\n/**\n * A one-time code drawn as cells but typed into a single native input, so paste, SMS\n * autofill and password managers work, and screen readers hear one field, not six.\n */\nexport function OtpInput({\n  label,\n  hint,\n  error,\n  length = 6,\n  mode = 'numeric',\n  value,\n  defaultValue = '',\n  onValueChange,\n  onComplete,\n  mask = false,\n  disabled = false,\n  name,\n  className,\n}: OtpInputProps) {\n  const ids = useFieldIds();\n  const [code, setCode] = useControllableState({\n    value,\n    defaultValue: sanitizeCode(defaultValue, length, mode),\n    onChange: onValueChange,\n  });\n  const [focused, setFocused] = useState(false);\n  const inputRef = useRef<HTMLInputElement>(null);\n\n  // Editing only happens at the end, so the caret cell is always the next empty one.\n  const keepCaretAtEnd = () => {\n    const input = inputRef.current;\n    if (!input) return;\n    const end = input.value.length;\n    if (input.selectionStart !== end || input.selectionEnd !== end)\n      input.setSelectionRange(end, end);\n  };\n\n  const activeIndex = Math.min(code.length, length - 1);\n\n  return (\n    <FieldShell\n      ids={ids}\n      label={label}\n      hint={hint}\n      error={error}\n      className={['atl-otp', className].filter(Boolean).join(' ')}\n    >\n      <div\n        className=\"atl-otp__frame\"\n        data-focused={focused || undefined}\n        data-disabled={disabled || undefined}\n      >\n        <input\n          ref={inputRef}\n          id={ids.inputId}\n          className=\"atl-otp__input\"\n          type=\"text\"\n          inputMode={mode === 'numeric' ? 'numeric' : 'text'}\n          autoComplete=\"one-time-code\"\n          autoCapitalize=\"characters\"\n          autoCorrect=\"off\"\n          spellCheck={false}\n          pattern={mode === 'numeric' ? '[0-9]*' : '[0-9A-Za-z]*'}\n          // No maxLength: it would cut a pasted \"123 456\" before the separators are removed.\n          value={code}\n          disabled={disabled}\n          name={name}\n          aria-describedby={describedBy(ids, hint, error)}\n          aria-invalid={error ? true : undefined}\n          onChange={(event) => {\n            const next = sanitizeCode(event.target.value, length, mode);\n            setCode(next);\n            if (next.length === length && next !== code) onComplete?.(next);\n          }}\n          onFocus={() => {\n            setFocused(true);\n            requestAnimationFrame(keepCaretAtEnd);\n          }}\n          onBlur={() => setFocused(false)}\n          onSelect={keepCaretAtEnd}\n          onClick={keepCaretAtEnd}\n        />\n        <div className=\"atl-otp__cells\" aria-hidden=\"true\">\n          {Array.from({ length }, (_, index) => {\n            const char = code[index];\n            return (\n              <span\n                key={index}\n                className=\"atl-otp__cell\"\n                data-filled={char ? '' : undefined}\n                data-active={focused && index === activeIndex ? '' : undefined}\n                data-gap={length >= 6 && index === length / 2 ? '' : undefined}\n              >\n                {char ? (mask ? '•' : char) : null}\n              </span>\n            );\n          })}\n        </div>\n      </div>\n    </FieldShell>\n  );\n}\n"
+    },
+    {
+      "path": "components/inputs/otp-input/otp-input.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-otp__frame {\n    position: relative;\n    width: fit-content;\n    max-width: 100%;\n  }\n\n  /* The real input covers the cells but draws nothing; the cells draw its value. */\n  .atl-otp__input {\n    position: absolute;\n    inset: 0;\n    z-index: 1;\n    width: 100%;\n    padding: 0;\n    border: 0;\n    background: transparent;\n    color: transparent;\n    caret-color: transparent;\n    font-size: 16px;\n    letter-spacing: 1.5em;\n    cursor: text;\n  }\n\n  .atl-otp__input::selection {\n    background: transparent;\n  }\n\n  .atl-otp__input:focus-visible {\n    outline: none;\n  }\n\n  .atl-otp__input:disabled {\n    cursor: not-allowed;\n  }\n\n  .atl-otp__cells {\n    display: flex;\n    gap: var(--space-xs);\n  }\n\n  .atl-otp__cell {\n    position: relative;\n    display: grid;\n    place-items: center;\n    width: 3rem;\n    height: 3.5rem;\n    border-radius: var(--radius-control);\n    background: var(--sea-1);\n    box-shadow: inset 0 0 0 1px var(--edge);\n    font-size: var(--step-2);\n    font-weight: 600;\n    font-variant-numeric: tabular-nums;\n    transition:\n      box-shadow var(--dur-tick) var(--ease-anchor),\n      scale var(--dur-tick) var(--ease-anchor);\n  }\n\n  /* A visible break in the middle of six or more cells, like a printed code. */\n  .atl-otp__cell[data-gap] {\n    margin-left: var(--space-s);\n  }\n\n  .atl-otp__cell[data-filled] {\n    background: var(--shoal);\n  }\n\n  .atl-otp__cell[data-active] {\n    box-shadow:\n      inset 0 0 0 2px var(--chart-magenta),\n      0 0 0 3px var(--magenta-wash);\n  }\n\n  /* The caret: a bar in the next empty cell. */\n  .atl-otp__cell[data-active]:not([data-filled])::after {\n    content: '';\n    width: 2px;\n    height: 1.4rem;\n    border-radius: 1px;\n    background: var(--ink);\n    animation: atl-otp-blink 1.1s steps(1) infinite;\n  }\n\n  @keyframes atl-otp-blink {\n    50% {\n      opacity: 0;\n    }\n  }\n\n  .atl-otp[data-invalid] .atl-otp__cell {\n    box-shadow: inset 0 0 0 2px var(--port);\n  }\n\n  .atl-otp__frame[data-disabled] .atl-otp__cells {\n    opacity: 0.55;\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-otp__cell::after {\n      animation: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-otp__cell::after {\n    animation: none;\n  }\n\n  @media (width < 30rem) {\n    .atl-otp__cell {\n      width: 2.5rem;\n      height: 3rem;\n    }\n  }\n\n  @media (forced-colors: active) {\n    .atl-otp__cell {\n      border: 1px solid FieldText;\n    }\n    .atl-otp__cell[data-active] {\n      outline: 2px solid Highlight;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/inputs/otp-input/index.ts",
+      "kind": "index",
+      "content": "export { OtpInput, sanitizeCode } from './OtpInput';\nexport type { OtpInputProps } from './OtpInput';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/field",
+    "primitives/use-controllable-state",
+    "icons/alert",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "0–9"
+        ],
+        "action": "Type the next character; invalid characters are ignored."
+      },
+      {
+        "keys": [
+          "Backspace"
+        ],
+        "action": "Delete the last character."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move focus into and out of the field."
+      }
+    ],
+    "notes": [
+      "A single native `<input>` with a `<label>`, `autocomplete=\"one-time-code\"` and the right `inputmode`, so it is announced as one text field with its whole value.",
+      "The cells are decorative (`aria-hidden`); the input itself carries the value, hint and error.",
+      "The hint and error are linked with `aria-describedby`; an error sets `aria-invalid` and turns every cell red with a thicker edge.",
+      "Cells are 48 × 56 px (40 × 48 px on narrow screens)."
+    ],
+    "reducedMotion": "The caret in the next empty cell does not blink."
+  },
+  "license": "MIT"
+}

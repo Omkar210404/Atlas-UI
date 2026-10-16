@@ -1,0 +1,61 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "data-display/code-panel",
+  "type": "component",
+  "title": "Code panel",
+  "description": "Highlighted source with line numbers and copy.",
+  "category": "data-display",
+  "files": [
+    {
+      "path": "components/data-display/code-panel/CodePanel.tsx",
+      "kind": "source",
+      "content": "import { Fragment, useEffect, useState } from 'react';\nimport { IconCheck } from '../../../icons/check';\nimport { IconCopy } from '../../../icons/copy';\nimport { announce } from '../../../primitives/announce';\nimport { Button } from '../../actions/button/Button';\nimport './code-panel.css';\n\nexport interface CodePanelProps {\n  /** The source text: what gets copied. */\n  code: string;\n  /** Pre-highlighted HTML for the same code (for example from Shiki at build time). Plain text is shown without it. */\n  html?: string;\n  filename?: string;\n  /** Called after a successful copy, for example to show a toast. Otherwise the panel announces it. */\n  onCopied?: () => void;\n  onCopyFailed?: () => void;\n  className?: string;\n}\n\n/**\n * Source code with line numbers and a copy button. Highlighting is optional and expected\n * to be done ahead of time, so no highlighter ships to the browser. The code area scrolls\n * and is focusable, so keyboard users can scroll it too.\n */\nexport function CodePanel({\n  code,\n  html,\n  filename,\n  onCopied,\n  onCopyFailed,\n  className,\n}: CodePanelProps) {\n  const [copied, setCopied] = useState(false);\n\n  useEffect(() => {\n    if (!copied) return;\n    const timer = window.setTimeout(() => setCopied(false), 2000);\n    return () => window.clearTimeout(timer);\n  }, [copied]);\n\n  const copy = async () => {\n    try {\n      await navigator.clipboard.writeText(code);\n      setCopied(true);\n      if (onCopied) onCopied();\n      else announce(`Copied${filename ? ` ${filename}` : ''}`);\n    } catch {\n      if (onCopyFailed) onCopyFailed();\n      else\n        announce(\n          'Copying was blocked by the browser. Select the code and copy it instead.',\n          'assertive',\n        );\n    }\n  };\n\n  const lines = code.split('\\n').length;\n\n  return (\n    <div className={['atl-code', className].filter(Boolean).join(' ')}>\n      <div className=\"atl-code__bar\">\n        {filename ? <span className=\"atl-code__file\">{filename}</span> : null}\n        <span className=\"atl-code__lines\">{lines} lines</span>\n        <Button\n          size=\"s\"\n          className=\"atl-code__copy\"\n          onClick={copy}\n          icon={copied ? <IconCheck /> : <IconCopy />}\n        >\n          {copied ? 'Copied' : 'Copy'}\n        </Button>\n      </div>\n      {html ? (\n        // Highlighted ahead of time from source the author controls, never from user input.\n        <div className=\"atl-code__body\" dangerouslySetInnerHTML={{ __html: html }} />\n      ) : (\n        <div className=\"atl-code__body\">\n          {/* A scrollable region must be reachable by keyboard. */}\n          {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}\n          <pre tabIndex={0}>\n            <code>\n              {code.split('\\n').map((line, i) => (\n                // Newlines sit between line spans, as in highlighted output.\n                <Fragment key={i}>\n                  <span className=\"line\">{line}</span>\n                  {'\\n'}\n                </Fragment>\n              ))}\n            </code>\n          </pre>\n        </div>\n      )}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/data-display/code-panel/code-panel.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  /* Token colours for highlighted code (Shiki's CSS-variables theme). Each reaches 5:1. */\n  :root,\n  [data-theme='night'] {\n    --code-foreground: #dce6e4;\n    --code-background: var(--sea-3);\n    --code-token-keyword: #9cc3f0;\n    --code-token-string: #e9bd68;\n    --code-token-string-expression: #e9bd68;\n    --code-token-constant: #74d3a0;\n    --code-token-function: #8fd8d2;\n    --code-token-parameter: #c9b6f2;\n    --code-token-comment: #9db4b8;\n    --code-token-punctuation: #9db4b8;\n    --code-token-link: #9cc3f0;\n  }\n\n  [data-theme='day'] {\n    --code-foreground: #15283a;\n    --code-background: var(--sea-3);\n    --code-token-keyword: #1f4f8f;\n    --code-token-string: #765000;\n    --code-token-string-expression: #765000;\n    --code-token-constant: #1e6a46;\n    --code-token-function: #0d5c5a;\n    --code-token-parameter: #5b3e8f;\n    --code-token-comment: #465d6d;\n    --code-token-punctuation: #465d6d;\n    --code-token-link: #1f4f8f;\n  }\n\n  .atl-code {\n    overflow: hidden;\n    border-radius: var(--radius-panel);\n    background: var(--sea-3);\n    color: var(--code-foreground);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);\n  }\n\n  .atl-code__bar {\n    display: flex;\n    align-items: center;\n    gap: var(--space-s);\n    padding: var(--space-2xs) var(--space-2xs) var(--space-2xs) var(--space-m);\n    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--isobath) 45%, transparent);\n  }\n\n  .atl-code__file {\n    font-family: var(--font-code);\n    font-size: var(--step--1);\n  }\n\n  .atl-code__lines {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n  }\n\n  .atl-code__copy {\n    margin-left: auto;\n  }\n\n  .atl-code__body pre {\n    max-height: 34rem;\n    margin: 0;\n    padding: var(--space-m) 0;\n    overflow: auto;\n    background: none !important;\n    font-family: var(--font-code);\n    font-size: 0.84rem;\n    line-height: 1.6;\n    tab-size: 2;\n    counter-reset: line;\n  }\n\n  .atl-code__body pre:focus-visible {\n    outline: var(--focus-ring);\n    outline-offset: -3px;\n  }\n\n  .atl-code__body code {\n    display: block;\n    min-width: max-content;\n  }\n\n  .atl-code__body .line {\n    display: inline-block;\n    padding-right: var(--space-l);\n  }\n\n  .atl-code__body .line::before {\n    content: counter(line);\n    counter-increment: line;\n    display: inline-block;\n    width: 3.2em;\n    padding-right: 1.2em;\n    color: var(--ink-soft);\n    text-align: right;\n    user-select: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/data-display/code-panel/index.ts",
+      "kind": "index",
+      "content": "export { CodePanel } from './CodePanel';\nexport type { CodePanelProps } from './CodePanel';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/announce",
+    "icons/check",
+    "icons/copy",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move to the copy button, then into the code area."
+      },
+      {
+        "keys": [
+          "ArrowDown",
+          "ArrowUp"
+        ],
+        "action": "Scroll the focused code area."
+      }
+    ],
+    "notes": [
+      "The scrolling code area is focusable, so keyboard users can scroll it (axe rule scrollable-region-focusable).",
+      "Line numbers are generated by CSS and are not copied or read out.",
+      "The copy button’s visible label is its name and changes to “Copied” after a copy; the change is also announced.",
+      "Every token colour reaches at least 5:1 against the panel in both themes."
+    ],
+    "reducedMotion": "Nothing animates."
+  },
+  "license": "MIT"
+}

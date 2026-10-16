@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/focus",
+  "type": "primitive",
+  "title": "focus",
+  "files": [
+    {
+      "path": "primitives/focus.ts",
+      "kind": "source",
+      "content": "const FOCUSABLE = [\n  'a[href]',\n  'button:not([disabled])',\n  'input:not([disabled]):not([type=\"hidden\"])',\n  'select:not([disabled])',\n  'textarea:not([disabled])',\n  '[tabindex]:not([tabindex=\"-1\"])',\n  'summary',\n].join(',');\n\n/** Focusable, visible elements inside `root`, in Tab order. */\nexport function focusables(root: HTMLElement): HTMLElement[] {\n  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(\n    (el) => !el.closest('[inert]') && el.getClientRects().length > 0,\n  );\n}\n\n/**\n * Keeps Tab and Shift+Tab inside `root`, wrapping from the last element to the first and\n * back. Call from a keydown handler; returns true when it handled the key.\n */\nexport function trapTab(event: KeyboardEvent | React.KeyboardEvent, root: HTMLElement): boolean {\n  if (event.key !== 'Tab') return false;\n  const list = focusables(root);\n  if (list.length === 0) {\n    event.preventDefault();\n    root.focus();\n    return true;\n  }\n  const first = list[0]!;\n  const last = list[list.length - 1]!;\n  const active = document.activeElement;\n  if (event.shiftKey && (active === first || active === root)) {\n    event.preventDefault();\n    last.focus();\n    return true;\n  }\n  if (!event.shiftKey && active === last) {\n    event.preventDefault();\n    first.focus();\n    return true;\n  }\n  return false;\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

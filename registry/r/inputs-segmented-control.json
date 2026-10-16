@@ -1,0 +1,65 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "inputs/segmented-control",
+  "type": "component",
+  "title": "Segmented control",
+  "description": "A small set of exclusive options with a sliding marker.",
+  "category": "inputs",
+  "files": [
+    {
+      "path": "components/inputs/segmented-control/SegmentedControl.tsx",
+      "kind": "source",
+      "content": "import { useId, useLayoutEffect, useRef, type ReactNode } from 'react';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport './segmented-control.css';\n\nexport interface SegmentOption {\n  value: string;\n  label: ReactNode;\n  icon?: ReactNode;\n  disabled?: boolean;\n}\n\nexport interface SegmentedControlProps {\n  /** Names the group. Shown above it unless `hideLabel` is set. */\n  label: ReactNode;\n  hideLabel?: boolean;\n  options: readonly SegmentOption[];\n  value?: string;\n  defaultValue?: string;\n  onValueChange?: (value: string) => void;\n  /** Form field name. Generated when omitted, so separate controls never share a group. */\n  name?: string;\n  size?: 's' | 'm';\n  disabled?: boolean;\n  className?: string;\n}\n\n/**\n * A small set of mutually exclusive options with a marker that slides to the selection.\n * Built on native radio buttons, so arrow keys, form submission and screen readers behave\n * exactly as they do for any radio group.\n */\nexport function SegmentedControl({\n  label,\n  hideLabel = false,\n  options,\n  value,\n  defaultValue,\n  onValueChange,\n  name,\n  size = 'm',\n  disabled = false,\n  className,\n}: SegmentedControlProps) {\n  const [selected, setSelected] = useControllableState({\n    value,\n    defaultValue: defaultValue ?? options[0]?.value ?? '',\n    onChange: onValueChange,\n  });\n  const id = useId();\n  const groupName = name ?? `${id}-segments`;\n  const trackRef = useRef<HTMLDivElement>(null);\n\n  useLayoutEffect(() => {\n    const track = trackRef.current;\n    if (!track) return;\n    const place = () => {\n      const input = track.querySelector<HTMLInputElement>('input:checked');\n      const option = input?.closest<HTMLElement>('.atl-seg__option');\n      if (!option) {\n        track.style.setProperty('--atl-seg-w', '0px');\n        return;\n      }\n      track.style.setProperty('--atl-seg-x', `${option.offsetLeft}px`);\n      track.style.setProperty('--atl-seg-w', `${option.offsetWidth}px`);\n    };\n    place();\n    const frame = requestAnimationFrame(() => track.setAttribute('data-ready', ''));\n    const observer = new ResizeObserver(place);\n    observer.observe(track);\n    return () => {\n      cancelAnimationFrame(frame);\n      observer.disconnect();\n    };\n  }, [selected, options]);\n\n  return (\n    <div className={['atl-seg', className].filter(Boolean).join(' ')} data-size={size}>\n      <span id={`${id}-label`} className={hideLabel ? 'atl-visually-hidden' : 'atl-seg__label'}>\n        {label}\n      </span>\n      <div\n        ref={trackRef}\n        role=\"radiogroup\"\n        aria-labelledby={`${id}-label`}\n        className=\"atl-seg__track\"\n      >\n        <span className=\"atl-seg__marker\" aria-hidden=\"true\" />\n        {options.map((option) => (\n          <label\n            key={option.value}\n            className=\"atl-seg__option\"\n            data-disabled={option.disabled || disabled || undefined}\n          >\n            <input\n              type=\"radio\"\n              name={groupName}\n              value={option.value}\n              checked={selected === option.value}\n              disabled={option.disabled || disabled}\n              onChange={() => setSelected(option.value)}\n            />\n            <span className=\"atl-seg__face\">\n              {option.icon ? (\n                <span className=\"atl-seg__icon\" aria-hidden=\"true\">\n                  {option.icon}\n                </span>\n              ) : null}\n              {option.label}\n            </span>\n          </label>\n        ))}\n      </div>\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/inputs/segmented-control/segmented-control.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-seg {\n    display: inline-grid;\n    gap: var(--space-2xs);\n    max-width: 100%;\n  }\n\n  .atl-seg__label {\n    font-weight: 600;\n  }\n\n  .atl-seg__track {\n    position: relative;\n    display: inline-flex;\n    width: fit-content;\n    max-width: 100%;\n    padding: 3px;\n    border-radius: var(--radius-panel);\n    background: var(--shoal);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 60%, transparent);\n  }\n\n  .atl-seg__marker {\n    position: absolute;\n    top: 3px;\n    bottom: 3px;\n    left: 0;\n    width: var(--atl-seg-w, 0px);\n    border-radius: calc(var(--radius-panel) - 3px);\n    background: var(--reef);\n    box-shadow:\n      inset 0 0 0 1px var(--edge),\n      inset 0 -2px 0 var(--chart-magenta);\n    transform: translateX(var(--atl-seg-x, 0px));\n    pointer-events: none;\n  }\n\n  .atl-seg__track[data-ready] .atl-seg__marker {\n    transition:\n      transform var(--dur-current) var(--ease-current),\n      width var(--dur-current) var(--ease-current);\n  }\n\n  .atl-seg__option {\n    position: relative;\n    z-index: 1;\n    display: inline-grid;\n    flex: 1 0 auto;\n  }\n\n  .atl-seg__option input {\n    position: absolute;\n    inset: 0;\n    margin: 0;\n    opacity: 0;\n    cursor: pointer;\n  }\n\n  .atl-seg__option[data-disabled] input {\n    cursor: not-allowed;\n  }\n\n  .atl-seg__face {\n    display: inline-flex;\n    align-items: center;\n    justify-content: center;\n    gap: var(--space-xs);\n    min-height: 38px;\n    padding: 0 var(--space-m);\n    border-radius: calc(var(--radius-panel) - 3px);\n    color: var(--ink-soft);\n    font-weight: 550;\n    white-space: nowrap;\n    transition: color var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-seg[data-size='s'] .atl-seg__face {\n    min-height: 32px;\n    padding: 0 var(--space-s);\n    font-size: var(--step--1);\n  }\n\n  .atl-seg__option input:hover + .atl-seg__face {\n    color: var(--ink);\n  }\n\n  .atl-seg__option input:checked + .atl-seg__face {\n    color: var(--ink);\n  }\n\n  .atl-seg__option input:focus-visible + .atl-seg__face {\n    outline: var(--focus-ring);\n    outline-offset: 1px;\n  }\n\n  .atl-seg__option[data-disabled] .atl-seg__face {\n    opacity: 0.5;\n  }\n\n  .atl-seg__icon {\n    display: grid;\n    place-items: center;\n  }\n\n  @media (forced-colors: active) {\n    .atl-seg__marker {\n      background: Highlight;\n    }\n    .atl-seg__option input:checked + .atl-seg__face {\n      color: HighlightText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/inputs/segmented-control/index.ts",
+      "kind": "index",
+      "content": "export { SegmentedControl } from './SegmentedControl';\nexport type { SegmentedControlProps, SegmentOption } from './SegmentedControl';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-controllable-state",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move into the group (onto the selected option) and out again."
+      },
+      {
+        "keys": [
+          "ArrowRight",
+          "ArrowDown"
+        ],
+        "action": "Select the next option (wraps)."
+      },
+      {
+        "keys": [
+          "ArrowLeft",
+          "ArrowUp"
+        ],
+        "action": "Select the previous option (wraps)."
+      }
+    ],
+    "notes": [
+      "A `radiogroup` named by its label, containing native `<input type=\"radio\">` elements, so the selected state and position (“2 of 3”) are announced by the browser.",
+      "Arrow keys move and select, as they do for any radio group; only the selected option is in the Tab order.",
+      "The selected option is marked by a raised marker with a magenta rule as well as text colour.",
+      "Each option is at least 38 px tall (32 px in the small size)."
+    ],
+    "reducedMotion": "The marker jumps to the selection instead of sliding."
+  },
+  "license": "MIT"
+}

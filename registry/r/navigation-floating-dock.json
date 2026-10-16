@@ -1,0 +1,91 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "navigation/floating-dock",
+  "type": "component",
+  "title": "Floating dock",
+  "description": "A compact toolbar whose items grow as the pointer approaches.",
+  "category": "navigation",
+  "files": [
+    {
+      "path": "components/navigation/floating-dock/FloatingDock.tsx",
+      "kind": "source",
+      "content": "import {\n  useLayoutEffect,\n  useRef,\n  useState,\n  type KeyboardEvent,\n  type MouseEvent,\n  type PointerEvent,\n  type ReactNode,\n} from 'react';\nimport { rovingIndex } from '../../../primitives/roving';\nimport { useReducedMotion } from '../../../primitives/use-reduced-motion';\nimport './floating-dock.css';\n\nconst ITEM = '[data-dock-item]:not([aria-disabled=\"true\"])';\n\nexport interface FloatingDockProps {\n  /** Accessible name of the toolbar, for example \"Site\". */\n  label: string;\n  /** Grow items near the pointer. Off for touch, and off under reduced motion. */\n  magnify?: boolean;\n  /** Largest scale an item reaches, right under the pointer. */\n  maxScale?: number;\n  /** Distance in px over which magnification fades out. */\n  reach?: number;\n  /** Fix the dock to the bottom centre of the viewport. Turn off to place it yourself. */\n  floating?: boolean;\n  className?: string;\n  children: ReactNode;\n}\n\nconst smoothstep = (t: number) => t * t * (3 - 2 * t);\n\nexport function FloatingDock({\n  label,\n  magnify = true,\n  maxScale = 1.55,\n  reach = 132,\n  floating = true,\n  className,\n  children,\n}: FloatingDockProps) {\n  const ref = useRef<HTMLDivElement>(null);\n  const [focusIndex, setFocusIndex] = useState(0);\n  const [tipsHidden, setTipsHidden] = useState(false);\n  const reduced = useReducedMotion();\n  const centres = useRef<number[]>([]);\n  const frame = useRef(0);\n  const magnifies = magnify && !reduced;\n\n  // Roving tabindex: exactly one item is in the Tab order.\n  useLayoutEffect(() => {\n    ref.current\n      ?.querySelectorAll<HTMLElement>('[data-dock-item]')\n      .forEach((item) => (item.tabIndex = -1));\n    const items = Array.from(ref.current?.querySelectorAll<HTMLElement>(ITEM) ?? []);\n    const active = items[Math.min(focusIndex, items.length - 1)];\n    if (active) active.tabIndex = 0;\n  });\n\n  const items = () => Array.from(ref.current?.querySelectorAll<HTMLElement>(ITEM) ?? []);\n\n  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {\n    if (event.key === 'Escape') {\n      if (!tipsHidden) {\n        // First Escape hides the visible label (WCAG 1.4.13); later ones pass through.\n        event.preventDefault();\n        setTipsHidden(true);\n      }\n      return;\n    }\n    const list = items();\n    const current = list.indexOf(document.activeElement as HTMLElement);\n    const rtl = getComputedStyle(event.currentTarget).direction === 'rtl';\n    const next = rovingIndex(event.key, current, list.length, { orientation: 'horizontal', rtl });\n    if (next === null || current === -1) return;\n    event.preventDefault();\n    setFocusIndex(next);\n    list[next]?.focus();\n  };\n\n  const setScales = (pointerX: number | null) => {\n    cancelAnimationFrame(frame.current);\n    frame.current = requestAnimationFrame(() => {\n      const list = Array.from(ref.current?.querySelectorAll<HTMLElement>('[data-dock-item]') ?? []);\n      list.forEach((item, i) => {\n        const centre = centres.current[i];\n        let scale = 1;\n        if (pointerX !== null && centre !== undefined) {\n          const t = Math.max(0, 1 - Math.abs(pointerX - centre) / reach);\n          scale = 1 + (maxScale - 1) * smoothstep(t);\n        }\n        item.style.setProperty('--atl-dock-scale', scale.toFixed(3));\n      });\n    });\n  };\n\n  const onPointerEnter = (event: PointerEvent<HTMLDivElement>) => {\n    if (!magnifies || event.pointerType === 'touch') return;\n    // Measure resting positions once, so growth does not feed back into the maths.\n    centres.current = Array.from(\n      event.currentTarget.querySelectorAll<HTMLElement>('[data-dock-item]'),\n    ).map((item) => {\n      const rect = item.getBoundingClientRect();\n      return rect.left + rect.width / 2;\n    });\n  };\n\n  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {\n    if (!magnifies || event.pointerType === 'touch') return;\n    setScales(event.clientX);\n  };\n\n  const onPointerLeave = () => {\n    setScales(null);\n    setTipsHidden(false);\n  };\n\n  return (\n    <div\n      ref={ref}\n      role=\"toolbar\"\n      aria-label={label}\n      aria-orientation=\"horizontal\"\n      className={['atl-dock', className].filter(Boolean).join(' ')}\n      data-floating={floating || undefined}\n      data-magnify={magnifies || undefined}\n      data-tips-hidden={tipsHidden || undefined}\n      onKeyDown={onKeyDown}\n      onFocus={(event) => {\n        const index = items().indexOf(event.target as HTMLElement);\n        if (index !== -1 && index !== focusIndex) setFocusIndex(index);\n      }}\n      onBlur={(event) => {\n        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setTipsHidden(false);\n      }}\n      onPointerEnter={onPointerEnter}\n      onPointerMove={onPointerMove}\n      onPointerLeave={onPointerLeave}\n    >\n      {children}\n    </div>\n  );\n}\n\nexport interface DockItemProps {\n  label: string;\n  icon: ReactNode;\n  /** Renders a link instead of a button. */\n  href?: string;\n  onClick?: (event: MouseEvent<HTMLElement>) => void;\n  /** Makes the item a toggle button with `aria-pressed`. */\n  pressed?: boolean;\n  /** Marks the item as the current page with `aria-current=\"page\"`. */\n  current?: boolean;\n  /** Shortcut shown in the label and exposed with `aria-keyshortcuts`, like `Control+K`. */\n  shortcut?: string;\n  disabled?: boolean;\n}\n\nexport function DockItem({\n  label,\n  icon,\n  href,\n  onClick,\n  pressed,\n  current = false,\n  shortcut,\n  disabled = false,\n}: DockItemProps) {\n  const content = (\n    <>\n      <span className=\"atl-dock__icon\" aria-hidden=\"true\">\n        {icon}\n      </span>\n      <span className=\"atl-visually-hidden\">{label}</span>\n      <span className=\"atl-dock__tip\" aria-hidden=\"true\">\n        {label}\n        {shortcut ? <kbd>{shortcut.replace('Control', 'Ctrl')}</kbd> : null}\n      </span>\n    </>\n  );\n  const shared = {\n    className: 'atl-dock__item',\n    'data-dock-item': '',\n    'data-current': current || undefined,\n    'aria-keyshortcuts': shortcut,\n    'aria-current': current ? ('page' as const) : undefined,\n  };\n\n  if (href && !disabled) {\n    return (\n      <a {...shared} href={href} onClick={onClick}>\n        {content}\n      </a>\n    );\n  }\n  return (\n    <button\n      {...shared}\n      type=\"button\"\n      aria-pressed={pressed}\n      aria-disabled={disabled || undefined}\n      onClick={(event) => {\n        if (disabled) return;\n        onClick?.(event);\n      }}\n    >\n      {content}\n    </button>\n  );\n}\n\nexport function DockSeparator() {\n  return <span className=\"atl-dock__separator\" role=\"separator\" aria-orientation=\"vertical\" />;\n}\n"
+    },
+    {
+      "path": "components/navigation/floating-dock/floating-dock.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-dock {\n    --atl-dock-size: var(--target-comfort);\n    --atl-dock-pad: 6px;\n    display: inline-flex;\n    align-items: flex-end;\n    gap: 4px;\n    height: calc(var(--atl-dock-size) + 2 * var(--atl-dock-pad));\n    padding: var(--atl-dock-pad);\n    border-radius: calc(var(--radius-overlay) + 2px);\n    background: var(--shoal);\n    box-shadow: var(--elev-overlay);\n  }\n\n  .atl-dock[data-floating] {\n    position: fixed;\n    left: 50%;\n    bottom: max(var(--space-m), env(safe-area-inset-bottom));\n    z-index: 20;\n    translate: -50% 0;\n  }\n\n  .atl-dock__item {\n    --atl-dock-scale: 1;\n    position: relative;\n    display: grid;\n    place-items: center;\n    flex: none;\n    width: calc(var(--atl-dock-size) * var(--atl-dock-scale));\n    height: calc(var(--atl-dock-size) * var(--atl-dock-scale));\n    padding: 0;\n    border: 0;\n    border-radius: calc(var(--radius-panel) * var(--atl-dock-scale));\n    background: none;\n    color: var(--ink-soft);\n    text-decoration: none;\n    transition:\n      background-color var(--dur-tick) var(--ease-anchor),\n      color var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-dock[data-magnify] .atl-dock__item {\n    transition:\n      width var(--dur-tick) var(--ease-anchor),\n      height var(--dur-tick) var(--ease-anchor),\n      border-radius var(--dur-tick) var(--ease-anchor),\n      background-color var(--dur-tick) var(--ease-anchor),\n      color var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-dock__item:hover {\n    background: var(--reef);\n    color: var(--ink);\n  }\n\n  .atl-dock__item[aria-disabled='true'] {\n    cursor: not-allowed;\n    opacity: 0.5;\n  }\n\n  .atl-dock__item[aria-disabled='true']:hover {\n    background: none;\n    color: var(--ink-soft);\n  }\n\n  .atl-dock__icon {\n    display: grid;\n    place-items: center;\n    width: 46%;\n    height: 46%;\n  }\n\n  .atl-dock__icon > svg {\n    width: 100%;\n    height: 100%;\n  }\n\n  .atl-dock__item[aria-pressed='true'] {\n    background: var(--magenta-wash);\n    color: var(--ink);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--chart-magenta) 55%, transparent);\n  }\n\n  /* \"You are here\": a magenta position mark under the current item. */\n  .atl-dock__item[data-current]::after {\n    content: '';\n    position: absolute;\n    bottom: 3px;\n    left: 50%;\n    width: 5px;\n    height: 5px;\n    border-radius: 50%;\n    background: var(--chart-magenta);\n    translate: -50% 0;\n  }\n\n  .atl-dock__item[data-current] {\n    color: var(--ink);\n  }\n\n  .atl-dock__item:focus-visible {\n    outline-offset: 1px;\n  }\n\n  .atl-dock__tip {\n    position: absolute;\n    bottom: calc(100% + 10px);\n    left: 50%;\n    display: flex;\n    align-items: center;\n    gap: var(--space-xs);\n    padding: var(--space-2xs) var(--space-xs);\n    border-radius: var(--radius-control);\n    background: var(--ink);\n    color: var(--sea-0);\n    font-size: var(--step--1);\n    font-weight: 500;\n    white-space: nowrap;\n    pointer-events: none;\n    opacity: 0;\n    translate: -50% 4px;\n    transition:\n      opacity var(--dur-tick) var(--ease-anchor),\n      translate var(--dur-tick) var(--ease-anchor);\n  }\n\n  .atl-dock__tip kbd {\n    background: color-mix(in oklch, var(--sea-0) 16%, transparent);\n    box-shadow: none;\n    color: inherit;\n  }\n\n  .atl-dock__item:hover .atl-dock__tip,\n  .atl-dock__item:focus-visible .atl-dock__tip {\n    opacity: 1;\n    translate: -50% 0;\n    transition-delay: 60ms;\n  }\n\n  .atl-dock[data-tips-hidden] .atl-dock__tip {\n    opacity: 0;\n  }\n\n  .atl-dock__separator {\n    align-self: center;\n    flex: none;\n    width: 1px;\n    height: 60%;\n    margin: 0 4px;\n    background: color-mix(in oklch, var(--isobath) 80%, transparent);\n  }\n\n  @media (forced-colors: active) {\n    .atl-dock {\n      border: 1px solid CanvasText;\n    }\n    .atl-dock__item[data-current]::after {\n      background: Highlight;\n    }\n    .atl-dock__tip {\n      border: 1px solid CanvasText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/navigation/floating-dock/index.ts",
+      "kind": "index",
+      "content": "export { DockItem, DockSeparator, FloatingDock } from './FloatingDock';\nexport type { DockItemProps, FloatingDockProps } from './FloatingDock';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/roving",
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move into the dock (to the last focused item) and out again."
+      },
+      {
+        "keys": [
+          "ArrowRight"
+        ],
+        "action": "Move to the next item (wraps)."
+      },
+      {
+        "keys": [
+          "ArrowLeft"
+        ],
+        "action": "Move to the previous item (wraps)."
+      },
+      {
+        "keys": [
+          "Home"
+        ],
+        "action": "Move to the first item."
+      },
+      {
+        "keys": [
+          "End"
+        ],
+        "action": "Move to the last item."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Activate the focused item."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Hide the visible label without moving focus."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA toolbar pattern: one Tab stop for the whole dock and arrow keys inside it (roving tabindex).",
+      "Each item has its label as real text (visually hidden), so its name does not depend on the tooltip.",
+      "Toggles expose `aria-pressed`; the current page link exposes `aria-current=\"page\"` and shows a magenta mark that does not rely on colour alone (it is a shape).",
+      "Labels appear on hover and keyboard focus, stay while hovered, and can be dismissed with Escape (WCAG 1.4.13).",
+      "Resting item size is 44 × 44 px, meeting the enhanced target size guideline.",
+      "Shortcuts are exposed with `aria-keyshortcuts`."
+    ],
+    "reducedMotion": "Items keep their resting size; only the hover colour changes."
+  },
+  "license": "MIT"
+}

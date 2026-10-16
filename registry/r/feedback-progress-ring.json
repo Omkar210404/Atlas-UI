@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "feedback/progress-ring",
+  "type": "component",
+  "title": "Progress ring",
+  "description": "Determinate and indeterminate progress in a ring.",
+  "category": "feedback",
+  "files": [
+    {
+      "path": "components/feedback/progress-ring/ProgressRing.tsx",
+      "kind": "source",
+      "content": "import './progress-ring.css';\n\nexport interface ProgressRingProps {\n  /** Names the progress, for example \"Downloading charts\". */\n  label: string;\n  /** 0 to `max`. Leave undefined for indeterminate progress. */\n  value?: number;\n  max?: number;\n  /** Diameter in px. */\n  size?: number;\n  /** Show the percentage in the middle. */\n  showValue?: boolean;\n  /** Text for assistive technology, such as \"3 of 8 charts\". Defaults to a percentage. */\n  valueText?: string;\n  tone?: 'ink' | 'success' | 'warning';\n  className?: string;\n}\n\n/**\n * Progress drawn as a ring inside a bearing-style bezel. Determinate when it has a value,\n * indeterminate (a sweeping arc) when it does not. Follows the ARIA progressbar role.\n */\nexport function ProgressRing({\n  label,\n  value,\n  max = 100,\n  size = 96,\n  showValue = true,\n  valueText,\n  tone = 'ink',\n  className,\n}: ProgressRingProps) {\n  const determinate = value !== undefined;\n  const fraction = determinate ? Math.min(Math.max(value / max, 0), 1) : 0.25;\n  const percent = Math.round(fraction * 100);\n  const radius = 40;\n  const circumference = 2 * Math.PI * radius;\n\n  return (\n    <div\n      role=\"progressbar\"\n      aria-label={label}\n      aria-valuemin={determinate ? 0 : undefined}\n      aria-valuemax={determinate ? max : undefined}\n      aria-valuenow={determinate ? value : undefined}\n      aria-valuetext={determinate ? (valueText ?? `${percent}%`) : undefined}\n      className={['atl-ring', className].filter(Boolean).join(' ')}\n      data-indeterminate={determinate ? undefined : ''}\n      data-tone={tone}\n      style={{ width: size, height: size }}\n    >\n      <svg viewBox=\"0 0 100 100\" aria-hidden=\"true\">\n        {/* Bezel ticks every 10%, like the degree marks on a compass rose. */}\n        <g className=\"atl-ring__ticks\">\n          {Array.from({ length: 40 }, (_, i) => (\n            <line\n              key={i}\n              x1=\"50\"\n              y1={i % 4 === 0 ? 2 : 3.5}\n              x2=\"50\"\n              y2=\"6\"\n              transform={`rotate(${i * 9} 50 50)`}\n            />\n          ))}\n        </g>\n        <circle className=\"atl-ring__track\" cx=\"50\" cy=\"50\" r={radius} />\n        <circle\n          className=\"atl-ring__value\"\n          cx=\"50\"\n          cy=\"50\"\n          r={radius}\n          strokeDasharray={circumference}\n          strokeDashoffset={circumference * (1 - fraction)}\n        />\n      </svg>\n      {determinate && showValue && size >= 56 ? (\n        <span className=\"atl-ring__label\" aria-hidden=\"true\">\n          {percent}\n          <small>%</small>\n        </span>\n      ) : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/feedback/progress-ring/progress-ring.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-ring {\n    --atl-ring-color: var(--ink);\n    position: relative;\n    display: inline-grid;\n    place-items: center;\n    flex: none;\n  }\n\n  .atl-ring[data-tone='success'] {\n    --atl-ring-color: var(--starboard);\n  }\n\n  .atl-ring[data-tone='warning'] {\n    --atl-ring-color: var(--caution);\n  }\n\n  .atl-ring svg {\n    width: 100%;\n    height: 100%;\n    rotate: -90deg;\n  }\n\n  .atl-ring__ticks line {\n    stroke: var(--isobath);\n    stroke-width: 0.8;\n  }\n\n  .atl-ring__track {\n    fill: none;\n    stroke: var(--ink-wash-strong);\n    stroke-width: 7;\n  }\n\n  .atl-ring__value {\n    fill: none;\n    stroke: var(--atl-ring-color);\n    stroke-width: 7;\n    stroke-linecap: round;\n    transition: stroke-dashoffset var(--dur-glide) var(--ease-drift);\n  }\n\n  .atl-ring[data-indeterminate] svg {\n    animation: atl-ring-sweep 1.2s linear infinite;\n  }\n\n  .atl-ring[data-indeterminate] .atl-ring__ticks {\n    /* Counter-rotate the bezel so only the arc moves. */\n    animation: atl-ring-hold 1.2s linear infinite;\n    transform-origin: 50px 50px;\n  }\n\n  @keyframes atl-ring-sweep {\n    to {\n      rotate: 270deg;\n    }\n  }\n\n  @keyframes atl-ring-hold {\n    to {\n      rotate: -360deg;\n    }\n  }\n\n  .atl-ring__label {\n    position: absolute;\n    font-size: var(--step-1);\n    font-weight: 650;\n    font-variant-numeric: tabular-nums;\n  }\n\n  .atl-ring__label small {\n    font-size: 0.6em;\n    color: var(--ink-soft);\n  }\n\n  /* Reduced motion: the indeterminate arc pulses in place instead of turning. */\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-ring[data-indeterminate] svg,\n    :root:not([data-motion='full']) .atl-ring[data-indeterminate] .atl-ring__ticks {\n      animation: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-ring[data-indeterminate] svg,\n  :root[data-motion='reduce'] .atl-ring[data-indeterminate] .atl-ring__ticks {\n    animation: none;\n  }\n\n  @media (forced-colors: active) {\n    .atl-ring__value {\n      stroke: Highlight;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/feedback/progress-ring/index.ts",
+      "kind": "index",
+      "content": "export { ProgressRing } from './ProgressRing';\nexport type { ProgressRingProps } from './ProgressRing';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "An element with the `progressbar` role, named by `label`.",
+      "Determinate rings expose `aria-valuenow`, `aria-valuemin`, `aria-valuemax` and `aria-valuetext`; indeterminate rings leave the value out, as the ARIA spec requires.",
+      "The drawing is decorative; the number in the middle is hidden from assistive technology because the role already carries it."
+    ],
+    "reducedMotion": "The value changes without easing, and the indeterminate arc stays still."
+  },
+  "license": "MIT"
+}

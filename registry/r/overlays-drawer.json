@@ -1,0 +1,62 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "overlays/drawer",
+  "type": "component",
+  "title": "Drawer",
+  "description": "A sheet from the edge that you can drag away.",
+  "category": "overlays",
+  "files": [
+    {
+      "path": "components/overlays/drawer/Drawer.tsx",
+      "kind": "source",
+      "content": "import { useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';\nimport { IconClose } from '../../../icons/close';\nimport { DialogShell } from '../../../primitives/dialog';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport { Button } from '../../actions/button/Button';\nimport './drawer.css';\n\nexport interface DrawerProps {\n  title: ReactNode;\n  description?: ReactNode;\n  open?: boolean;\n  defaultOpen?: boolean;\n  onOpenChange?: (open: boolean) => void;\n  /** Edge the sheet slides from. */\n  side?: 'right' | 'left' | 'bottom';\n  footer?: ReactNode;\n  children?: ReactNode;\n}\n\nconst CLOSE_FRACTION = 0.3;\nconst FLICK_SPEED = 0.6; // px per ms\n\n/**\n * A sheet that slides in from an edge and can be dragged away. A modal dialog underneath:\n * focus stays inside while it is open and returns to the trigger when it closes.\n */\nexport function Drawer({\n  title,\n  description,\n  open: openProp,\n  defaultOpen = false,\n  onOpenChange,\n  side = 'right',\n  footer,\n  children,\n}: DrawerProps) {\n  const [open, setOpen] = useControllableState({\n    value: openProp,\n    defaultValue: defaultOpen,\n    onChange: onOpenChange,\n  });\n  const id = useId();\n  const panelRef = useRef<HTMLDivElement>(null);\n  const drag = useRef<{ start: number; time: number; size: number } | null>(null);\n  const [offset, setOffset] = useState(0);\n\n  const axis = side === 'bottom' ? 'clientY' : 'clientX';\n  // Positive offset always means \"toward closed\".\n  const direction = side === 'left' ? -1 : 1;\n\n  const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {\n    if (\n      event.button !== 0 ||\n      (event.target as HTMLElement).closest('button, a, input, select, textarea')\n    )\n      return;\n    const panel = panelRef.current;\n    if (!panel) return;\n    const rect = panel.getBoundingClientRect();\n    drag.current = {\n      start: event[axis],\n      time: performance.now(),\n      size: side === 'bottom' ? rect.height : rect.width,\n    };\n    panel.setPointerCapture(event.pointerId);\n  };\n\n  const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {\n    if (!drag.current) return;\n    setOffset(Math.max(0, (event[axis] - drag.current.start) * direction));\n  };\n\n  const onPointerUp = (event: PointerEvent<HTMLDivElement>) => {\n    const d = drag.current;\n    drag.current = null;\n    if (!d) return;\n    const distance = Math.max(0, (event[axis] - d.start) * direction);\n    const speed = distance / Math.max(performance.now() - d.time, 1);\n    setOffset(0);\n    if (distance > d.size * CLOSE_FRACTION || (speed > FLICK_SPEED && distance > 24))\n      setOpen(false);\n  };\n\n  return (\n    <DialogShell\n      open={open}\n      onClose={() => setOpen(false)}\n      labelledBy={`${id}-title`}\n      describedBy={description ? `${id}-description` : undefined}\n      className=\"atl-dialog-surface atl-drawer\"\n    >\n      <div\n        ref={panelRef}\n        className=\"atl-drawer__panel\"\n        data-side={side}\n        data-dragging={offset > 0 || undefined}\n        style={{ '--atl-drawer-drag': `${offset * direction}px` } as React.CSSProperties}\n        onPointerDown={onPointerDown}\n        onPointerMove={onPointerMove}\n        onPointerUp={onPointerUp}\n        onPointerCancel={onPointerUp}\n      >\n        <span className=\"atl-drawer__handle\" aria-hidden=\"true\" />\n        <div className=\"atl-dialog__header\">\n          <div className=\"atl-dialog__titles\">\n            <h2 id={`${id}-title`} className=\"atl-dialog__title\">\n              {title}\n            </h2>\n            {description ? (\n              <p id={`${id}-description`} className=\"atl-dialog__description\">\n                {description}\n              </p>\n            ) : null}\n          </div>\n          <Button\n            variant=\"quiet\"\n            size=\"s\"\n            icon={<IconClose />}\n            aria-label=\"Close\"\n            onClick={() => setOpen(false)}\n          />\n        </div>\n        <div className=\"atl-dialog__body atl-drawer__body\">{children}</div>\n        {footer ? <div className=\"atl-dialog__footer\">{footer}</div> : null}\n      </div>\n    </DialogShell>\n  );\n}\n"
+    },
+    {
+      "path": "components/overlays/drawer/drawer.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-drawer {\n    position: fixed;\n    inset: 0;\n    width: 100%;\n    height: 100%;\n    margin: 0;\n    background: none;\n    box-shadow: none;\n    transition:\n      overlay var(--dur-glide) allow-discrete,\n      display var(--dur-glide) allow-discrete;\n  }\n\n  .atl-drawer__panel {\n    --atl-drawer-drag: 0px;\n    position: absolute;\n    display: grid;\n    grid-template-rows: auto auto 1fr auto;\n    gap: var(--space-l);\n    padding: var(--space-l);\n    background: var(--shoal);\n    box-shadow: var(--elev-overlay);\n    touch-action: none;\n    transition: translate var(--dur-glide) var(--ease-drift);\n  }\n\n  .atl-drawer__panel[data-dragging] {\n    transition: none;\n  }\n\n  .atl-drawer__panel[data-side='right'],\n  .atl-drawer__panel[data-side='left'] {\n    top: 0;\n    bottom: 0;\n    width: min(26rem, 92vw);\n    translate: var(--atl-drawer-drag) 0;\n  }\n\n  .atl-drawer__panel[data-side='right'] {\n    right: 0;\n    border-radius: var(--radius-overlay) 0 0 var(--radius-overlay);\n  }\n\n  .atl-drawer__panel[data-side='left'] {\n    left: 0;\n    border-radius: 0 var(--radius-overlay) var(--radius-overlay) 0;\n  }\n\n  .atl-drawer__panel[data-side='bottom'] {\n    left: 0;\n    right: 0;\n    bottom: 0;\n    max-height: 85dvh;\n    border-radius: var(--radius-overlay) var(--radius-overlay) 0 0;\n    translate: 0 var(--atl-drawer-drag);\n  }\n\n  .atl-drawer:not([open]) .atl-drawer__panel[data-side='right'] {\n    translate: 100% 0;\n  }\n\n  .atl-drawer:not([open]) .atl-drawer__panel[data-side='left'] {\n    translate: -100% 0;\n  }\n\n  .atl-drawer:not([open]) .atl-drawer__panel[data-side='bottom'] {\n    translate: 0 100%;\n  }\n\n  @starting-style {\n    .atl-drawer[open] .atl-drawer__panel[data-side='right'] {\n      translate: 100% 0;\n    }\n    .atl-drawer[open] .atl-drawer__panel[data-side='left'] {\n      translate: -100% 0;\n    }\n    .atl-drawer[open] .atl-drawer__panel[data-side='bottom'] {\n      translate: 0 100%;\n    }\n  }\n\n  /* A grip that says \"this can be dragged\". */\n  .atl-drawer__handle {\n    position: absolute;\n    border-radius: var(--radius-round);\n    background: var(--isobath);\n    cursor: grab;\n  }\n\n  .atl-drawer__panel[data-side='bottom'] .atl-drawer__handle {\n    top: var(--space-xs);\n    left: 50%;\n    width: 40px;\n    height: 4px;\n    translate: -50% 0;\n  }\n\n  .atl-drawer__panel[data-side='right'] .atl-drawer__handle,\n  .atl-drawer__panel[data-side='left'] .atl-drawer__handle {\n    top: 50%;\n    width: 4px;\n    height: 40px;\n    translate: 0 -50%;\n  }\n\n  .atl-drawer__panel[data-side='right'] .atl-drawer__handle {\n    left: var(--space-xs);\n  }\n\n  .atl-drawer__panel[data-side='left'] .atl-drawer__handle {\n    right: var(--space-xs);\n  }\n\n  .atl-drawer__body {\n    min-height: 0;\n    overflow-y: auto;\n  }\n}\n"
+    },
+    {
+      "path": "components/overlays/drawer/index.ts",
+      "kind": "index",
+      "content": "export { Drawer } from './Drawer';\nexport type { DrawerProps } from './Drawer';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "actions/button",
+    "primitives/dialog",
+    "primitives/focus",
+    "primitives/use-controllable-state",
+    "icons/close",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab",
+          "Shift+Tab"
+        ],
+        "action": "Move through the drawer’s controls; wraps inside it."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Close the drawer and return focus to its trigger."
+      }
+    ],
+    "notes": [
+      "A native modal `<dialog>` labelled by its title; the page behind is inert while it is open.",
+      "Dragging is an enhancement for pointer users. Every way of closing has a keyboard and a button equivalent (WCAG 2.5.7).",
+      "Drags that start on a button, link or field are ignored, so controls inside keep working.",
+      "Focus moves into the drawer on open and back to the opener on close."
+    ],
+    "reducedMotion": "The sheet appears at once instead of sliding, and does not glide back after a short drag."
+  },
+  "license": "MIT"
+}

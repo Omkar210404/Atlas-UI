@@ -1,0 +1,19 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "primitives/typeahead",
+  "type": "primitive",
+  "title": "typeahead",
+  "files": [
+    {
+      "path": "primitives/typeahead.ts",
+      "kind": "source",
+      "content": "/**\n * Type-to-select for lists and menus: typing letters moves to the next item whose label\n * starts with them. Letters typed within `timeout` ms build up a longer search string;\n * repeating one letter cycles through items that start with it.\n */\nexport function createTypeahead(timeout = 600) {\n  let buffer = '';\n  let last = 0;\n\n  return function search(key: string, labels: readonly string[], current: number): number {\n    if (key.length !== 1 || key === ' ') return -1;\n    const now = Date.now();\n    buffer = now - last > timeout ? key : buffer + key;\n    last = now;\n    const query = buffer.toLowerCase();\n    const repeated = query.split('').every((c) => c === query[0]);\n    const needle = repeated ? query[0]! : query;\n    const start = repeated || buffer.length === 1 ? current + 1 : current;\n    for (let i = 0; i < labels.length; i++) {\n      const index = (start + i) % labels.length;\n      if (labels[index]?.toLowerCase().startsWith(needle)) return index;\n    }\n    return -1;\n  };\n}\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [],
+  "license": "MIT"
+}

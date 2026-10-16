@@ -1,0 +1,57 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "data-display/timeline",
+  "type": "component",
+  "title": "Timeline",
+  "description": "Events in order, with a progress line that follows scrolling.",
+  "category": "data-display",
+  "files": [
+    {
+      "path": "components/data-display/timeline/Timeline.tsx",
+      "kind": "source",
+      "content": "import { useId, useState, type ReactNode } from 'react';\nimport { IconChevronDown } from '../../../icons/chevron-down';\nimport './timeline.css';\n\nexport interface TimelineEvent {\n  id: string;\n  /** When it happened, as shown: \"06:12\" or \"14 Oct\". Also given to `<time dateTime>`. */\n  time: string;\n  dateTime?: string;\n  title: string;\n  /** Detail revealed by the event's disclosure button. */\n  details?: ReactNode;\n  /** Marks the event as the current position on the timeline. */\n  current?: boolean;\n}\n\nexport interface TimelineProps {\n  label: string;\n  events: readonly TimelineEvent[];\n  className?: string;\n}\n\n/**\n * Events in order on a vertical line. The line fills as the timeline scrolls through the\n * viewport (a CSS scroll-driven animation where supported); each event can open its details.\n */\nexport function Timeline({ label, events, className }: TimelineProps) {\n  const [open, setOpen] = useState<Set<string>>(() => new Set());\n  const id = useId();\n  const toggle = (eventId: string) =>\n    setOpen((set) => {\n      const next = new Set(set);\n      if (next.has(eventId)) next.delete(eventId);\n      else next.add(eventId);\n      return next;\n    });\n\n  return (\n    <ol className={['atl-timeline', className].filter(Boolean).join(' ')} aria-label={label}>\n      {events.map((event) => {\n        const expanded = open.has(event.id);\n        const detailsId = `${id}-${event.id}`;\n        return (\n          <li\n            key={event.id}\n            className=\"atl-timeline__event\"\n            data-current={event.current || undefined}\n          >\n            <span className=\"atl-timeline__mark\" aria-hidden=\"true\" />\n            <time className=\"atl-timeline__time\" dateTime={event.dateTime}>\n              {event.time}\n            </time>\n            {event.details ? (\n              <button\n                type=\"button\"\n                className=\"atl-timeline__title\"\n                aria-expanded={expanded}\n                aria-controls={detailsId}\n                onClick={() => toggle(event.id)}\n              >\n                {event.title}\n                <IconChevronDown size={16} className=\"atl-timeline__chevron\" />\n              </button>\n            ) : (\n              <span className=\"atl-timeline__title\">{event.title}</span>\n            )}\n            {event.current ? <span className=\"atl-visually-hidden\"> (now)</span> : null}\n            {event.details ? (\n              <div id={detailsId} className=\"atl-timeline__details\" hidden={!expanded}>\n                {event.details}\n              </div>\n            ) : null}\n          </li>\n        );\n      })}\n    </ol>\n  );\n}\n"
+    },
+    {
+      "path": "components/data-display/timeline/timeline.css",
+      "kind": "style",
+      "content": "@property --atl-timeline-fill {\n  syntax: '<percentage>';\n  inherits: true;\n  initial-value: 100%;\n}\n\n@layer atlas.components {\n  .atl-timeline {\n    --atl-timeline-fill: 100%;\n    position: relative;\n    display: grid;\n    gap: var(--space-m);\n    margin: 0;\n    padding: 0 0 0 var(--space-xl);\n    list-style: none;\n  }\n\n  /* The track, and the course line that fills along it as you scroll. */\n  .atl-timeline::before,\n  .atl-timeline::after {\n    content: '';\n    position: absolute;\n    top: 8px;\n    left: 9px;\n    width: 2px;\n    border-radius: 1px;\n  }\n\n  .atl-timeline::before {\n    bottom: 8px;\n    background: color-mix(in oklch, var(--isobath) 60%, transparent);\n  }\n\n  .atl-timeline::after {\n    height: calc((100% - 16px) * var(--atl-timeline-fill) / 100%);\n    background: var(--ink);\n  }\n\n  @supports (animation-timeline: view()) {\n    .atl-timeline {\n      animation: atl-timeline-fill linear both;\n      animation-timeline: view();\n      animation-range: entry 60% exit 40%;\n    }\n  }\n\n  @keyframes atl-timeline-fill {\n    from {\n      --atl-timeline-fill: 0%;\n    }\n    to {\n      --atl-timeline-fill: 100%;\n    }\n  }\n\n  .atl-timeline__event {\n    position: relative;\n    display: grid;\n    gap: var(--space-3xs);\n  }\n\n  .atl-timeline__mark {\n    position: absolute;\n    top: 6px;\n    left: calc(-1 * var(--space-xl) + 4px);\n    width: 12px;\n    height: 12px;\n    border-radius: 50%;\n    background: var(--sea-1);\n    box-shadow: inset 0 0 0 2px var(--ink);\n  }\n\n  .atl-timeline__event[data-current] .atl-timeline__mark {\n    background: var(--chart-magenta);\n    box-shadow: 0 0 0 4px var(--magenta-wash);\n  }\n\n  .atl-timeline__time {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n    font-variant-numeric: tabular-nums;\n  }\n\n  .atl-timeline__title {\n    display: inline-flex;\n    align-items: center;\n    gap: var(--space-2xs);\n    width: fit-content;\n    min-height: var(--target-min);\n    padding: 0;\n    border: 0;\n    background: none;\n    color: var(--ink);\n    font-weight: 600;\n    text-align: left;\n  }\n\n  button.atl-timeline__title:hover {\n    text-decoration: underline;\n    text-decoration-color: var(--isobath);\n  }\n\n  .atl-timeline__chevron {\n    transition: rotate var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-timeline__title[aria-expanded='true'] .atl-timeline__chevron {\n    rotate: 180deg;\n  }\n\n  .atl-timeline__details {\n    max-width: 52ch;\n    color: var(--ink-soft);\n    font-family: var(--font-prose);\n    line-height: var(--leading-prose);\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-timeline {\n      animation: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-timeline {\n    animation: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/data-display/timeline/index.ts",
+      "kind": "index",
+      "content": "export { Timeline } from './Timeline';\nexport type { TimelineEvent, TimelineProps } from './Timeline';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/chevron-down",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move between events that have details."
+      },
+      {
+        "keys": [
+          "Enter",
+          "Space"
+        ],
+        "action": "Show or hide an event’s details."
+      }
+    ],
+    "notes": [
+      "An ordered list, so its length and each event’s position are announced.",
+      "Times are `<time>` elements; detail toggles are buttons with `aria-expanded` and `aria-controls`.",
+      "The current event says “(now)” to screen readers as well as showing a magenta mark."
+    ],
+    "reducedMotion": "The line is drawn full and does not follow scrolling."
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/bell",
+  "type": "icon",
+  "title": "bell",
+  "files": [
+    {
+      "path": "icons/bell.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconBell = createIcon(\n  'IconBell',\n  <>\n    <path d=\"M5.25 13.75V9.5a4.75 4.75 0 0 1 9.5 0v4.25l1.25 1.5H4Z\" />\n    <path d=\"M8.25 17h3.5\" />\n  </>,\n);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

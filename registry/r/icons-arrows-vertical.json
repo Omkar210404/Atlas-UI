@@ -1,0 +1,21 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "icons/arrows-vertical",
+  "type": "icon",
+  "title": "arrows-vertical",
+  "files": [
+    {
+      "path": "icons/arrows-vertical.tsx",
+      "kind": "source",
+      "content": "import { createIcon } from './create-icon';\n\nexport const IconArrowsVertical = createIcon(\n  'IconArrowsVertical',\n  <path d=\"M7 16V4M4.25 6.75 7 4l2.75 2.75M13 4v12m-2.75-2.75L13 16l2.75-2.75\" />,\n);\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "icons/create-icon"
+  ],
+  "license": "MIT"
+}

@@ -1,0 +1,491 @@
+{
+  "$schema": "./schema.json",
+  "format": "atlas-registry/1",
+  "name": "atlas-ui",
+  "version": "0.1.0",
+  "homepage": "https://github.com/Omkar210404/atlas-ui",
+  "items": [
+    {
+      "name": "actions/button",
+      "type": "component",
+      "title": "Button",
+      "description": "The base button every other action builds on.",
+      "category": "actions",
+      "url": "r/actions-button.json"
+    },
+    {
+      "name": "actions/loading-state-button",
+      "type": "component",
+      "title": "Loading-state button",
+      "description": "Shows progress and the outcome without changing size.",
+      "category": "actions",
+      "url": "r/actions-loading-state-button.json"
+    },
+    {
+      "name": "actions/magnetic-button",
+      "type": "component",
+      "title": "Magnetic button",
+      "description": "A button that leans toward the pointer.",
+      "category": "actions",
+      "url": "r/actions-magnetic-button.json"
+    },
+    {
+      "name": "actions/morphing-icon-button",
+      "type": "component",
+      "title": "Morphing icon button",
+      "description": "A toggle whose icon reshapes between states.",
+      "category": "actions",
+      "url": "r/actions-morphing-icon-button.json"
+    },
+    {
+      "name": "actions/split-action-button",
+      "type": "component",
+      "title": "Split action button",
+      "description": "One main action with alternatives behind a seam.",
+      "category": "actions",
+      "url": "r/actions-split-action-button.json"
+    },
+    {
+      "name": "data-display/code-panel",
+      "type": "component",
+      "title": "Code panel",
+      "description": "Highlighted source with line numbers and copy.",
+      "category": "data-display",
+      "url": "r/data-display-code-panel.json"
+    },
+    {
+      "name": "data-display/heat-grid",
+      "type": "component",
+      "title": "Heat-grid",
+      "description": "A grid of cells shaded by value, navigable by keyboard.",
+      "category": "data-display",
+      "url": "r/data-display-heat-grid.json"
+    },
+    {
+      "name": "data-display/sparkline",
+      "type": "component",
+      "title": "Sparkline",
+      "description": "A word-sized line chart you can scrub.",
+      "category": "data-display",
+      "url": "r/data-display-sparkline.json"
+    },
+    {
+      "name": "data-display/stat-counter",
+      "type": "component",
+      "title": "Animated stat counter",
+      "description": "A figure that rolls to its new value.",
+      "category": "data-display",
+      "url": "r/data-display-stat-counter.json"
+    },
+    {
+      "name": "data-display/timeline",
+      "type": "component",
+      "title": "Timeline",
+      "description": "Events in order, with a progress line that follows scrolling.",
+      "category": "data-display",
+      "url": "r/data-display-timeline.json"
+    },
+    {
+      "name": "feedback/empty-states",
+      "type": "component",
+      "title": "Empty-state illustrations",
+      "description": "Original chart-style illustrations for empty screens.",
+      "category": "feedback",
+      "url": "r/feedback-empty-states.json"
+    },
+    {
+      "name": "feedback/progress-ring",
+      "type": "component",
+      "title": "Progress ring",
+      "description": "Determinate and indeterminate progress in a ring.",
+      "category": "feedback",
+      "url": "r/feedback-progress-ring.json"
+    },
+    {
+      "name": "feedback/skeleton",
+      "type": "component",
+      "title": "Skeleton shimmer system",
+      "description": "Placeholders shaped like the content to come.",
+      "category": "feedback",
+      "url": "r/feedback-skeleton.json"
+    },
+    {
+      "name": "feedback/toast-stack",
+      "type": "component",
+      "title": "Toast stack",
+      "description": "Brief messages that stack, pause and dismiss.",
+      "category": "feedback",
+      "url": "r/feedback-toast-stack.json"
+    },
+    {
+      "name": "icons/alert",
+      "type": "icon",
+      "title": "alert",
+      "url": "r/icons-alert.json"
+    },
+    {
+      "name": "icons/arrows-vertical",
+      "type": "icon",
+      "title": "arrows-vertical",
+      "url": "r/icons-arrows-vertical.json"
+    },
+    {
+      "name": "icons/bell",
+      "type": "icon",
+      "title": "bell",
+      "url": "r/icons-bell.json"
+    },
+    {
+      "name": "icons/check",
+      "type": "icon",
+      "title": "check",
+      "url": "r/icons-check.json"
+    },
+    {
+      "name": "icons/chevron-down",
+      "type": "icon",
+      "title": "chevron-down",
+      "url": "r/icons-chevron-down.json"
+    },
+    {
+      "name": "icons/chevron-right",
+      "type": "icon",
+      "title": "chevron-right",
+      "url": "r/icons-chevron-right.json"
+    },
+    {
+      "name": "icons/close",
+      "type": "icon",
+      "title": "close",
+      "url": "r/icons-close.json"
+    },
+    {
+      "name": "icons/copy",
+      "type": "icon",
+      "title": "copy",
+      "url": "r/icons-copy.json"
+    },
+    {
+      "name": "icons/create-icon",
+      "type": "icon",
+      "title": "create-icon",
+      "url": "r/icons-create-icon.json"
+    },
+    {
+      "name": "icons/enter-key",
+      "type": "icon",
+      "title": "enter-key",
+      "url": "r/icons-enter-key.json"
+    },
+    {
+      "name": "icons/more",
+      "type": "icon",
+      "title": "more",
+      "url": "r/icons-more.json"
+    },
+    {
+      "name": "icons/search",
+      "type": "icon",
+      "title": "search",
+      "url": "r/icons-search.json"
+    },
+    {
+      "name": "inputs/animated-select",
+      "type": "component",
+      "title": "Animated select",
+      "description": "A select whose options unroll from the trigger.",
+      "category": "inputs",
+      "url": "r/inputs-animated-select.json"
+    },
+    {
+      "name": "inputs/otp-input",
+      "type": "component",
+      "title": "OTP input",
+      "description": "One-time codes, drawn as cells, typed as one field.",
+      "category": "inputs",
+      "url": "r/inputs-otp-input.json"
+    },
+    {
+      "name": "inputs/range-slider",
+      "type": "component",
+      "title": "Range slider",
+      "description": "One or two thumbs with a live value readout.",
+      "category": "inputs",
+      "url": "r/inputs-range-slider.json"
+    },
+    {
+      "name": "inputs/segmented-control",
+      "type": "component",
+      "title": "Segmented control",
+      "description": "A small set of exclusive options with a sliding marker.",
+      "category": "inputs",
+      "url": "r/inputs-segmented-control.json"
+    },
+    {
+      "name": "inputs/switch",
+      "type": "component",
+      "title": "Switch",
+      "description": "An on/off setting that applies at once.",
+      "category": "inputs",
+      "url": "r/inputs-switch.json"
+    },
+    {
+      "name": "inputs/text-field",
+      "type": "component",
+      "title": "Text field",
+      "description": "A labelled field with hint and error text.",
+      "category": "inputs",
+      "url": "r/inputs-text-field.json"
+    },
+    {
+      "name": "layout/bento-grid",
+      "type": "component",
+      "title": "Bento grid",
+      "description": "A spanning grid that reflows with its container.",
+      "category": "layout",
+      "url": "r/layout-bento-grid.json"
+    },
+    {
+      "name": "layout/expandable-card",
+      "type": "component",
+      "title": "Expandable card",
+      "description": "A card that opens into its details in place.",
+      "category": "layout",
+      "url": "r/layout-expandable-card.json"
+    },
+    {
+      "name": "layout/parallax-stack",
+      "type": "component",
+      "title": "Parallax stack",
+      "description": "Layers that drift at different speeds as you scroll.",
+      "category": "layout",
+      "url": "r/layout-parallax-stack.json"
+    },
+    {
+      "name": "layout/tilt-card",
+      "type": "component",
+      "title": "Tilt card",
+      "description": "A card that tilts toward the pointer.",
+      "category": "layout",
+      "url": "r/layout-tilt-card.json"
+    },
+    {
+      "name": "motion/tween",
+      "type": "primitive",
+      "title": "tween",
+      "url": "r/motion-tween.json"
+    },
+    {
+      "name": "navigation/breadcrumb-trail",
+      "type": "component",
+      "title": "Breadcrumb trail",
+      "description": "The path to the current page, folding its middle when space runs out.",
+      "category": "navigation",
+      "url": "r/navigation-breadcrumb-trail.json"
+    },
+    {
+      "name": "navigation/command-palette",
+      "type": "component",
+      "title": "Command palette",
+      "description": "Jump anywhere by typing a few letters.",
+      "category": "navigation",
+      "url": "r/navigation-command-palette.json"
+    },
+    {
+      "name": "navigation/floating-dock",
+      "type": "component",
+      "title": "Floating dock",
+      "description": "A compact toolbar whose items grow as the pointer approaches.",
+      "category": "navigation",
+      "url": "r/navigation-floating-dock.json"
+    },
+    {
+      "name": "navigation/tab-bar",
+      "type": "component",
+      "title": "Tab bar",
+      "description": "Tabs with an indicator that glides to the selected tab.",
+      "category": "navigation",
+      "url": "r/navigation-tab-bar.json"
+    },
+    {
+      "name": "overlays/context-menu",
+      "type": "component",
+      "title": "Context menu",
+      "description": "Right-click and keyboard menus with submenus.",
+      "category": "overlays",
+      "url": "r/overlays-context-menu.json"
+    },
+    {
+      "name": "overlays/drawer",
+      "type": "component",
+      "title": "Drawer",
+      "description": "A sheet from the edge that you can drag away.",
+      "category": "overlays",
+      "url": "r/overlays-drawer.json"
+    },
+    {
+      "name": "overlays/modal",
+      "type": "component",
+      "title": "Modal",
+      "description": "A dialog that holds focus until you close it.",
+      "category": "overlays",
+      "url": "r/overlays-modal.json"
+    },
+    {
+      "name": "overlays/popover",
+      "type": "component",
+      "title": "Popover",
+      "description": "Anchored content that flips and shifts to stay visible.",
+      "category": "overlays",
+      "url": "r/overlays-popover.json"
+    },
+    {
+      "name": "overlays/tooltip",
+      "type": "component",
+      "title": "Tooltip",
+      "description": "A short label on hover and focus that you can dismiss.",
+      "category": "overlays",
+      "url": "r/overlays-tooltip.json"
+    },
+    {
+      "name": "primitives/announce",
+      "type": "primitive",
+      "title": "announce",
+      "url": "r/primitives-announce.json"
+    },
+    {
+      "name": "primitives/dialog",
+      "type": "primitive",
+      "title": "dialog",
+      "url": "r/primitives-dialog.json"
+    },
+    {
+      "name": "primitives/field",
+      "type": "primitive",
+      "title": "field",
+      "url": "r/primitives-field.json"
+    },
+    {
+      "name": "primitives/focus",
+      "type": "primitive",
+      "title": "focus",
+      "url": "r/primitives-focus.json"
+    },
+    {
+      "name": "primitives/menu",
+      "type": "primitive",
+      "title": "menu",
+      "url": "r/primitives-menu.json"
+    },
+    {
+      "name": "primitives/place",
+      "type": "primitive",
+      "title": "place",
+      "url": "r/primitives-place.json"
+    },
+    {
+      "name": "primitives/roving",
+      "type": "primitive",
+      "title": "roving",
+      "url": "r/primitives-roving.json"
+    },
+    {
+      "name": "primitives/three-core",
+      "type": "primitive",
+      "title": "three-core",
+      "url": "r/primitives-three-core.json"
+    },
+    {
+      "name": "primitives/three-host",
+      "type": "primitive",
+      "title": "three-host",
+      "url": "r/primitives-three-host.json"
+    },
+    {
+      "name": "primitives/typeahead",
+      "type": "primitive",
+      "title": "typeahead",
+      "url": "r/primitives-typeahead.json"
+    },
+    {
+      "name": "primitives/use-controllable-state",
+      "type": "primitive",
+      "title": "use-controllable-state",
+      "url": "r/primitives-use-controllable-state.json"
+    },
+    {
+      "name": "primitives/use-dismiss",
+      "type": "primitive",
+      "title": "use-dismiss",
+      "url": "r/primitives-use-dismiss.json"
+    },
+    {
+      "name": "primitives/use-latest",
+      "type": "primitive",
+      "title": "use-latest",
+      "url": "r/primitives-use-latest.json"
+    },
+    {
+      "name": "primitives/use-placement",
+      "type": "primitive",
+      "title": "use-placement",
+      "url": "r/primitives-use-placement.json"
+    },
+    {
+      "name": "primitives/use-popover",
+      "type": "primitive",
+      "title": "use-popover",
+      "url": "r/primitives-use-popover.json"
+    },
+    {
+      "name": "primitives/use-reduced-motion",
+      "type": "primitive",
+      "title": "use-reduced-motion",
+      "url": "r/primitives-use-reduced-motion.json"
+    },
+    {
+      "name": "spatial/ambient-background",
+      "type": "component",
+      "title": "WebGL ambient background",
+      "description": "A slow contour field behind the page.",
+      "category": "spatial",
+      "url": "r/spatial-ambient-background.json"
+    },
+    {
+      "name": "spatial/carousel-3d",
+      "type": "component",
+      "title": "3D carousel",
+      "description": "A ring of slides you rotate by key or button.",
+      "category": "spatial",
+      "url": "r/spatial-carousel-3d.json"
+    },
+    {
+      "name": "spatial/depth-layers-card",
+      "type": "component",
+      "title": "Depth-layers card",
+      "description": "Planes that separate in CSS 3D.",
+      "category": "spatial",
+      "url": "r/spatial-depth-layers-card.json"
+    },
+    {
+      "name": "spatial/particle-field",
+      "type": "component",
+      "title": "Cursor-reactive particle field",
+      "description": "Particles that drift and part around the cursor.",
+      "category": "spatial",
+      "url": "r/spatial-particle-field.json"
+    },
+    {
+      "name": "tokens",
+      "type": "tokens",
+      "title": "Design tokens",
+      "url": "r/tokens.json"
+    },
+    {
+      "name": "tokens/tokens",
+      "type": "primitive",
+      "title": "tokens",
+      "url": "r/tokens-tokens.json"
+    }
+  ]
+}

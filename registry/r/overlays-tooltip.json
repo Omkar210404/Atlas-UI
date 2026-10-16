@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "overlays/tooltip",
+  "type": "component",
+  "title": "Tooltip",
+  "description": "A short label on hover and focus that you can dismiss.",
+  "category": "overlays",
+  "files": [
+    {
+      "path": "components/overlays/tooltip/Tooltip.tsx",
+      "kind": "source",
+      "content": "import {\n  cloneElement,\n  isValidElement,\n  useEffect,\n  useId,\n  useRef,\n  useState,\n  type FocusEvent,\n  type KeyboardEvent,\n  type PointerEvent,\n  type ReactElement,\n  type ReactNode,\n} from 'react';\nimport type { Side } from '../../../primitives/place';\nimport { usePlacement } from '../../../primitives/use-placement';\nimport { usePopover } from '../../../primitives/use-popover';\nimport './tooltip.css';\n\nexport interface TooltipProps {\n  /** Short text that adds to the trigger's name; never the only place information lives. */\n  content: ReactNode;\n  /** One focusable element, such as a button. */\n  children: ReactElement<{ 'aria-describedby'?: string }>;\n  side?: Side;\n  /** Milliseconds of hover before showing. Keyboard focus shows it at once. */\n  delay?: number;\n}\n\n/**\n * A short description shown on hover and keyboard focus. Meets WCAG 1.4.13: it can be\n * dismissed with Escape without moving focus, it stays while the pointer is over it, and it\n * stays until the pointer or focus leaves.\n */\nexport function Tooltip({ content, children, side = 'top', delay = 300 }: TooltipProps) {\n  const id = useId();\n  const [open, setOpen] = useState(false);\n  // The anchor is a wrapper around the trigger, so the trigger's own ref is left alone.\n  const anchorRef = useRef<HTMLSpanElement>(null);\n  const tipRef = useRef<HTMLDivElement>(null);\n  const timer = useRef(0);\n\n  usePopover(tipRef, open);\n  const placement = usePlacement(anchorRef, tipRef, open, { side, offset: 8 });\n\n  useEffect(() => () => window.clearTimeout(timer.current), []);\n\n  const show = (wait: number) => {\n    window.clearTimeout(timer.current);\n    timer.current = window.setTimeout(() => setOpen(true), wait);\n  };\n  // A short grace period lets the pointer travel from the trigger onto the tooltip.\n  const hide = (wait = 100) => {\n    window.clearTimeout(timer.current);\n    timer.current = window.setTimeout(() => setOpen(false), wait);\n  };\n\n  const trigger = isValidElement(children)\n    ? cloneElement(children, {\n        'aria-describedby': [children.props['aria-describedby'], id].filter(Boolean).join(' '),\n      })\n    : children;\n\n  return (\n    <>\n      {/* Pointer, focus and Escape events bubble up from the trigger to this wrapper. */}\n      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}\n      <span\n        ref={anchorRef}\n        className=\"atl-tooltip-anchor\"\n        onPointerEnter={(event: PointerEvent) => {\n          if (event.pointerType !== 'touch') show(delay);\n        }}\n        onPointerLeave={() => hide()}\n        onFocus={(event: FocusEvent) => {\n          if ((event.target as HTMLElement).matches(':focus-visible')) show(0);\n        }}\n        onBlur={() => hide(0)}\n        onKeyDown={(event: KeyboardEvent) => {\n          if (event.key === 'Escape' && open) {\n            event.preventDefault();\n            event.stopPropagation();\n            window.clearTimeout(timer.current);\n            setOpen(false);\n          }\n        }}\n      >\n        {trigger}\n      </span>\n      <div\n        ref={tipRef}\n        id={id}\n        role=\"tooltip\"\n        popover=\"manual\"\n        className=\"atl-tooltip\"\n        data-side={placement?.side ?? side}\n        style={\n          placement ? { left: placement.x, top: placement.y } : { left: 0, top: 0, opacity: 0 }\n        }\n        onPointerEnter={() => window.clearTimeout(timer.current)}\n        onPointerLeave={() => hide()}\n      >\n        {content}\n      </div>\n    </>\n  );\n}\n"
+    },
+    {
+      "path": "components/overlays/tooltip/tooltip.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-tooltip-anchor {\n    display: inline-flex;\n  }\n\n  /* Hidden tooltips still describe their trigger: keep them in the DOM, out of view. */\n  .atl-tooltip {\n    position: fixed;\n    inset: auto;\n    max-width: min(18rem, calc(100vw - 16px));\n    margin: 0;\n    padding: var(--space-2xs) var(--space-xs);\n    border: 0;\n    border-radius: var(--radius-control);\n    background: var(--ink);\n    color: var(--sea-0);\n    font-size: var(--step--1);\n    font-weight: 500;\n    line-height: 1.35;\n    overflow: visible;\n    transition:\n      opacity var(--dur-tick) var(--ease-anchor),\n      translate var(--dur-tick) var(--ease-anchor);\n  }\n\n  @starting-style {\n    .atl-tooltip:popover-open {\n      opacity: 0;\n      translate: 0 3px;\n    }\n  }\n\n  @media (forced-colors: active) {\n    .atl-tooltip {\n      border: 1px solid CanvasText;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/overlays/tooltip/index.ts",
+      "kind": "index",
+      "content": "export { Tooltip } from './Tooltip';\nexport type { TooltipProps } from './Tooltip';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/place",
+    "primitives/use-placement",
+    "primitives/use-popover",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Focus the trigger: the tooltip appears at once."
+      },
+      {
+        "keys": [
+          "Escape"
+        ],
+        "action": "Hide the tooltip without moving focus."
+      }
+    ],
+    "notes": [
+      "The tooltip has `role=\"tooltip\"` and describes its trigger through `aria-describedby`, so its text is read after the trigger’s name.",
+      "It shows on keyboard focus (not on mouse focus), and on hover after a short delay.",
+      "A 100 ms grace period lets the pointer cross from the trigger onto the tooltip.",
+      "It is never shown for touch input, where hover does not exist."
+    ],
+    "reducedMotion": "The tooltip appears without its short rise."
+  },
+  "license": "MIT"
+}

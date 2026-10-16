@@ -1,0 +1,45 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "spatial/particle-field",
+  "type": "component",
+  "title": "Cursor-reactive particle field",
+  "description": "Particles that drift and part around the cursor.",
+  "category": "spatial",
+  "files": [
+    {
+      "path": "components/spatial/particle-field/ParticleField.tsx",
+      "kind": "source",
+      "content": "import { useEffect, useRef, useState } from 'react';\nimport {\n  canRender3d,\n  startHost,\n  tokenColour,\n  type RendererChoice,\n} from '../../../primitives/three-host';\nimport './particle-field.css';\n\nexport interface ParticleFieldProps {\n  /** Number of particles. */\n  count?: number;\n  /** Radius, in field units (the field is 2 high), within which particles part around the pointer. */\n  reach?: number;\n  renderer?: RendererChoice | 'none';\n  className?: string;\n}\n\ntype Status = 'loading' | 'running' | 'fallback';\n\n/** A smooth, slowly changing flow field: the direction a particle at (x, y) drifts. */\nexport function flowAngle(x: number, y: number, t: number): number {\n  return (\n    Math.sin(y * 2.1 + t * 0.35) * 1.4 +\n    Math.cos(x * 1.6 - t * 0.25) * 1.1 +\n    Math.sin((x + y) * 0.9) * 0.6\n  );\n}\n\n/**\n * Particles that drift along a flow field like plankton in a current, and part around the\n * cursor. Drawn as one instanced mesh, so it renders the same on WebGPU and WebGL2.\n * Decorative: hidden from assistive technology, paused off screen, still under reduced motion.\n */\nexport function ParticleField({\n  count = 900,\n  reach = 0.4,\n  renderer = 'auto',\n  className,\n}: ParticleFieldProps) {\n  const canvasRef = useRef<HTMLCanvasElement>(null);\n  const [status, setStatus] = useState<Status>(() =>\n    renderer === 'none' || (typeof window !== 'undefined' && !canRender3d())\n      ? 'fallback'\n      : 'loading',\n  );\n\n  useEffect(() => {\n    const canvas = canvasRef.current;\n    if (!canvas || renderer === 'none' || !canRender3d()) return;\n    let stop: (() => void) | null = null;\n    let cancelled = false;\n\n    startHost(\n      canvas,\n      (three, scene, _info, camera) => {\n        const root = canvas.parentElement ?? document.documentElement;\n        const material = new three.MeshBasicMaterial({\n          color: tokenColour(root, '--ink-soft'),\n          transparent: true,\n          opacity: 0.75,\n        });\n        const mesh = new three.InstancedMesh(new three.CircleGeometry(1, 6), material, count);\n        scene.add(mesh);\n\n        let aspect = 1;\n        // Seeded positions, so the field starts the same way every time.\n        let seed = 7;\n        const random = () => (seed = (seed * 16807) % 2147483647) / 2147483647;\n        const x = new Float32Array(count);\n        const y = new Float32Array(count);\n        const size = new Float32Array(count);\n        for (let i = 0; i < count; i++) {\n          x[i] = random() * 2 - 1;\n          y[i] = random() * 2 - 1;\n          size[i] = 0.004 + random() * 0.006;\n        }\n\n        const write = () => {\n          const m = mesh.instanceMatrix.array as Float32Array;\n          for (let i = 0; i < count; i++) {\n            const o = i * 16;\n            m[o] = size[i]!;\n            m[o + 5] = size[i]!;\n            m[o + 10] = 1;\n            m[o + 12] = x[i]! * aspect;\n            m[o + 13] = y[i]!;\n            m[o + 15] = 1;\n          }\n          mesh.instanceMatrix.needsUpdate = true;\n        };\n        write();\n\n        return {\n          frame: ({ time, delta, pointer }) => {\n            const px = pointer ? pointer.x : 9;\n            const py = pointer ? pointer.y : 9;\n            for (let i = 0; i < count; i++) {\n              const angle = flowAngle(x[i]!, y[i]!, time);\n              let vx = Math.cos(angle) * 0.06;\n              let vy = Math.sin(angle) * 0.06;\n              const dx = x[i]! - px;\n              const dy = y[i]! - py;\n              const d = Math.hypot(dx * aspect, dy);\n              if (d < reach && d > 1e-4) {\n                const push = (1 - d / reach) * 1.2;\n                vx += (dx / d) * push;\n                vy += (dy / d) * push;\n              }\n              x[i] = x[i]! + vx * delta;\n              y[i] = y[i]! + vy * delta;\n              // Wrap at the edges so the field never empties.\n              if (x[i]! > 1.05) x[i] = -1.05;\n              if (x[i]! < -1.05) x[i] = 1.05;\n              if (y[i]! > 1.05) y[i] = -1.05;\n              if (y[i]! < -1.05) y[i] = 1.05;\n            }\n            write();\n          },\n          resize: (w, h) => {\n            aspect = w / h;\n            if (camera instanceof three.OrthographicCamera) {\n              camera.left = -aspect;\n              camera.right = aspect;\n              camera.updateProjectionMatrix();\n            }\n            write();\n          },\n          theme: () => material.color.set(tokenColour(root, '--ink-soft')),\n          dispose: () => {\n            mesh.geometry.dispose();\n            material.dispose();\n          },\n        };\n      },\n      { renderer: renderer === 'webgl' ? 'webgl' : 'auto' },\n    )\n      .then((s) => {\n        stop = s;\n        if (cancelled) s();\n        else setStatus('running');\n      })\n      .catch(() => {\n        if (!cancelled) setStatus('fallback');\n      });\n\n    return () => {\n      cancelled = true;\n      stop?.();\n    };\n  }, [count, reach, renderer]);\n\n  return (\n    <div\n      className={['atl-particles', className].filter(Boolean).join(' ')}\n      data-status={status}\n      aria-hidden=\"true\"\n    >\n      <div className=\"atl-particles__fallback\" />\n      {status !== 'fallback' ? <canvas ref={canvasRef} className=\"atl-particles__canvas\" /> : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/spatial/particle-field/particle-field.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  /* Fill a positioned parent, for use as a background. */\n  .atl-particles.atl-fill {\n    position: absolute;\n    inset: 0;\n  }\n\n  .atl-particles {\n    position: relative;\n    overflow: hidden;\n    border-radius: var(--radius-panel);\n    background: var(--sea-1);\n  }\n\n  .atl-particles__canvas,\n  .atl-particles__fallback {\n    position: absolute;\n    inset: 0;\n    width: 100%;\n    height: 100%;\n  }\n\n  .atl-particles__canvas {\n    opacity: 0;\n    transition: opacity var(--dur-voyage) var(--ease-anchor);\n  }\n\n  .atl-particles[data-status='running'] .atl-particles__canvas {\n    opacity: 1;\n  }\n\n  /* Still fallback: a scatter of dots. */\n  .atl-particles__fallback {\n    background-image: radial-gradient(\n      circle,\n      color-mix(in oklch, var(--ink-soft) 60%, transparent) 1.2px,\n      transparent 1.6px\n    );\n    background-size: 22px 26px;\n    opacity: 0.55;\n  }\n\n  .atl-particles[data-status='running'] .atl-particles__fallback {\n    opacity: 0;\n  }\n}\n"
+    },
+    {
+      "path": "components/spatial/particle-field/index.ts",
+      "kind": "index",
+      "content": "export { flowAngle, ParticleField } from './ParticleField';\nexport type { ParticleFieldProps } from './ParticleField';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19",
+    "three": ">=0.180"
+  },
+  "registryDependencies": [
+    "primitives/three-host",
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "Decorative: hidden from assistive technology; nothing in it can be operated.",
+      "Never required: a still dot pattern is shown where 3D rendering is unavailable.",
+      "Pauses when off screen or when the tab is hidden, and holds still under reduced motion."
+    ],
+    "reducedMotion": "Draws one still frame of the particles."
+  },
+  "license": "MIT"
+}

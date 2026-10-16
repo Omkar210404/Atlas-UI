@@ -1,0 +1,59 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "inputs/switch",
+  "type": "component",
+  "title": "Switch",
+  "description": "An on/off setting that applies at once.",
+  "category": "inputs",
+  "files": [
+    {
+      "path": "components/inputs/switch/Switch.tsx",
+      "kind": "source",
+      "content": "import { useId, type ReactNode } from 'react';\nimport { useControllableState } from '../../../primitives/use-controllable-state';\nimport './switch.css';\n\nexport interface SwitchProps {\n  /** Visible label, said together with the state (\"Show depth contours, on\"). */\n  label: ReactNode;\n  /** Extra detail under the label. */\n  description?: ReactNode;\n  checked?: boolean;\n  defaultChecked?: boolean;\n  onCheckedChange?: (checked: boolean) => void;\n  disabled?: boolean;\n  /** Submit with a form under this name, as \"on\" when checked. */\n  name?: string;\n  value?: string;\n  /** Put the switch before the label instead of after it. */\n  labelPosition?: 'start' | 'end';\n  className?: string;\n}\n\n/**\n * An on/off setting that takes effect at once. Follows the WAI-ARIA switch pattern: a\n * button with `role=\"switch\"` and `aria-checked`. The thumb carries a mark when on, so the\n * state never relies on colour.\n */\nexport function Switch({\n  label,\n  description,\n  checked: checkedProp,\n  defaultChecked = false,\n  onCheckedChange,\n  disabled = false,\n  name,\n  value = 'on',\n  labelPosition = 'end',\n  className,\n}: SwitchProps) {\n  const [checked, setChecked] = useControllableState({\n    value: checkedProp,\n    defaultValue: defaultChecked,\n    onChange: onCheckedChange,\n  });\n  const id = useId();\n  const labelId = `${id}-label`;\n  const descriptionId = `${id}-description`;\n\n  const control = (\n    <button\n      id={id}\n      type=\"button\"\n      role=\"switch\"\n      aria-checked={checked}\n      aria-labelledby={labelId}\n      aria-describedby={description ? descriptionId : undefined}\n      disabled={disabled}\n      className=\"atl-switch__control\"\n      onClick={() => setChecked((c) => !c)}\n    >\n      <span className=\"atl-switch__thumb\" aria-hidden=\"true\">\n        <svg viewBox=\"0 0 12 12\" width=\"12\" height=\"12\">\n          <path d=\"M2.5 6.5 5 9l4.5-6\" />\n        </svg>\n      </span>\n    </button>\n  );\n\n  return (\n    <div\n      className={['atl-switch', className].filter(Boolean).join(' ')}\n      data-label-position={labelPosition}\n      data-disabled={disabled || undefined}\n    >\n      {labelPosition === 'start' ? control : null}\n      <span className=\"atl-switch__text\">\n        {/* Clicking the label toggles too, like a native checkbox label. */}\n        <label id={labelId} htmlFor={id} className=\"atl-switch__label\">\n          {label}\n        </label>\n        {description ? (\n          <span id={descriptionId} className=\"atl-switch__description\">\n            {description}\n          </span>\n        ) : null}\n      </span>\n      {labelPosition === 'end' ? control : null}\n      {name ? <input type=\"hidden\" name={name} value={checked ? value : ''} /> : null}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/inputs/switch/switch.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-switch {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    gap: var(--space-m);\n    min-height: var(--target-comfort);\n  }\n\n  .atl-switch[data-label-position='start'] {\n    justify-content: flex-start;\n  }\n\n  .atl-switch__text {\n    display: grid;\n    min-width: 0;\n  }\n\n  .atl-switch__label {\n    font-weight: 600;\n    cursor: pointer;\n  }\n\n  .atl-switch[data-disabled] .atl-switch__label {\n    cursor: not-allowed;\n  }\n\n  .atl-switch__description {\n    color: var(--ink-soft);\n    font-size: var(--step--1);\n  }\n\n  .atl-switch__control {\n    --atl-switch-w: 46px;\n    --atl-switch-h: 28px;\n    --atl-switch-pad: 3px;\n    position: relative;\n    flex: none;\n    width: var(--atl-switch-w);\n    height: var(--atl-switch-h);\n    padding: 0;\n    border: 0;\n    border-radius: var(--radius-round);\n    background: var(--sea-1);\n    box-shadow: inset 0 0 0 1px var(--edge);\n    transition:\n      background-color var(--dur-step) var(--ease-anchor),\n      box-shadow var(--dur-step) var(--ease-anchor);\n  }\n\n  /* A larger invisible hit area, so the 28px track still gives a 44px target. */\n  .atl-switch__control::before {\n    content: '';\n    position: absolute;\n    inset: -8px -4px;\n  }\n\n  .atl-switch__control:hover:not(:disabled) {\n    box-shadow: inset 0 0 0 1px var(--ink-soft);\n  }\n\n  .atl-switch__control[aria-checked='true'] {\n    background: var(--ink);\n    box-shadow: inset 0 0 0 1px var(--ink);\n  }\n\n  .atl-switch__control:disabled {\n    cursor: not-allowed;\n    opacity: 0.55;\n  }\n\n  .atl-switch__thumb {\n    position: absolute;\n    top: var(--atl-switch-pad);\n    left: var(--atl-switch-pad);\n    display: grid;\n    place-items: center;\n    width: calc(var(--atl-switch-h) - 2 * var(--atl-switch-pad));\n    height: calc(var(--atl-switch-h) - 2 * var(--atl-switch-pad));\n    border-radius: 50%;\n    background: var(--ink-soft);\n    color: var(--ink);\n    transition:\n      translate var(--dur-current) var(--ease-current),\n      background-color var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-switch__control[aria-checked='true'] .atl-switch__thumb {\n    translate: calc(var(--atl-switch-w) - var(--atl-switch-h)) 0;\n    background: var(--sea-0);\n  }\n\n  .atl-switch__thumb svg {\n    fill: none;\n    stroke: currentColor;\n    stroke-width: 1.75;\n    stroke-linecap: round;\n    stroke-linejoin: round;\n    opacity: 0;\n    scale: 0.6;\n    transition:\n      opacity var(--dur-step) var(--ease-anchor),\n      scale var(--dur-step) var(--ease-anchor);\n  }\n\n  .atl-switch__control[aria-checked='true'] .atl-switch__thumb svg {\n    opacity: 1;\n    scale: 1;\n  }\n\n  @media (forced-colors: active) {\n    .atl-switch__control {\n      border: 1px solid ButtonText;\n    }\n    .atl-switch__thumb {\n      background: ButtonText;\n    }\n    .atl-switch__control[aria-checked='true'] .atl-switch__thumb {\n      background: Highlight;\n    }\n  }\n}\n"
+    },
+    {
+      "path": "components/inputs/switch/index.ts",
+      "kind": "index",
+      "content": "export { Switch } from './Switch';\nexport type { SwitchProps } from './Switch';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-controllable-state",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [
+      {
+        "keys": [
+          "Space",
+          "Enter"
+        ],
+        "action": "Toggle the switch."
+      },
+      {
+        "keys": [
+          "Tab"
+        ],
+        "action": "Move focus to and from the switch."
+      }
+    ],
+    "notes": [
+      "Follows the WAI-ARIA switch pattern: a `button` with `role=\"switch\"` and `aria-checked`, named by its visible label through `aria-labelledby`.",
+      "The description is linked with `aria-describedby`.",
+      "Clicking the label toggles the switch, like a native checkbox label.",
+      "The visible track is 28 px tall; an invisible extension gives it a 44 px target.",
+      "The on state shows a tick inside the thumb and a solid track; colour is not the only signal."
+    ],
+    "reducedMotion": "The thumb jumps to its new side instead of gliding."
+  },
+  "license": "MIT"
+}

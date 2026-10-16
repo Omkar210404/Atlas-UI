@@ -1,0 +1,42 @@
+{
+  "$schema": "../schema.json",
+  "format": "atlas-registry/1",
+  "name": "layout/parallax-stack",
+  "type": "component",
+  "title": "Parallax stack",
+  "description": "Layers that drift at different speeds as you scroll.",
+  "category": "layout",
+  "files": [
+    {
+      "path": "components/layout/parallax-stack/ParallaxStack.tsx",
+      "kind": "source",
+      "content": "import { useEffect, useRef, type ReactNode } from 'react';\nimport { prefersReducedMotion } from '../../../primitives/use-reduced-motion';\nimport './parallax-stack.css';\n\nexport interface ParallaxLayer {\n  id: string;\n  content: ReactNode;\n  /** 0 stays still; 1 moves the most. Far layers small, near layers large. */\n  depth: number;\n}\n\nexport interface ParallaxStackProps {\n  layers: readonly ParallaxLayer[];\n  /** Height of the frame. */\n  height?: string;\n  /** Distance in px the nearest layer travels over a full pass through the viewport. */\n  travel?: number;\n  /** Text alternative for the whole scene, or leave empty if it is decorative. */\n  label?: string;\n  className?: string;\n}\n\nconst supportsViewTimeline = () =>\n  typeof CSS !== 'undefined' && CSS.supports('animation-timeline: view()');\n\n/**\n * Layers that drift at different speeds as the frame scrolls through the viewport. Uses a\n * CSS scroll-driven animation where supported (no script runs while scrolling), and a\n * small scroll listener elsewhere.\n */\nexport function ParallaxStack({\n  layers,\n  height = '20rem',\n  travel = 80,\n  label,\n  className,\n}: ParallaxStackProps) {\n  const ref = useRef<HTMLDivElement>(null);\n\n  useEffect(() => {\n    const el = ref.current;\n    if (!el || supportsViewTimeline() || prefersReducedMotion()) return;\n    // Fallback: progress through the viewport, 0 when entering, 1 when leaving.\n    let frame = 0;\n    const update = () => {\n      const rect = el.getBoundingClientRect();\n      const progress = (window.innerHeight - rect.top) / (window.innerHeight + rect.height);\n      el.style.setProperty('--atl-parallax-p', Math.min(Math.max(progress, 0), 1).toFixed(3));\n    };\n    const onScroll = () => {\n      cancelAnimationFrame(frame);\n      frame = requestAnimationFrame(update);\n    };\n    update();\n    window.addEventListener('scroll', onScroll, { passive: true, capture: true });\n    window.addEventListener('resize', onScroll);\n    return () => {\n      cancelAnimationFrame(frame);\n      window.removeEventListener('scroll', onScroll, { capture: true });\n      window.removeEventListener('resize', onScroll);\n    };\n  }, []);\n\n  return (\n    <div\n      ref={ref}\n      className={['atl-parallax', className].filter(Boolean).join(' ')}\n      style={{ height, '--atl-parallax-travel': `${travel}px` } as React.CSSProperties}\n      role={label ? 'img' : undefined}\n      aria-label={label}\n      aria-hidden={label ? undefined : true}\n    >\n      {layers.map((layer) => (\n        <div\n          key={layer.id}\n          className=\"atl-parallax__layer\"\n          style={{ '--atl-depth': layer.depth } as React.CSSProperties}\n        >\n          {layer.content}\n        </div>\n      ))}\n    </div>\n  );\n}\n"
+    },
+    {
+      "path": "components/layout/parallax-stack/parallax-stack.css",
+      "kind": "style",
+      "content": "@layer atlas.components {\n  .atl-parallax {\n    --atl-parallax-p: 0.5;\n    position: relative;\n    overflow: hidden;\n    border-radius: var(--radius-panel);\n    background: var(--sea-1);\n    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 50%, transparent);\n  }\n\n  .atl-parallax__layer {\n    position: absolute;\n    inset: -12% 0;\n    display: grid;\n    align-items: end;\n    pointer-events: none;\n    /* Script fallback: offset from the scroll progress. */\n    translate: 0\n      calc((0.5 - var(--atl-parallax-p)) * var(--atl-depth) * var(--atl-parallax-travel) * 2);\n  }\n\n  .atl-parallax__layer > * {\n    width: 100%;\n  }\n\n  @supports (animation-timeline: view()) {\n    .atl-parallax__layer {\n      translate: none;\n      animation: atl-parallax linear both;\n      animation-timeline: view();\n    }\n  }\n\n  @keyframes atl-parallax {\n    from {\n      translate: 0 calc(var(--atl-depth) * var(--atl-parallax-travel));\n    }\n    to {\n      translate: 0 calc(var(--atl-depth) * var(--atl-parallax-travel) * -1);\n    }\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    :root:not([data-motion='full']) .atl-parallax__layer {\n      animation: none;\n      translate: none;\n    }\n  }\n\n  :root[data-motion='reduce'] .atl-parallax__layer {\n    animation: none;\n    translate: none;\n  }\n}\n"
+    },
+    {
+      "path": "components/layout/parallax-stack/index.ts",
+      "kind": "index",
+      "content": "export { ParallaxStack } from './ParallaxStack';\nexport type { ParallaxLayer, ParallaxStackProps } from './ParallaxStack';\n"
+    }
+  ],
+  "dependencies": {
+    "react": ">=19"
+  },
+  "registryDependencies": [
+    "primitives/use-reduced-motion",
+    "tokens"
+  ],
+  "accessibility": {
+    "keyboard": [],
+    "notes": [
+      "With a `label` the scene is an image with that text alternative; without one it is hidden as decoration.",
+      "Movement is tied to scrolling the person controls; nothing moves on its own."
+    ],
+    "reducedMotion": "The layers stay in place."
+  },
+  "license": "MIT"
+}
