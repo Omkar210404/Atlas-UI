@@ -29,6 +29,11 @@ function read(): Prefs {
 }
 
 let prefs = read();
+
+// `?view=simple` or `?view=spatial` picks the view for this visit without saving it, so a
+// link (or a test tool with a fresh profile) can open either view.
+const requested = new URLSearchParams(window.location.search).get('view');
+if (requested === 'simple' || requested === 'spatial') prefs = { ...prefs, view: requested };
 const listeners = new Set<() => void>();
 
 function apply() {
