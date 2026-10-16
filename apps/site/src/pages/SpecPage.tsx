@@ -1,10 +1,9 @@
 import { Fragment, useEffect, useState } from 'react';
 import { defaultValues, type ComponentDocs, type PlaygroundValues } from 'atlas-ui/docs/types';
-import { IconCheck } from 'atlas-ui/icons/check';
-import { IconCopy } from 'atlas-ui/icons/copy';
 import { Button } from 'atlas-ui/actions/button';
 import { SegmentedControl } from 'atlas-ui/inputs/segmented-control';
 import { Tab, TabBar, TabPanel, Tabs } from 'atlas-ui/navigation/tab-bar';
+import { CodePanel } from 'atlas-ui/data-display/code-panel';
 import { useToast } from 'atlas-ui/feedback/toast-stack';
 import type { Category, TypeEntry } from '../catalog';
 import { Controls } from './Playground';
@@ -133,9 +132,9 @@ function PlaygroundSection({ docs }: { docs: ComponentDocs }) {
   );
 }
 
-function CodePanel({ category, slug, file }: { category: string; slug: string; file: string }) {
+function SourceFile({ category, slug, file }: { category: string; slug: string; file: string }) {
   const [source, setSource] = useState<Source | null | undefined>(undefined);
-  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     let alive = true;
@@ -145,57 +144,27 @@ function CodePanel({ category, slug, file }: { category: string; slug: string; f
     };
   }, [category, slug, file]);
 
-  useEffect(() => {
-    if (!copied) return;
-    const timer = window.setTimeout(() => setCopied(false), 2000);
-    return () => window.clearTimeout(timer);
-  }, [copied]);
-
-  const { toast } = useToast();
-  const copy = async () => {
-    if (!source) return;
-    try {
-      await navigator.clipboard.writeText(source.code);
-      setCopied(true);
-      toast({ title: 'Copied', description: file, tone: 'success', duration: 3000 });
-    } catch {
-      toast({
-        title: 'Couldn’t copy',
-        description: 'The browser blocked it. Select the code and copy it instead.',
-        tone: 'error',
-      });
-    }
-  };
-
+  if (!source) {
+    return (
+      <p className="page__meta">{source === null ? 'Source not found.' : 'Loading source…'}</p>
+    );
+  }
   return (
-    <div className="code-panel">
-      <div className="code-panel__bar">
-        <span className="code-panel__file">{file}</span>
-        {source ? (
-          <span className="code-panel__lines">{source.code.split('\n').length} lines</span>
-        ) : null}
-        <Button
-          size="s"
-          className="code-panel__copy"
-          onClick={copy}
-          disabled={!source}
-          icon={copied ? <IconCheck /> : <IconCopy />}
-        >
-          {copied ? 'Copied' : 'Copy'}
-        </Button>
-      </div>
-      {source ? (
-        <div
-          className="code-panel__body"
-          // Generated at build time from this repository's own source files.
-          dangerouslySetInnerHTML={{ __html: source.html }}
-        />
-      ) : (
-        <p className="code-panel__loading">
-          {source === null ? 'Source not found.' : 'Loading source…'}
-        </p>
-      )}
-    </div>
+    <CodePanel
+      code={source.code}
+      html={source.html}
+      filename={file}
+      onCopied={() =>
+        toast({ title: 'Copied', description: file, tone: 'success', duration: 3000 })
+      }
+      onCopyFailed={() =>
+        toast({
+          title: 'Couldn’t copy',
+          description: 'The browser blocked it. Select the code and copy it instead.',
+          tone: 'error',
+        })
+      }
+    />
   );
 }
 
@@ -228,7 +197,7 @@ function SourceSection({ docs }: { docs: ComponentDocs }) {
         </TabBar>
         {docs.meta.files.map((f) => (
           <TabPanel key={f} value={f} className="reference__code">
-            <CodePanel category={docs.meta.category} slug={docs.meta.slug} file={f} />
+            <SourceFile category={docs.meta.category} slug={docs.meta.slug} file={f} />
           </TabPanel>
         ))}
       </Tabs>

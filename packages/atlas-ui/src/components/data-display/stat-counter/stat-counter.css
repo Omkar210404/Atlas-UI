@@ -1,0 +1,57 @@
+@layer atlas.components {
+  .atl-stat {
+    display: grid;
+    gap: var(--space-3xs);
+  }
+
+  .atl-stat__value {
+    font-size: var(--step-5);
+    font-weight: 650;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .atl-stat__digits {
+    display: inline-flex;
+    align-items: baseline;
+  }
+
+  /* Each digit is a strip of 0–9 behind a one-digit window; --d picks the row. */
+  .atl-stat__wheel {
+    position: relative;
+    display: inline-block;
+    height: 1em;
+    overflow: hidden;
+    line-height: 1;
+  }
+
+  .atl-stat__sizer {
+    visibility: hidden;
+  }
+
+  .atl-stat__strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    translate: 0 calc(var(--d) * -1em);
+    transition: translate calc(var(--dur-voyage) * 1.4) var(--ease-drift);
+    transition-delay: calc(var(--i) * 40ms);
+  }
+
+  .atl-stat__strip > span {
+    height: 1em;
+    line-height: 1;
+  }
+
+  .atl-stat__label {
+    font-weight: 600;
+  }
+
+  .atl-stat__detail {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+}

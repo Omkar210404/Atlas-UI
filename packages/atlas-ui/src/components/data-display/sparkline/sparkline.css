@@ -1,0 +1,93 @@
+@layer atlas.components {
+  .atl-spark {
+    display: inline-grid;
+    gap: var(--space-2xs);
+    margin: 0;
+  }
+
+  .atl-spark__chart {
+    position: relative;
+  }
+
+  .atl-spark__chart svg {
+    overflow: visible;
+  }
+
+  .atl-spark__line {
+    fill: none;
+    stroke: var(--ink);
+    stroke-width: 1.75;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  .atl-spark__area {
+    fill: color-mix(in oklch, var(--isobath) 30%, transparent);
+  }
+
+  .atl-spark__end {
+    fill: var(--ink);
+  }
+
+  .atl-spark__cursor line {
+    stroke: var(--ink-soft);
+    stroke-dasharray: 2 2;
+  }
+
+  .atl-spark__cursor circle {
+    fill: var(--sea-0);
+    stroke: var(--ink);
+    stroke-width: 2;
+  }
+
+  .atl-spark__scrub {
+    position: absolute;
+    inset: -6px;
+    border-radius: var(--radius-control);
+    cursor: crosshair;
+  }
+
+  .atl-spark__caption {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-s);
+    font-size: var(--step--1);
+  }
+
+  .atl-spark__label {
+    font-weight: 600;
+  }
+
+  .atl-spark__readout {
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .atl-spark__table summary {
+    width: fit-content;
+    min-height: var(--target-min);
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    cursor: pointer;
+  }
+
+  .atl-spark__table table {
+    margin-top: var(--space-2xs);
+    border-collapse: collapse;
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .atl-spark__table th,
+  .atl-spark__table td {
+    padding: 2px var(--space-s) 2px 0;
+    text-align: left;
+    font-weight: 400;
+  }
+
+  @media (forced-colors: active) {
+    .atl-spark__line {
+      stroke: CanvasText;
+    }
+  }
+}

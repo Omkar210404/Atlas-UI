@@ -1,0 +1,127 @@
+@property --atl-timeline-fill {
+  syntax: '<percentage>';
+  inherits: true;
+  initial-value: 100%;
+}
+
+@layer atlas.components {
+  .atl-timeline {
+    --atl-timeline-fill: 100%;
+    position: relative;
+    display: grid;
+    gap: var(--space-m);
+    margin: 0;
+    padding: 0 0 0 var(--space-xl);
+    list-style: none;
+  }
+
+  /* The track, and the course line that fills along it as you scroll. */
+  .atl-timeline::before,
+  .atl-timeline::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 9px;
+    width: 2px;
+    border-radius: 1px;
+  }
+
+  .atl-timeline::before {
+    bottom: 8px;
+    background: color-mix(in oklch, var(--isobath) 60%, transparent);
+  }
+
+  .atl-timeline::after {
+    height: calc((100% - 16px) * var(--atl-timeline-fill) / 100%);
+    background: var(--ink);
+  }
+
+  @supports (animation-timeline: view()) {
+    .atl-timeline {
+      animation: atl-timeline-fill linear both;
+      animation-timeline: view();
+      animation-range: entry 60% exit 40%;
+    }
+  }
+
+  @keyframes atl-timeline-fill {
+    from {
+      --atl-timeline-fill: 0%;
+    }
+    to {
+      --atl-timeline-fill: 100%;
+    }
+  }
+
+  .atl-timeline__event {
+    position: relative;
+    display: grid;
+    gap: var(--space-3xs);
+  }
+
+  .atl-timeline__mark {
+    position: absolute;
+    top: 6px;
+    left: calc(-1 * var(--space-xl) + 4px);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--sea-1);
+    box-shadow: inset 0 0 0 2px var(--ink);
+  }
+
+  .atl-timeline__event[data-current] .atl-timeline__mark {
+    background: var(--chart-magenta);
+    box-shadow: 0 0 0 4px var(--magenta-wash);
+  }
+
+  .atl-timeline__time {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .atl-timeline__title {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2xs);
+    width: fit-content;
+    min-height: var(--target-min);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font-weight: 600;
+    text-align: left;
+  }
+
+  button.atl-timeline__title:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--isobath);
+  }
+
+  .atl-timeline__chevron {
+    transition: rotate var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-timeline__title[aria-expanded='true'] .atl-timeline__chevron {
+    rotate: 180deg;
+  }
+
+  .atl-timeline__details {
+    max-width: 52ch;
+    color: var(--ink-soft);
+    font-family: var(--font-prose);
+    line-height: var(--leading-prose);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-timeline {
+      animation: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-timeline {
+    animation: none;
+  }
+}
