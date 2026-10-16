@@ -1,0 +1,20 @@
+@layer atlas.components {
+  .atl-morph .atl-morph__glyph {
+    width: 1.5em;
+    height: 1.5em;
+  }
+
+  /* Filled and stroked in the same colour: the stroke rounds every corner. */
+  .atl-morph__glyph path {
+    fill: currentColor;
+    stroke: currentColor;
+    stroke-width: 1.25;
+    stroke-linejoin: round;
+  }
+
+  .atl-morph[aria-pressed='true'][data-variant='secondary'],
+  .atl-morph[aria-pressed='true'][data-variant='quiet'] {
+    --atl-button-bg: var(--magenta-wash);
+    --atl-button-edge: color-mix(in oklch, var(--chart-magenta) 60%, transparent);
+  }
+}

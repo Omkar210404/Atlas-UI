@@ -1,0 +1,40 @@
+@layer atlas.components {
+  .atl-magnetic {
+    translate: var(--atl-magnet-x, 0px) var(--atl-magnet-y, 0px);
+  }
+
+  /* The label leans further than the body. */
+  .atl-magnetic .atl-button__label,
+  .atl-magnetic .atl-button__icon {
+    translate: calc(var(--atl-magnet-x, 0px) * 0.35) calc(var(--atl-magnet-y, 0px) * 0.35);
+  }
+
+  /* A contour ring marks the field; pressing tightens it onto the button. */
+  .atl-magnetic[data-magnetic]::after {
+    content: '';
+    position: absolute;
+    inset: -7px;
+    border-radius: calc(var(--radius-control) + 7px);
+    box-shadow: 0 0 0 1px color-mix(in oklch, var(--isobath) 80%, transparent);
+    opacity: 0;
+    scale: 1.06;
+    pointer-events: none;
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      scale var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-magnetic[data-magnetic]:hover::after {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .atl-magnetic[data-magnetic]:active::after {
+    scale: 0.94;
+    opacity: 0.6;
+  }
+
+  .atl-magnetic:active:not(:disabled, [aria-disabled='true']) {
+    translate: var(--atl-magnet-x, 0px) calc(var(--atl-magnet-y, 0px) + 1px);
+  }
+}

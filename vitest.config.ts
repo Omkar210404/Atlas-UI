@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: { alias: atlasAliases, dedupe: ['react', 'react-dom'] },
   optimizeDeps: {
     include: [
+      'motion/react',
       'react',
       'react/jsx-runtime',
       'react/jsx-dev-runtime',
@@ -17,7 +18,8 @@ export default defineConfig({
     ],
   },
   test: {
-    include: ['packages/**/*.test.{ts,tsx}', 'apps/**/*.test.{ts,tsx}'],
+    include: [
+      'motion/react','packages/**/*.test.{ts,tsx}', 'apps/**/*.test.{ts,tsx}'],
     setupFiles: ['./vitest.setup.ts'],
     browser: {
       enabled: true,
