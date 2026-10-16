@@ -35,3 +35,4 @@ Thumbs.db
 # Visual baselines are OS-specific; only the Linux ones (made in CI) are committed.
 e2e/__screenshots__/win32/
 e2e/__screenshots__/darwin/
+reports/bundle.json

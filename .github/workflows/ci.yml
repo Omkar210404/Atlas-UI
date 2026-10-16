@@ -1,0 +1,76 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Lint, types, unit tests, build, budgets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - name: Generated tokens are up to date
+        run: npm run tokens:check
+      - name: Install Chromium for browser-mode unit tests
+        run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run build
+      - name: Bundle budgets (fails when exceeded)
+        run: npm run size
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: bundle-report
+          path: reports/bundle.json
+          if-no-files-found: ignore
+
+  e2e:
+    name: Accessibility, smoke and visual tests
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run build
+      - name: axe on every page in both themes (fails on any violation)
+        run: npx playwright test --project=axe
+      - name: Smoke tests in Chromium, Firefox and WebKit
+        run: npx playwright test --project=smoke-chromium --project=smoke-firefox --project=smoke-webkit
+      - name: Visual snapshots (Linux baselines are the reference)
+        # Missing baselines are written and uploaded below so they can be reviewed and committed;
+        # existing baselines are compared and fail the job on a difference.
+        run: npx playwright test --project=visual --update-snapshots=missing
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: linux-visual-baselines
+          path: e2e/__screenshots__/linux
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 14

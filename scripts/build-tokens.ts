@@ -21,7 +21,9 @@ import {
 } from '../packages/atlas-ui/src/tokens/tokens.ts';
 import { sampleSpring, toCssLinear } from '../packages/atlas-ui/src/tokens/spring.ts';
 
-const outFile = fileURLToPath(new URL('../packages/atlas-ui/src/tokens/tokens.css', import.meta.url));
+const outFile = fileURLToPath(
+  new URL('../packages/atlas-ui/src/tokens/tokens.css', import.meta.url),
+);
 
 const colourNames: Record<keyof ThemeColours, string> = {
   sea0: '--sea-0',
