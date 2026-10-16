@@ -1,0 +1,52 @@
+@layer atlas.components {
+  /* Fill a positioned parent, for use as a background. */
+  .atl-ambient.atl-fill {
+    position: absolute;
+    inset: 0;
+  }
+
+  .atl-ambient {
+    position: relative;
+    overflow: hidden;
+    background: var(--sea);
+    pointer-events: none;
+  }
+
+  .atl-ambient__canvas,
+  .atl-ambient__fallback {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .atl-ambient__canvas {
+    opacity: 0;
+    transition: opacity var(--dur-voyage) var(--ease-anchor);
+  }
+
+  .atl-ambient[data-status='running'] .atl-ambient__canvas {
+    opacity: 1;
+  }
+
+  /* The still fallback: concentric contour rings, drawn once by CSS. */
+  .atl-ambient__fallback {
+    background:
+      repeating-radial-gradient(
+        ellipse at 30% 40%,
+        transparent 0 34px,
+        color-mix(in oklch, var(--isobath) 50%, transparent) 34px 35px
+      ),
+      repeating-radial-gradient(
+        ellipse at 78% 70%,
+        transparent 0 28px,
+        color-mix(in oklch, var(--isobath) 35%, transparent) 28px 29px
+      );
+    opacity: 0.6;
+  }
+
+  .atl-ambient[data-status='running'] .atl-ambient__fallback {
+    opacity: 0;
+    transition: opacity var(--dur-voyage) var(--ease-anchor);
+  }
+}

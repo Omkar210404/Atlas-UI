@@ -71,6 +71,25 @@ if (preloadedFonts.length > 2) {
   process.exitCode = 1;
 }
 
+// Lazy 3D chunks: three.js must never be part of the first load ---------------------------------
+// Vite names the chunks after three's own modules (three.webgpu-*.js, three.tsl-*.js).
+const threeChunks = globSync('assets/three.*.js', { cwd: siteDist }).map((f) =>
+  f.replace(/\\/g, '/'),
+);
+const threeInInitial = threeChunks.filter((f) => initialJs.some((u) => u.endsWith(f)));
+if (threeInInitial.length) {
+  console.error('three.js is in the initial load: ' + threeInInitial.join(', '));
+  process.exitCode = 1;
+}
+results.push({
+  name: `Site: lazy 3D chunks (${threeChunks.length} file${threeChunks.length === 1 ? '' : 's'})`,
+  bytes: threeChunks.reduce((sum, f) => sum + gz(readFileSync(join(siteDist, f))), 0),
+  // Planned at 250 KB. three's WebGPU build is one ~290 KB module that does not tree-shake, so
+  // the budget was raised to 300 KB (PLAN.md §13). It never loads on first paint or in Simple view.
+  limit: 300 * KB,
+  measure: 'gzip',
+});
+
 // Library: one bundle per component ------------------------------------------------------------
 const components = globSync('components/*/*/index.js', { cwd: libDist }).map((f) =>
   f.replace(/\\/g, '/'),
@@ -84,12 +103,21 @@ for (const entry of components) {
     format: 'esm',
     write: false,
     outdir: 'out',
-    external: ['react', 'react-dom', 'react/jsx-runtime', 'motion', 'motion/react'],
+    external: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'motion',
+      'motion/react',
+      'three',
+      'three/webgpu',
+      'three/tsl',
+    ],
     logLevel: 'silent',
   });
   const bytes = out.outputFiles.reduce((sum, file) => sum + gz(file.contents), 0);
   results.push({
-    name: `${category}/${slug}: JS + CSS, without React or motion`,
+    name: `${category}/${slug}: JS + CSS, without React, motion or three`,
     bytes,
     limit: 6 * KB,
     measure: 'gzip',

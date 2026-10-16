@@ -50,7 +50,7 @@ export default defineConfig({
     lib: { entry: entries, formats: ['es'] },
     rolldownOptions: {
       // Peer dependencies stay external, so consumers share one copy.
-      external: (id) => /^(react|react-dom|motion)($|\/)/.test(id) || id.endsWith('.css'),
+      external: (id) => /^(react|react-dom|motion|three)($|\/)/.test(id) || id.endsWith('.css'),
       output: {
         preserveModules: true,
         preserveModulesRoot: src,

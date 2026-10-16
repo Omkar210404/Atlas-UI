@@ -23,10 +23,14 @@
   "peerDependencies": {
     "react": ">=19.0.0",
     "react-dom": ">=19.0.0",
-    "motion": ">=12"
+    "motion": ">=12",
+    "three": ">=0.180"
   },
   "peerDependenciesMeta": {
     "motion": {
+      "optional": true
+    },
+    "three": {
       "optional": true
     }
   }

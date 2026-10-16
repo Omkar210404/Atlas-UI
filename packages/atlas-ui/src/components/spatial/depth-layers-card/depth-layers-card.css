@@ -1,0 +1,67 @@
+@layer atlas.components {
+  .atl-depth {
+    display: grid;
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 50%, transparent);
+  }
+
+  .atl-depth__stage {
+    height: 11rem;
+    perspective: 700px;
+    perspective-origin: 50% 20%;
+    background: var(--sea-1);
+  }
+
+  .atl-depth__stack {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transform: rotateX(28deg) rotateZ(-8deg) scale(0.86);
+    transition: transform var(--dur-voyage) var(--ease-drift);
+  }
+
+  .atl-depth__layer {
+    position: absolute;
+    inset: 12% 14%;
+    transform: translateZ(calc(var(--atl-layer) * 2px));
+    transition: transform var(--dur-voyage) var(--ease-drift);
+    transition-delay: calc(var(--atl-layer) * 30ms);
+  }
+
+  .atl-depth__layer > * {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Open out on hover, or while anything inside the card has keyboard focus. */
+  .atl-depth:hover .atl-depth__stack,
+  .atl-depth:has(:focus-visible) .atl-depth__stack {
+    transform: rotateX(48deg) rotateZ(-18deg) scale(0.8);
+  }
+
+  .atl-depth:hover .atl-depth__layer,
+  .atl-depth:has(:focus-visible) .atl-depth__layer {
+    transform: translateZ(calc(var(--atl-layer) * var(--atl-spread)));
+  }
+
+  .atl-depth__body {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-depth .atl-depth__stack,
+    :root:not([data-motion='full']) .atl-depth .atl-depth__layer {
+      transform: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-depth .atl-depth__stack,
+  :root[data-motion='reduce'] .atl-depth .atl-depth__layer {
+    transform: none;
+  }
+}

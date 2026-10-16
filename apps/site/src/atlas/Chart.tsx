@@ -27,6 +27,7 @@ import {
   type Size,
 } from './camera';
 import { buildLayout, type Island, type Layout } from './geometry';
+import { ChartBackground } from './ChartBackground';
 import './chart.css';
 
 const HEADER = 84;
@@ -362,6 +363,7 @@ export function Chart({ route, layout, children }: ChartProps) {
 
   return (
     <CameraContext.Provider value={api}>
+      <ChartBackground />
       <svg
         ref={svgRef}
         className="chart"
