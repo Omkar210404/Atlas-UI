@@ -5,7 +5,9 @@ import { highlight } from './plugins/highlight.ts';
 import { preloadFonts, spaFallback } from './plugins/pages.ts';
 
 export default defineConfig({
-  base: '/atlas-ui/',
+  // Pages serves a project site at /<repository name>/, so the deploy workflow passes the real
+  // name (its case matters); local builds and tests use /atlas-ui/.
+  base: process.env.SITE_BASE ?? '/atlas-ui/',
   plugins: [
     highlight(),
     react(),
