@@ -1,0 +1,59 @@
+@layer atlas.components {
+  .atl-expand {
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-m);
+    overflow: hidden;
+    background: var(--shoal);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 50%, transparent);
+  }
+
+  .atl-expand[data-open] {
+    background: color-mix(in oklch, var(--shoal), var(--reef) 40%);
+  }
+
+  .atl-expand__head {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .atl-expand__title {
+    font-size: var(--step-1);
+  }
+
+  .atl-expand__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-s);
+    width: 100%;
+    min-height: var(--target-comfort);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 650;
+    text-align: left;
+  }
+
+  .atl-expand__chevron {
+    flex: none;
+    color: var(--ink-soft);
+    transition: rotate var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-expand__toggle[aria-expanded='true'] .atl-expand__chevron {
+    rotate: 180deg;
+  }
+
+  .atl-expand__summary {
+    color: var(--ink-soft);
+  }
+
+  .atl-expand__details {
+    font-family: var(--font-prose);
+    line-height: var(--leading-prose);
+  }
+}

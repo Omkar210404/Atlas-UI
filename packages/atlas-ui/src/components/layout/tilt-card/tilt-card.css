@@ -1,0 +1,81 @@
+@property --atl-tilt-x {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --atl-tilt-y {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@layer atlas.components {
+  .atl-tilt {
+    perspective: 900px;
+  }
+
+  .atl-tilt__card {
+    position: relative;
+    padding: var(--space-l);
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: var(--elev-1);
+    transform: rotateX(var(--atl-tilt-y)) rotateY(var(--atl-tilt-x));
+    transform-style: preserve-3d;
+    transition:
+      --atl-tilt-x var(--dur-glide) var(--ease-drift),
+      --atl-tilt-y var(--dur-glide) var(--ease-drift),
+      translate var(--dur-step) var(--ease-anchor),
+      box-shadow var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-tilt__card[data-active] {
+    transition:
+      --atl-tilt-x 120ms linear,
+      --atl-tilt-y 120ms linear;
+  }
+
+  /* Keyboard focus lifts the card a little instead of tilting it. */
+  .atl-tilt__card:has(:focus-visible) {
+    translate: 0 -3px;
+    box-shadow:
+      var(--elev-2),
+      0 10px 24px -12px var(--shadow-tint);
+  }
+
+  /* The sheen: contour rings centred on the pointer. */
+  .atl-tilt__card[data-sheen]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-radial-gradient(
+      circle at var(--atl-sheen-x, 50%) var(--atl-sheen-y, 50%),
+      transparent 0 14px,
+      color-mix(in oklch, var(--ink) 9%, transparent) 14px 15px
+    );
+    mask-image: radial-gradient(
+      circle at var(--atl-sheen-x, 50%) var(--atl-sheen-y, 50%),
+      black,
+      transparent 60%
+    );
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-tilt__card[data-sheen][data-active]::after {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-tilt__card {
+      transform: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-tilt__card {
+    transform: none;
+  }
+}

@@ -1,0 +1,71 @@
+@layer atlas.components {
+  .atl-bento {
+    container-type: inline-size;
+    width: 100%;
+  }
+
+  .atl-bento__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-rows: minmax(8rem, auto);
+    grid-auto-flow: dense;
+    gap: var(--space-s);
+  }
+
+  .atl-bento__grid[data-columns='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .atl-bento__item {
+    min-width: 0;
+    padding: var(--space-m);
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 45%, transparent);
+  }
+
+  .atl-bento__item[data-tone='raised'] {
+    background: var(--reef);
+  }
+
+  .atl-bento__item[data-col='2'] {
+    grid-column: span 2;
+  }
+  .atl-bento__item[data-col='3'] {
+    grid-column: span 3;
+  }
+  .atl-bento__item[data-col='4'] {
+    grid-column: span 4;
+  }
+  .atl-bento__item[data-row='2'] {
+    grid-row: span 2;
+  }
+
+  .atl-bento__grid[data-columns='3'] .atl-bento__item[data-col='4'] {
+    grid-column: span 3;
+  }
+
+  /* Medium containers: two columns, wide items span both. */
+  @container (width < 44rem) {
+    .atl-bento__grid,
+    .atl-bento__grid[data-columns='3'] {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .atl-bento__grid .atl-bento__item:is([data-col='3'], [data-col='4']) {
+      grid-column: span 2;
+    }
+  }
+
+  /* Narrow containers: one column, in source order. */
+  @container (width < 26rem) {
+    .atl-bento__grid,
+    .atl-bento__grid[data-columns='3'] {
+      grid-template-columns: minmax(0, 1fr);
+      grid-auto-flow: row;
+    }
+    .atl-bento__grid .atl-bento__item {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+}
