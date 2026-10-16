@@ -1,0 +1,18 @@
+@layer atlas.components {
+  .atl-context {
+    position: relative;
+    border-radius: var(--radius-panel);
+  }
+
+  .atl-context[data-open] {
+    box-shadow: 0 0 0 2px var(--magenta-wash);
+  }
+
+  /* A zero-size point the menu is placed against. */
+  .atl-context__anchor {
+    position: fixed;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+}

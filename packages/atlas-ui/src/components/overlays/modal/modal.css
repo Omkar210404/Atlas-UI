@@ -1,0 +1,43 @@
+@layer atlas.components {
+  .atl-modal {
+    width: min(var(--atl-modal-w, 32rem), calc(100% - 2 * var(--space-m)));
+    margin: auto;
+    border-radius: var(--radius-overlay);
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity var(--dur-glide) var(--ease-anchor),
+      translate var(--dur-glide) var(--ease-drift),
+      overlay var(--dur-glide) allow-discrete,
+      display var(--dur-glide) allow-discrete;
+  }
+
+  .atl-modal:has([data-size='s']) {
+    --atl-modal-w: 24rem;
+  }
+
+  .atl-modal:has([data-size='l']) {
+    --atl-modal-w: 44rem;
+  }
+
+  .atl-modal:not([open]) {
+    opacity: 0;
+    translate: 0 8px;
+    transition-timing-function: var(--ease-ebb);
+  }
+
+  @starting-style {
+    .atl-modal[open] {
+      opacity: 0;
+      translate: 0 16px;
+    }
+  }
+
+  .atl-modal__panel {
+    display: grid;
+    gap: var(--space-l);
+    max-height: calc(100dvh - 4rem);
+    padding: var(--space-l);
+    overflow-y: auto;
+  }
+}

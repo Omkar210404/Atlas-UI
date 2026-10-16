@@ -72,8 +72,13 @@
     font-size: var(--step--1);
   }
 
-  .atl-menu__hint {
+  .atl-menu__hint,
+  .atl-menu__more {
     flex: none;
+  }
+
+  .atl-menu__more {
+    color: var(--ink-soft);
   }
 
   /* Menus opened as popovers sit in the top layer and are placed by script. */

@@ -1,0 +1,38 @@
+@layer atlas.components {
+  .atl-tooltip-anchor {
+    display: inline-flex;
+  }
+
+  /* Hidden tooltips still describe their trigger: keep them in the DOM, out of view. */
+  .atl-tooltip {
+    position: fixed;
+    inset: auto;
+    max-width: min(18rem, calc(100vw - 16px));
+    margin: 0;
+    padding: var(--space-2xs) var(--space-xs);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--ink);
+    color: var(--sea-0);
+    font-size: var(--step--1);
+    font-weight: 500;
+    line-height: 1.35;
+    overflow: visible;
+    transition:
+      opacity var(--dur-tick) var(--ease-anchor),
+      translate var(--dur-tick) var(--ease-anchor);
+  }
+
+  @starting-style {
+    .atl-tooltip:popover-open {
+      opacity: 0;
+      translate: 0 3px;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .atl-tooltip {
+      border: 1px solid CanvasText;
+    }
+  }
+}
