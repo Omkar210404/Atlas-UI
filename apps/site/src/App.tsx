@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from 'atlas-ui/actions/button';
+import { ToastProvider } from 'atlas-ui/feedback/toast-stack';
 import { useReducedMotion } from 'atlas-ui/primitives/use-reduced-motion';
 import { Chart, useLayoutForViewport } from './atlas/Chart';
 import { RegionPanel } from './atlas/RegionPanel';
@@ -135,7 +136,7 @@ export function App() {
   }
 
   return (
-    <>
+    <ToastProvider>
       <a className="skip-link" href="#main">
         Skip to content
       </a>
@@ -158,6 +159,6 @@ export function App() {
       <ScaleBar route={route} />
       <SiteDock route={route} view={view} />
       <SitePalette view={view} />
-    </>
+    </ToastProvider>
   );
 }

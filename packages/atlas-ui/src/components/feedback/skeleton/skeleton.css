@@ -1,0 +1,71 @@
+/* The sweep position is a registered property so the browser can animate it on its own. */
+@property --atl-shimmer {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: -40%;
+}
+
+@layer atlas.components {
+  .atl-skeleton {
+    --atl-shimmer: -40%;
+    display: block;
+    border-radius: var(--radius-control);
+    background:
+      linear-gradient(
+          100deg,
+          transparent calc(var(--atl-shimmer) - 20%),
+          color-mix(in oklch, var(--ink) 9%, transparent) var(--atl-shimmer),
+          transparent calc(var(--atl-shimmer) + 20%)
+        )
+        no-repeat,
+      var(--ink-wash);
+    animation: atl-shimmer 1.6s var(--ease-drift) infinite;
+  }
+
+  .atl-skeleton[data-shape='line'] {
+    width: 100%;
+    height: 0.9em;
+    border-radius: 4px;
+  }
+
+  .atl-skeleton[data-shape='block'] {
+    width: 100%;
+    height: 8rem;
+    border-radius: var(--radius-panel);
+  }
+
+  .atl-skeleton[data-shape='circle'] {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    flex: none;
+  }
+
+  .atl-skeleton-lines {
+    display: grid;
+    gap: 0.6em;
+  }
+
+  @keyframes atl-shimmer {
+    to {
+      --atl-shimmer: 140%;
+    }
+  }
+
+  /* Reduced motion: a still placeholder. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-skeleton {
+      animation: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-skeleton {
+    animation: none;
+  }
+
+  @media (forced-colors: active) {
+    .atl-skeleton {
+      border: 1px dashed GrayText;
+    }
+  }
+}

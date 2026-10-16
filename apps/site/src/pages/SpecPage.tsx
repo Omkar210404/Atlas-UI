@@ -5,7 +5,7 @@ import { IconCopy } from 'atlas-ui/icons/copy';
 import { Button } from 'atlas-ui/actions/button';
 import { SegmentedControl } from 'atlas-ui/inputs/segmented-control';
 import { Tab, TabBar, TabPanel, Tabs } from 'atlas-ui/navigation/tab-bar';
-import { announce } from 'atlas-ui/primitives/announce';
+import { useToast } from 'atlas-ui/feedback/toast-stack';
 import type { Category, TypeEntry } from '../catalog';
 import { Controls } from './Playground';
 import { loadSource, type Source } from './sources';
@@ -151,17 +151,19 @@ function CodePanel({ category, slug, file }: { category: string; slug: string; f
     return () => window.clearTimeout(timer);
   }, [copied]);
 
+  const { toast } = useToast();
   const copy = async () => {
     if (!source) return;
     try {
       await navigator.clipboard.writeText(source.code);
       setCopied(true);
-      announce(`Copied ${file}`);
+      toast({ title: 'Copied', description: file, tone: 'success', duration: 3000 });
     } catch {
-      announce(
-        'Copying was blocked by the browser. Select the code and copy it instead.',
-        'assertive',
-      );
+      toast({
+        title: 'Couldn’t copy',
+        description: 'The browser blocked it. Select the code and copy it instead.',
+        tone: 'error',
+      });
     }
   };
 
@@ -259,30 +261,37 @@ function Reference({ docs }: { docs: ComponentDocs }) {
           <SourceSection docs={docs} />
         </TabPanel>
         <TabPanel value="keyboard" className="reference__panel">
-          <table className="key-table">
-            <caption className="atl-visually-hidden">Keyboard map for {meta.name}</caption>
-            <thead>
-              <tr>
-                <th scope="col">Keys</th>
-                <th scope="col">What happens</th>
-              </tr>
-            </thead>
-            <tbody>
-              {meta.keyboard.map((binding) => (
-                <tr key={binding.keys.join()}>
-                  <td>
-                    {binding.keys.map((combo, i) => (
-                      <Fragment key={combo}>
-                        {i > 0 ? <span className="key-table__or"> or </span> : null}
-                        <Keys combo={combo} />
-                      </Fragment>
-                    ))}
-                  </td>
-                  <td>{binding.action}</td>
+          {meta.keyboard.length === 0 ? (
+            <p className="prose">
+              Nothing to operate: {meta.name} is not interactive, so it adds no keys and no Tab
+              stops.
+            </p>
+          ) : (
+            <table className="key-table">
+              <caption className="atl-visually-hidden">Keyboard map for {meta.name}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Keys</th>
+                  <th scope="col">What happens</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {meta.keyboard.map((binding) => (
+                  <tr key={binding.keys.join()}>
+                    <td>
+                      {binding.keys.map((combo, i) => (
+                        <Fragment key={combo}>
+                          {i > 0 ? <span className="key-table__or"> or </span> : null}
+                          <Keys combo={combo} />
+                        </Fragment>
+                      ))}
+                    </td>
+                    <td>{binding.action}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </TabPanel>
         <TabPanel value="a11y" className="reference__panel">
           <ul className="notes">

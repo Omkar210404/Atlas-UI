@@ -1,0 +1,54 @@
+@layer atlas.components {
+  .atl-empty {
+    display: grid;
+    justify-items: center;
+    gap: var(--space-xs);
+    max-width: 26rem;
+    padding: var(--space-l);
+    text-align: center;
+  }
+
+  .atl-empty__art {
+    width: min(12rem, 70%);
+    height: auto;
+    margin-bottom: var(--space-xs);
+    color: var(--ink-soft);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .atl-empty__art .sea {
+    stroke: var(--isobath);
+  }
+
+  .atl-empty__art .dash {
+    stroke-dasharray: 3 4;
+  }
+
+  .atl-empty__art .mark {
+    fill: var(--ink);
+    stroke: none;
+  }
+
+  .atl-empty__art .mark-fill {
+    fill: var(--ink-soft);
+  }
+
+  .atl-empty__title {
+    font-size: var(--step-1);
+    font-weight: 650;
+  }
+
+  .atl-empty__description {
+    color: var(--ink-soft);
+    font-family: var(--font-prose);
+    text-wrap: balance;
+  }
+
+  .atl-empty__action {
+    margin-top: var(--space-xs);
+  }
+}

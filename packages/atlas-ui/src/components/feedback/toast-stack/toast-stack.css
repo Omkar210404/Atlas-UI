@@ -1,0 +1,142 @@
+@layer atlas.components {
+  .atl-toasts {
+    z-index: 50;
+    width: min(24rem, calc(100% - 2 * var(--space-m)));
+    pointer-events: none;
+  }
+
+  .atl-toasts[data-placement='fixed'] {
+    position: fixed;
+    right: var(--space-m);
+    bottom: calc(var(--space-m) + env(safe-area-inset-bottom));
+  }
+
+  .atl-toasts[data-placement='contained'] {
+    position: absolute;
+    right: var(--space-m);
+    bottom: var(--space-m);
+  }
+
+  .atl-toasts__list {
+    position: relative;
+    height: var(--atl-toast-front, 0px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    transition: height var(--dur-glide) var(--ease-drift);
+  }
+
+  .atl-toasts[data-expanded] .atl-toasts__list {
+    height: var(--atl-toast-total, 0px);
+  }
+
+  /*
+   * Collapsed: the newest toast at the front, older ones fanned behind it.
+   * Expanded (hover or focus): each toast at its measured offset, fully readable.
+   */
+  .atl-toast {
+    --atl-toast-i: 0;
+    --atl-toast-offset: 0px;
+    --atl-toast-drag: 0px;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-s);
+    padding: var(--space-s) var(--space-2xs) var(--space-s) var(--space-m);
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    color: var(--ink);
+    box-shadow: var(--elev-overlay);
+    pointer-events: auto;
+    touch-action: pan-y;
+    translate: var(--atl-toast-drag) calc(var(--atl-toast-i) * -10px);
+    scale: calc(1 - var(--atl-toast-i) * 0.05);
+    transform-origin: 50% 0;
+    opacity: calc(1 - var(--atl-toast-drag) / 160px);
+    transition:
+      translate var(--dur-glide) var(--ease-drift),
+      scale var(--dur-glide) var(--ease-drift),
+      opacity var(--dur-glide) var(--ease-anchor);
+  }
+
+  .atl-toast:nth-last-child(n + 4) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .atl-toasts[data-expanded] .atl-toast {
+    translate: var(--atl-toast-drag) calc(-1 * var(--atl-toast-offset));
+    scale: 1;
+    visibility: visible;
+    opacity: calc(1 - var(--atl-toast-drag) / 160px);
+  }
+
+  .atl-toast[data-dragging] {
+    transition: none;
+  }
+
+  @starting-style {
+    .atl-toast {
+      translate: 0 24px;
+      opacity: 0;
+    }
+  }
+
+  .atl-toast:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-offset);
+  }
+
+  /* The tone is carried by a shaped icon and an edge, not by colour alone. */
+  .atl-toast::before {
+    content: '';
+    position: absolute;
+    top: var(--space-s);
+    bottom: var(--space-s);
+    left: 0;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--atl-toast-tone, var(--isobath));
+  }
+
+  .atl-toast[data-tone='success'] {
+    --atl-toast-tone: var(--starboard);
+  }
+  .atl-toast[data-tone='warning'] {
+    --atl-toast-tone: var(--caution);
+  }
+  .atl-toast[data-tone='error'] {
+    --atl-toast-tone: var(--port);
+  }
+
+  .atl-toast__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    margin-top: 2px;
+    color: var(--atl-toast-tone, var(--ink-soft));
+  }
+
+  .atl-toast__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .atl-toast__title {
+    font-weight: 600;
+  }
+
+  .atl-toast__description {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  @media (forced-colors: active) {
+    .atl-toast {
+      border: 1px solid CanvasText;
+    }
+  }
+}

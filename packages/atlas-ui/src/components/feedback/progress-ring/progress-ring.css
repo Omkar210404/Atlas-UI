@@ -1,0 +1,95 @@
+@layer atlas.components {
+  .atl-ring {
+    --atl-ring-color: var(--ink);
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+  }
+
+  .atl-ring[data-tone='success'] {
+    --atl-ring-color: var(--starboard);
+  }
+
+  .atl-ring[data-tone='warning'] {
+    --atl-ring-color: var(--caution);
+  }
+
+  .atl-ring svg {
+    width: 100%;
+    height: 100%;
+    rotate: -90deg;
+  }
+
+  .atl-ring__ticks line {
+    stroke: var(--isobath);
+    stroke-width: 0.8;
+  }
+
+  .atl-ring__track {
+    fill: none;
+    stroke: var(--ink-wash-strong);
+    stroke-width: 7;
+  }
+
+  .atl-ring__value {
+    fill: none;
+    stroke: var(--atl-ring-color);
+    stroke-width: 7;
+    stroke-linecap: round;
+    transition: stroke-dashoffset var(--dur-glide) var(--ease-drift);
+  }
+
+  .atl-ring[data-indeterminate] svg {
+    animation: atl-ring-sweep 1.2s linear infinite;
+  }
+
+  .atl-ring[data-indeterminate] .atl-ring__ticks {
+    /* Counter-rotate the bezel so only the arc moves. */
+    animation: atl-ring-hold 1.2s linear infinite;
+    transform-origin: 50px 50px;
+  }
+
+  @keyframes atl-ring-sweep {
+    to {
+      rotate: 270deg;
+    }
+  }
+
+  @keyframes atl-ring-hold {
+    to {
+      rotate: -360deg;
+    }
+  }
+
+  .atl-ring__label {
+    position: absolute;
+    font-size: var(--step-1);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .atl-ring__label small {
+    font-size: 0.6em;
+    color: var(--ink-soft);
+  }
+
+  /* Reduced motion: the indeterminate arc pulses in place instead of turning. */
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) .atl-ring[data-indeterminate] svg,
+    :root:not([data-motion='full']) .atl-ring[data-indeterminate] .atl-ring__ticks {
+      animation: none;
+    }
+  }
+
+  :root[data-motion='reduce'] .atl-ring[data-indeterminate] svg,
+  :root[data-motion='reduce'] .atl-ring[data-indeterminate] .atl-ring__ticks {
+    animation: none;
+  }
+
+  @media (forced-colors: active) {
+    .atl-ring__value {
+      stroke: Highlight;
+    }
+  }
+}
