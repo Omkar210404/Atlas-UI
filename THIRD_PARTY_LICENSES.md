@@ -21,9 +21,8 @@ ship with the site in `apps/site/public/licenses/`.
 | Package | Licence | Used by |
 |---|---|---|
 | react, react-dom | MIT | All components and the site |
-
-`motion` and `three` are planned for later batches (see `PLAN.md`) and are added here when a
-component starts using them.
+| motion | MIT | Magnetic button (spring follow) and Expandable card (shared-layout expand) |
+| three | MIT | The Spatial and 3D components and the site's ambient background, loaded on demand through `primitives/three-host.ts` |
 
 ## Build and test tools (not shipped to browsers)
 
@@ -40,3 +39,6 @@ component starts using them.
 | esbuild | MIT | Per-component bundle budgets |
 | subset-font | BSD-3-Clause | Font subsetting (uses harfbuzzjs, MIT) |
 | prettier | MIT | Formatting |
+| lighthouse, chrome-launcher | Apache-2.0 | Performance measurement (`scripts/measure.ts`) |
+| web-vitals | Apache-2.0 | Lab INP, CLS and LCP in `scripts/measure.ts` |
+| gifenc, pngjs | MIT | Encoding the README GIF from screenshots (`scripts/record-media.ts`) |
