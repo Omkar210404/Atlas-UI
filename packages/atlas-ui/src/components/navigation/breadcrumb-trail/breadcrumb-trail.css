@@ -1,0 +1,153 @@
+@layer atlas.components {
+  .atl-crumbs {
+    position: relative;
+    min-width: 0;
+  }
+
+  .atl-crumbs__list {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    white-space: nowrap;
+  }
+
+  .atl-crumbs__measure {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: max-content;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .atl-crumbs__item {
+    display: flex;
+    align-items: center;
+    flex: none;
+    transition:
+      opacity var(--dur-glide) var(--ease-drift),
+      translate var(--dur-glide) var(--ease-drift);
+  }
+
+  /* A newly plotted crumb slides in from the direction of travel. */
+  @starting-style {
+    .atl-crumbs__list:not(.atl-crumbs__measure) .atl-crumbs__item:last-child {
+      opacity: 0;
+      translate: -8px 0;
+    }
+  }
+
+  .atl-crumbs__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--target-min);
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-control);
+    color: var(--ink-soft);
+    font-size: var(--step-0);
+    text-decoration: none;
+    transition:
+      color var(--dur-tick) var(--ease-anchor),
+      background-color var(--dur-tick) var(--ease-anchor);
+  }
+
+  a.atl-crumbs__link:hover {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--isobath);
+  }
+
+  /* The current position: a magenta mark plus weight, so it is not colour alone. */
+  .atl-crumbs__link[aria-current='page'] {
+    gap: var(--space-xs);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .atl-crumbs__link[aria-current='page']::before {
+    content: '';
+    flex: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--chart-magenta);
+    box-shadow: 0 0 0 3px var(--magenta-wash);
+  }
+
+  .atl-crumbs__sep {
+    flex: none;
+    margin-inline: var(--space-3xs);
+    color: var(--isobath);
+  }
+
+  .atl-crumbs__more {
+    display: inline-grid;
+    place-items: center;
+    width: var(--target-min);
+    height: var(--target-min);
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: var(--ink-wash);
+    color: var(--ink-soft);
+  }
+
+  button.atl-crumbs__more:hover,
+  button.atl-crumbs__more[aria-expanded='true'] {
+    background: var(--ink-wash-strong);
+    color: var(--ink);
+  }
+
+  .atl-crumbs__menu {
+    position: fixed;
+    z-index: 40;
+    min-width: 12rem;
+    max-width: min(22rem, calc(100vw - 16px));
+    margin: 0;
+    padding: var(--space-2xs);
+    list-style: none;
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: var(--elev-overlay);
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      translate var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-crumbs__menu[hidden] {
+    display: none;
+  }
+
+  @starting-style {
+    .atl-crumbs__menu:not([hidden]) {
+      opacity: 0;
+      translate: 0 -4px;
+    }
+  }
+
+  .atl-crumbs__menu-link {
+    display: flex;
+    width: 100%;
+    min-height: var(--target-comfort);
+    padding-inline: var(--space-s);
+    white-space: normal;
+  }
+
+  .atl-crumbs__menu-link:hover {
+    background: var(--reef);
+  }
+
+  @media (forced-colors: active) {
+    .atl-crumbs__link[aria-current='page']::before {
+      background: Highlight;
+    }
+    .atl-crumbs__menu {
+      border: 1px solid CanvasText;
+    }
+  }
+}
