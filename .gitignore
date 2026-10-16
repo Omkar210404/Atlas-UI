@@ -1,0 +1,30 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# test and report artifacts
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.lighthouseci/
+reports/raw/
+
+# environment
+.env
+.env.*
+!.env.example
+
+# editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# local agent settings
+.claude/
