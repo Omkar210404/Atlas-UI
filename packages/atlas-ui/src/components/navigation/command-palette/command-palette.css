@@ -1,0 +1,246 @@
+@layer atlas.components {
+  .atl-palette {
+    --atl-palette-width: 40rem;
+    width: min(var(--atl-palette-width), calc(100% - 2 * var(--space-m)));
+    max-width: none;
+    max-height: min(34rem, calc(100dvh - 2 * var(--space-xl)));
+    margin: max(8dvh, var(--space-m)) auto auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-overlay);
+    background: var(--shoal);
+    color: var(--ink);
+    box-shadow: var(--elev-overlay);
+    overflow: hidden;
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+    transition:
+      opacity var(--dur-glide) var(--ease-anchor),
+      translate var(--dur-glide) var(--ease-anchor),
+      scale var(--dur-glide) var(--ease-anchor),
+      overlay var(--dur-glide) allow-discrete,
+      display var(--dur-glide) allow-discrete;
+  }
+
+  .atl-palette:not([open]) {
+    opacity: 0;
+    translate: 0 -6px;
+    scale: 0.985;
+    transition-timing-function: var(--ease-ebb);
+    transition-duration: var(--dur-step);
+  }
+
+  @starting-style {
+    .atl-palette[open] {
+      opacity: 0;
+      translate: 0 -10px;
+      scale: 0.985;
+    }
+  }
+
+  .atl-palette::backdrop {
+    background: rgb(4 12 18 / 0.5);
+    background: color-mix(in oklch, var(--sea-3) 62%, transparent);
+    transition:
+      opacity var(--dur-glide) var(--ease-anchor),
+      overlay var(--dur-glide) allow-discrete,
+      display var(--dur-glide) allow-discrete;
+  }
+
+  .atl-palette:not([open])::backdrop {
+    opacity: 0;
+  }
+
+  @starting-style {
+    .atl-palette[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  .atl-palette__panel {
+    display: flex;
+    flex-direction: column;
+    max-height: inherit;
+  }
+
+  .atl-palette__field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-m);
+    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--isobath) 70%, transparent);
+  }
+
+  .atl-palette__glass {
+    flex: none;
+    color: var(--ink-soft);
+  }
+
+  .atl-palette__input {
+    flex: 1;
+    min-width: 0;
+    min-height: 3.25rem;
+    border: 0;
+    background: none;
+    font-size: var(--step-1);
+    font-weight: 450;
+    letter-spacing: -0.005em;
+  }
+
+  .atl-palette__input::placeholder {
+    color: var(--ink-soft);
+    opacity: 1;
+  }
+
+  .atl-palette__input:focus-visible {
+    outline: none;
+  }
+
+  /* The field carries focus for the whole palette, so the ring goes on the field row. */
+  .atl-palette__field:has(.atl-palette__input:focus-visible) {
+    box-shadow:
+      inset 0 -1px 0 color-mix(in oklch, var(--isobath) 70%, transparent),
+      inset 0 -3px 0 -1px var(--chart-magenta);
+  }
+
+  .atl-palette__close {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: var(--target-comfort);
+    height: var(--target-comfort);
+    border: 0;
+    border-radius: var(--radius-control);
+    background: none;
+    color: var(--ink-soft);
+  }
+
+  .atl-palette__close:hover {
+    background: var(--ink-wash);
+    color: var(--ink);
+  }
+
+  .atl-palette__list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--space-2xs) var(--space-xs) var(--space-xs);
+    scroll-padding-block: var(--space-xl) var(--space-xs);
+  }
+
+  .atl-palette__group + .atl-palette__group {
+    margin-top: var(--space-2xs);
+  }
+
+  /* Hydrographic lettering: group names in italic serif, as charts name bodies of water. */
+  .atl-palette__heading {
+    position: sticky;
+    top: calc(-1 * var(--space-2xs));
+    z-index: 1;
+    padding: var(--space-xs) var(--space-s) var(--space-2xs);
+    background: var(--shoal);
+    color: var(--ink-soft);
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-size: var(--step-0);
+    letter-spacing: 0.01em;
+  }
+
+  .atl-palette__option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    min-height: var(--target-comfort);
+    padding: var(--space-2xs) var(--space-s);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .atl-palette__option[aria-selected='true'] {
+    background: var(--reef);
+    box-shadow: inset 3px 0 0 var(--chart-magenta);
+  }
+
+  .atl-palette__option[aria-disabled='true'] {
+    cursor: not-allowed;
+    color: var(--ink-soft);
+  }
+
+  .atl-palette__icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    color: var(--ink-soft);
+  }
+
+  .atl-palette__option[aria-selected='true'] .atl-palette__icon {
+    color: var(--ink);
+  }
+
+  .atl-palette__label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .atl-palette__label mark {
+    background: none;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--chart-magenta);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+  }
+
+  .atl-palette__hint {
+    flex: none;
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  .atl-palette__empty {
+    padding: var(--space-l) var(--space-s);
+    color: var(--ink-soft);
+    font-family: var(--font-prose);
+    font-size: var(--step-0);
+    max-width: var(--measure);
+  }
+
+  .atl-palette__footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-m);
+    padding: var(--space-xs) var(--space-m);
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    box-shadow: inset 0 1px 0 color-mix(in oklch, var(--isobath) 55%, transparent);
+  }
+
+  .atl-palette__footer kbd {
+    display: inline-grid;
+    place-items: center;
+    vertical-align: middle;
+    min-height: 1.5em;
+  }
+
+  @media (pointer: coarse) {
+    .atl-palette__footer {
+      display: none;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .atl-palette {
+      border: 1px solid CanvasText;
+    }
+    .atl-palette__option[aria-selected='true'] {
+      outline: 2px solid Highlight;
+    }
+  }
+}

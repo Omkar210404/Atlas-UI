@@ -1,0 +1,137 @@
+@layer atlas.components {
+  .atl-tabbar {
+    position: relative;
+    display: flex;
+    gap: var(--space-3xs);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .atl-tabbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .atl-tab {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex: none;
+    min-height: var(--target-comfort);
+    padding: 0 var(--space-m);
+    border: 0;
+    background: none;
+    color: var(--ink-soft);
+    font-size: var(--step-0);
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      color var(--dur-tick) var(--ease-anchor),
+      background-color var(--dur-tick) var(--ease-anchor);
+  }
+
+  .atl-tab:hover:not(:disabled) {
+    color: var(--ink);
+  }
+
+  .atl-tab[aria-selected='true'] {
+    color: var(--ink);
+  }
+
+  .atl-tab:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .atl-tab:focus-visible {
+    outline-offset: -3px;
+  }
+
+  .atl-tabbar__indicator {
+    position: absolute;
+    left: 0;
+    width: var(--atl-indicator-w, 0px);
+    transform: translateX(var(--atl-indicator-x, 0px));
+    pointer-events: none;
+  }
+
+  .atl-tabbar[data-ready] .atl-tabbar__indicator {
+    transition:
+      transform var(--dur-current) var(--ease-current),
+      width var(--dur-current) var(--ease-current);
+  }
+
+  /* line: a magenta course line under the selected tab, over a faint isobath track */
+  .atl-tabbar[data-variant='line'] {
+    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--isobath) 65%, transparent);
+  }
+
+  .atl-tabbar[data-variant='line'] .atl-tab {
+    border-radius: var(--radius-control) var(--radius-control) 0 0;
+  }
+
+  .atl-tabbar[data-variant='line'] .atl-tab:hover:not(:disabled) {
+    background: var(--ink-wash);
+  }
+
+  .atl-tabbar[data-variant='line'] .atl-tabbar__indicator {
+    bottom: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--chart-magenta);
+  }
+
+  /* chip: a raised chip that slides behind the selected tab */
+  .atl-tabbar[data-variant='chip'] {
+    width: fit-content;
+    max-width: 100%;
+    padding: var(--space-2xs);
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);
+  }
+
+  .atl-tabbar[data-variant='chip'] .atl-tab {
+    min-height: calc(var(--target-comfort) - 4px);
+    border-radius: calc(var(--radius-panel) - 4px);
+  }
+
+  .atl-tabbar[data-variant='chip'] .atl-tabbar__indicator {
+    top: var(--space-2xs);
+    bottom: var(--space-2xs);
+    border-radius: calc(var(--radius-panel) - 4px);
+    background: var(--reef);
+    box-shadow:
+      inset 0 0 0 1px var(--edge),
+      inset 0 -2px 0 var(--chart-magenta);
+  }
+
+  .atl-tabpanel {
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      translate var(--dur-step) var(--ease-anchor);
+  }
+
+  @starting-style {
+    .atl-tabpanel:not([hidden]) {
+      opacity: 0;
+      translate: 0 6px;
+    }
+  }
+
+  .atl-tabpanel:focus-visible {
+    outline-offset: 6px;
+    border-radius: var(--radius-control);
+  }
+
+  @media (forced-colors: active) {
+    .atl-tabbar__indicator {
+      background: Highlight !important;
+    }
+    .atl-tab[aria-selected='true'] {
+      text-decoration: underline;
+    }
+  }
+}
