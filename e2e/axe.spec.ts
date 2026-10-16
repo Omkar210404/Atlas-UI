@@ -61,7 +61,10 @@ for (const theme of themes) {
         await expectNoViolations(page, `${slug} spec sheet`);
         for (const tab of ['Source', 'Keyboard', 'Accessibility', 'Reduced motion']) {
           await page.getByRole('tab', { name: tab, exact: true }).click();
-          if (tab === 'Source') await expect(page.locator('.atl-code__body pre')).toBeVisible();
+          if (tab === 'Source') {
+            const source = page.getByRole('tabpanel', { name: 'Source', exact: true });
+            await expect(source.locator('.atl-code__body pre')).toBeVisible();
+          }
           await expectNoViolations(page, `${slug} spec sheet, ${tab} tab`);
         }
       });
