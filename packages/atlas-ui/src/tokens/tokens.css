@@ -1,0 +1,139 @@
+/* Generated from tokens.ts by scripts/build-tokens.ts. Do not edit by hand. */
+@layer atlas.tokens, atlas.base, atlas.components, atlas.site;
+
+@layer atlas.tokens {
+  :root {
+    --font-ui: 'Bricolage Grotesque', 'Bricolage Fallback', ui-sans-serif, system-ui, sans-serif;
+    --font-prose: 'Newsreader', 'Newsreader Fallback', ui-serif, Georgia, serif;
+    --font-code: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+    --step-0: 1.0625rem;
+    --step-1: 1.328rem;
+    --step-2: 1.66rem;
+    --step-3: 2.075rem;
+    --step-4: 2.594rem;
+    --step-5: 3.242rem;
+    --step-6: 4.053rem;
+    --step--1: 0.85rem;
+    --leading-ui: 1.45;
+    --leading-prose: 1.6;
+    --leading-tight: 1.08;
+    --measure: 68ch;
+    --space-3xs: 0.125rem;
+    --space-2xs: 0.25rem;
+    --space-xs: 0.5rem;
+    --space-s: 0.75rem;
+    --space-m: 1rem;
+    --space-l: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
+    --space-5xl: 8rem;
+    --radius-control: 6px;
+    --radius-panel: 12px;
+    --radius-overlay: 16px;
+    --radius-round: 999px;
+    --target-min: 24px;
+    --target-comfort: 44px;
+    --ease-anchor: cubic-bezier(0.2, 0, 0, 1);
+    --ease-drift: cubic-bezier(0.22, 0.61, 0.24, 1);
+    --ease-ebb: cubic-bezier(0.4, 0, 1, 1);
+    --ease-current: linear(0, 0.0361, 0.1287, 0.2445, 0.3793, 0.5052, 0.6222, 0.7316, 0.8183, 0.8926, 0.9466, 0.9886, 1.0159, 1.0334, 1.0435, 1.047, 1.0462, 1.0427, 1.0376, 1.0313, 1.0253, 1.0193, 1.0142, 1.0099, 1.0061, 1.0033, 1.0011, 0.9996, 0.9987, 0.9981, 0.9978, 0.9978, 0.9979, 0.9982, 0.9984, 0.9987, 0.999, 0.9993, 0.9995, 1);
+    --dur-tick: 90ms;
+    --dur-step: 160ms;
+    --dur-glide: 280ms;
+    --dur-voyage: 560ms;
+    --dur-current: 640ms;
+    --sea: var(--sea-0);
+    --magenta-wash: color-mix(in oklch, var(--chart-magenta) 16%, transparent);
+    --ink-wash: color-mix(in oklch, var(--ink) 7%, transparent);
+    --ink-wash-strong: color-mix(in oklch, var(--ink) 13%, transparent);
+    --focus-ring: 2px solid var(--chart-magenta);
+    --focus-offset: 2px;
+    --elev-gap: var(--sea);
+    --elev-1: 0 0 0 1px color-mix(in oklch, var(--isobath) 70%, transparent), 0 0 0 4px var(--elev-gap), 0 0 0 5px color-mix(in oklch, var(--isobath) 30%, transparent);
+    --elev-2: 0 0 0 1px var(--edge), 0 0 0 4px var(--elev-gap), 0 0 0 5px color-mix(in oklch, var(--isobath) 45%, transparent);
+    --elev-overlay: 0 0 0 1px color-mix(in oklch, var(--edge) 60%, transparent), 0 2px 4px var(--shadow-tint), 0 24px 56px -16px var(--shadow-tint);
+  }
+
+  :root,
+  [data-theme='night'] {
+    color-scheme: dark;
+    --sea-0: #0E1E2B;
+    --sea-1: #0C1A26;
+    --sea-2: #0A1721;
+    --sea-3: #09141D;
+    --shoal: #15293A;
+    --reef: #1D3A4C;
+    --ink: #DCE6E4;
+    --ink-soft: #9DB4B8;
+    --edge: #6F98A4;
+    --isobath: #4F7C88;
+    --chart-magenta: #E683C6;
+    --on-magenta: #0E1E2B;
+    --starboard: #74D3A0;
+    --port: #F2907F;
+    --caution: #E9BD68;
+    --shadow-tint: color-mix(in oklch, #02080D 72%, transparent);
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+      color-scheme: light;
+      --sea-0: #EEF3F1;
+      --sea-1: #E8F0EF;
+      --sea-2: #E2ECEC;
+      --sea-3: #DDE8E9;
+      --shoal: #DFEBEC;
+      --reef: #CBDFE3;
+      --ink: #15283A;
+      --ink-soft: #465D6D;
+      --edge: #5E7F89;
+      --isobath: #7FA0A8;
+      --chart-magenta: #A0186C;
+      --on-magenta: #FFFFFF;
+      --starboard: #1E6A46;
+      --port: #A4322A;
+      --caution: #765000;
+      --shadow-tint: color-mix(in oklch, #15283A 22%, transparent);
+    }
+  }
+
+  [data-theme='day'] {
+    color-scheme: light;
+    --sea-0: #EEF3F1;
+    --sea-1: #E8F0EF;
+    --sea-2: #E2ECEC;
+    --sea-3: #DDE8E9;
+    --shoal: #DFEBEC;
+    --reef: #CBDFE3;
+    --ink: #15283A;
+    --ink-soft: #465D6D;
+    --edge: #5E7F89;
+    --isobath: #7FA0A8;
+    --chart-magenta: #A0186C;
+    --on-magenta: #FFFFFF;
+    --starboard: #1E6A46;
+    --port: #A4322A;
+    --caution: #765000;
+    --shadow-tint: color-mix(in oklch, #15283A 22%, transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion='full']) {
+      --dur-tick: 0ms;
+      --dur-step: 0ms;
+      --dur-glide: 0ms;
+      --dur-voyage: 0ms;
+      --dur-current: 0ms;
+    }
+  }
+
+  :root[data-motion='reduce'] {
+    --dur-tick: 0ms;
+    --dur-step: 0ms;
+    --dur-glide: 0ms;
+    --dur-voyage: 0ms;
+    --dur-current: 0ms;
+  }
+}

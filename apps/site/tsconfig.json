@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["vite/client", "vitest/browser"],
+    "paths": {
+      "atlas-ui/tokens/*": ["../../packages/atlas-ui/src/tokens/*"],
+      "atlas-ui/primitives/*": ["../../packages/atlas-ui/src/primitives/*"],
+      "atlas-ui/motion/*": ["../../packages/atlas-ui/src/motion/*"],
+      "atlas-ui/icons/*": ["../../packages/atlas-ui/src/icons/*"],
+      "atlas-ui/docs/*": ["../../packages/atlas-ui/src/docs/*"],
+      "atlas-ui/*": ["../../packages/atlas-ui/src/components/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts", "plugins"]
+}

@@ -1,0 +1,58 @@
+{
+  "name": "atlas-ui-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "npm run tokens && npm run dev -w @atlas-ui/site",
+    "tokens": "node --experimental-strip-types --no-warnings scripts/build-tokens.ts",
+    "tokens:check": "node --experimental-strip-types --no-warnings scripts/build-tokens.ts --check",
+    "build": "npm run tokens && npm run build -w atlas-ui && npm run build -w @atlas-ui/site",
+    "preview": "npm run preview -w @atlas-ui/site",
+    "lint": "eslint .",
+    "typecheck": "tsc -p packages/atlas-ui && tsc -p apps/site && tsc -p tsconfig.node.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "e2e:axe": "playwright test --project=axe",
+    "size": "size-limit",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@eslint/js": "^9.39.5",
+    "@playwright/test": "^1.64.1",
+    "@size-limit/esbuild": "^14.2.0",
+    "@size-limit/file": "^14.2.0",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.8",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/browser-playwright": "^5.0.5",
+    "axe-core": "^4.14.0",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
+    "playwright": "^1.64.1",
+    "prettier": "^3.9.10",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "shiki": "^4.5.0",
+    "size-limit": "^14.2.0",
+    "subset-font": "^2.9.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
+  }
+}

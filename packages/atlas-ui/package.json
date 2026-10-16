@@ -1,0 +1,29 @@
+{
+  "name": "atlas-ui",
+  "version": "0.1.0",
+  "description": "An atlas of interfaces: original, accessible React components.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    "./tokens.css": "./dist/tokens/tokens.css",
+    "./base.css": "./dist/styles/base.css",
+    "./navigation/floating-dock": "./dist/components/navigation/floating-dock/index.js",
+    "./navigation/command-palette": "./dist/components/navigation/command-palette/index.js",
+    "./navigation/breadcrumb-trail": "./dist/components/navigation/breadcrumb-trail/index.js",
+    "./navigation/tab-bar": "./dist/components/navigation/tab-bar/index.js",
+    "./icons/*": "./dist/icons/*.js"
+  },
+  "scripts": {
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0"
+  }
+}
