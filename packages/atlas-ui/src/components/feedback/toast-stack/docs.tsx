@@ -121,7 +121,7 @@ function Trigger({
   );
 }
 
-function Stage({ children }: { children: ReactNode }) {
+function Stage({ children, name }: { children: ReactNode; name: string }) {
   return (
     <div
       style={{
@@ -132,7 +132,7 @@ function Stage({ children }: { children: ReactNode }) {
         placeItems: 'start center',
       }}
     >
-      <ToastProvider placement="contained" label="Demo notifications">
+      <ToastProvider placement="contained" label={`Demo notifications, ${name}`}>
         {children}
       </ToastProvider>
     </div>
@@ -146,8 +146,8 @@ export const docs: ComponentDocs = {
       id: 'stack',
       name: 'A stack of four',
       description: 'Each press adds the next kind of message.',
-      render: () => (
-        <Stage>
+      render: (instance) => (
+        <Stage name={['stack', instance].filter(Boolean).join(' ')}>
           <Trigger cycle />
         </Stage>
       ),
@@ -156,15 +156,15 @@ export const docs: ComponentDocs = {
       id: 'undo',
       name: 'With an action',
       description: 'An Undo button that closes the toast after it runs.',
-      render: () => (
-        <Stage>
+      render: (instance) => (
+        <Stage name={['undo', instance].filter(Boolean).join(' ')}>
           <Trigger action />
         </Stage>
       ),
     },
   ],
   Playground: ({ values }) => (
-    <Stage>
+    <Stage name="playground">
       <Trigger
         tone={values.tone as ToastTone}
         title={String(values.title) || 'Toast'}
