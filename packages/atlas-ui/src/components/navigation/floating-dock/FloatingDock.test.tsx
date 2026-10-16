@@ -6,7 +6,13 @@ import { IconCompass } from '../../../icons/compass';
 import { meta } from './docs';
 import { DockItem, DockSeparator, FloatingDock } from './FloatingDock';
 
-function Example({ onSearch = () => {}, magnify = true }: { onSearch?: () => void; magnify?: boolean }) {
+function Example({
+  onSearch = () => {},
+  magnify = true,
+}: {
+  onSearch?: () => void;
+  magnify?: boolean;
+}) {
   return (
     <>
       <button type="button">Before</button>

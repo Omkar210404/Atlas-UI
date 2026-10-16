@@ -144,7 +144,9 @@ export function MenuList({
           ) : null}
           <span className="atl-menu__text">
             <span className="atl-menu__label">{item.label}</span>
-            {item.description ? <span className="atl-menu__description">{item.description}</span> : null}
+            {item.description ? (
+              <span className="atl-menu__description">{item.description}</span>
+            ) : null}
           </span>
           {item.hint ? <span className="atl-menu__hint">{item.hint}</span> : null}
         </div>

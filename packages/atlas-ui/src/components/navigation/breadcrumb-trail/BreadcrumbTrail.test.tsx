@@ -53,7 +53,12 @@ describe('Breadcrumb trail', () => {
     expect(nav.querySelector('ol')).toBeTruthy();
     const current = screen.getByRole('link', { name: 'Specification sheet' });
     expect(current.getAttribute('aria-current')).toBe('page');
-    expect(visibleLinks()).toEqual(['Atlas', 'Navigation', 'Command palette', 'Specification sheet']);
+    expect(visibleLinks()).toEqual([
+      'Atlas',
+      'Navigation',
+      'Command palette',
+      'Specification sheet',
+    ]);
   });
 
   it('folds the middle when narrow and unfolds when there is room', async () => {
@@ -94,7 +99,9 @@ describe('Breadcrumb trail', () => {
         await userEvent.keyboard('{Tab}');
         expect(document.activeElement).toBe(more());
         await userEvent.keyboard('{Tab}');
-        expect(document.activeElement).toBe(screen.getByRole('link', { name: 'Specification sheet' }));
+        expect(document.activeElement).toBe(
+          screen.getByRole('link', { name: 'Specification sheet' }),
+        );
       },
       Enter: async () => {
         const onNavigate = vi.fn();

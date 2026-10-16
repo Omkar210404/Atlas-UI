@@ -15,7 +15,13 @@ const items: CommandItem[] = [
   { id: 'off', label: 'Disabled thing', group: 'Actions', disabled: true },
 ];
 
-function Harness({ onSelect = () => {}, recentIds }: { onSelect?: (item: CommandItem) => void; recentIds?: string[] }) {
+function Harness({
+  onSelect = () => {},
+  recentIds,
+}: {
+  onSelect?: (item: CommandItem) => void;
+  recentIds?: string[];
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>

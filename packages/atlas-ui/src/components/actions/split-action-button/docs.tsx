@@ -21,9 +21,19 @@ export const meta: ComponentMeta = {
     'Items can carry a `description`, an `icon`, a `hint` (such as a shortcut) and `separatorBefore`.',
   ],
   keyboard: [
-    { keys: ['Enter', 'Space'], action: 'On the main half, run the main action; on the menu button, open the menu.' },
-    { keys: ['ArrowDown'], action: 'On the menu button, open the menu on the first item. In the menu, move down (wraps).' },
-    { keys: ['ArrowUp'], action: 'On the menu button, open the menu on the last item. In the menu, move up (wraps).' },
+    {
+      keys: ['Enter', 'Space'],
+      action: 'On the main half, run the main action; on the menu button, open the menu.',
+    },
+    {
+      keys: ['ArrowDown'],
+      action:
+        'On the menu button, open the menu on the first item. In the menu, move down (wraps).',
+    },
+    {
+      keys: ['ArrowUp'],
+      action: 'On the menu button, open the menu on the last item. In the menu, move up (wraps).',
+    },
     { keys: ['Home', 'End'], action: 'Move to the first or last item.' },
     { keys: ['Escape'], action: 'Close the menu and return focus to the menu button.' },
     { keys: ['Tab'], action: 'Close the menu and move on.' },
@@ -37,7 +47,13 @@ export const meta: ComponentMeta = {
   ],
   reducedMotion: 'The menu appears without its short drop, and the chevron flips without turning.',
   props: [
-    { kind: 'text', name: 'label', label: 'Main label', description: 'The main action.', default: 'Save chart' },
+    {
+      kind: 'text',
+      name: 'label',
+      label: 'Main label',
+      description: 'The main action.',
+      default: 'Save chart',
+    },
     {
       kind: 'select',
       name: 'variant',
@@ -49,7 +65,13 @@ export const meta: ComponentMeta = {
         { value: 'secondary', label: 'Secondary' },
       ],
     },
-    { kind: 'boolean', name: 'descriptions', label: 'Descriptions', description: 'Show a line of detail under each item.', default: true },
+    {
+      kind: 'boolean',
+      name: 'descriptions',
+      label: 'Descriptions',
+      description: 'Show a line of detail under each item.',
+      default: true,
+    },
   ],
   files: ['SplitActionButton.tsx', 'split-action-button.css', 'index.ts'],
   dependencies: { react: '>=19' },
@@ -78,10 +100,35 @@ function Demo({
 }) {
   const [last, setLast] = useState('Nothing saved yet.');
   const actions: MenuItem[] = [
-    { id: 'copy', label: 'Save a copy', description: 'Keeps the original as it is.', icon: <IconCopy />, onSelect: () => setLast('Saved a copy.') },
-    { id: 'template', label: 'Save as template', description: 'Reuse the layers on a new chart.', icon: <IconFile />, onSelect: () => setLast('Saved as a template.') },
-    { id: 'export', label: 'Export as image', description: 'A PNG at screen resolution.', icon: <IconExternal />, hint: 'Ctrl E', separatorBefore: true, onSelect: () => setLast('Exported an image.') },
-    { id: 'print', label: 'Print', description: 'Printing arrives in a later release.', disabled: true },
+    {
+      id: 'copy',
+      label: 'Save a copy',
+      description: 'Keeps the original as it is.',
+      icon: <IconCopy />,
+      onSelect: () => setLast('Saved a copy.'),
+    },
+    {
+      id: 'template',
+      label: 'Save as template',
+      description: 'Reuse the layers on a new chart.',
+      icon: <IconFile />,
+      onSelect: () => setLast('Saved as a template.'),
+    },
+    {
+      id: 'export',
+      label: 'Export as image',
+      description: 'A PNG at screen resolution.',
+      icon: <IconExternal />,
+      hint: 'Ctrl E',
+      separatorBefore: true,
+      onSelect: () => setLast('Exported an image.'),
+    },
+    {
+      id: 'print',
+      label: 'Print',
+      description: 'Printing arrives in a later release.',
+      disabled: true,
+    },
   ].map((item) => (descriptions ? item : { ...item, description: undefined })) as MenuItem[];
   return (
     <div style={{ display: 'grid', gap: 'var(--space-s)', justifyItems: 'center' }}>
@@ -102,9 +149,24 @@ function Demo({
 export const docs: ComponentDocs = {
   meta,
   presets: [
-    { id: 'save', name: 'Save options', description: 'A primary save with three alternatives and one unavailable item.', render: () => <Demo /> },
-    { id: 'secondary', name: 'Secondary emphasis', description: 'For a split action that is not the main one in its view.', render: () => <Demo variant="secondary" label="Share route" menuLabel="More ways to share" /> },
-    { id: 'compact', name: 'Plain menu', description: 'Items without descriptions.', render: () => <Demo descriptions={false} menuLabel="More save options" /> },
+    {
+      id: 'save',
+      name: 'Save options',
+      description: 'A primary save with three alternatives and one unavailable item.',
+      render: () => <Demo />,
+    },
+    {
+      id: 'secondary',
+      name: 'Secondary emphasis',
+      description: 'For a split action that is not the main one in its view.',
+      render: () => <Demo variant="secondary" label="Share route" menuLabel="More ways to share" />,
+    },
+    {
+      id: 'compact',
+      name: 'Plain menu',
+      description: 'Items without descriptions.',
+      render: () => <Demo descriptions={false} menuLabel="More save options" />,
+    },
   ],
   Playground: ({ values }) => (
     <Demo

@@ -5,7 +5,12 @@ import { keyboardCases } from '../../../docs/keyboard-cases';
 import { meta } from './docs';
 import { LoadingStateButton } from './LoadingStateButton';
 
-const labels = { idle: 'Save', loading: 'Saving…', success: 'Saved', error: 'Couldn’t save. Try again' };
+const labels = {
+  idle: 'Save',
+  loading: 'Saving…',
+  success: 'Saved',
+  error: 'Couldn’t save. Try again',
+};
 
 function deferred() {
   let resolve!: () => void;

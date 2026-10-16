@@ -6,7 +6,13 @@ import { createTypeahead } from '../../../primitives/typeahead';
 import { meta } from './docs';
 import { SplitActionButton } from './SplitActionButton';
 
-function Example({ onAction = () => {}, onCopy = () => {} }: { onAction?: () => void; onCopy?: () => void }) {
+function Example({
+  onAction = () => {},
+  onCopy = () => {},
+}: {
+  onAction?: () => void;
+  onCopy?: () => void;
+}) {
   return (
     <>
       <SplitActionButton

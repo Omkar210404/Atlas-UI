@@ -1,11 +1,4 @@
-import {
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type MouseEvent,
-  type ReactNode,
-} from 'react';
+import { useId, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { IconMore } from '../../../icons/more';
 import { useDismiss } from '../../../primitives/use-dismiss';
 import { usePlacement } from '../../../primitives/use-placement';
@@ -76,7 +69,11 @@ export function BreadcrumbTrail({
       const entries = Array.from(measure.children) as HTMLElement[];
       const overflow = entries.pop();
       const widths = entries.map((el) => el.getBoundingClientRect().width);
-      const next = crumbsToHide(widths, overflow?.getBoundingClientRect().width ?? 0, nav.clientWidth);
+      const next = crumbsToHide(
+        widths,
+        overflow?.getBoundingClientRect().width ?? 0,
+        nav.clientWidth,
+      );
       setHidden(next);
     };
     update();
@@ -153,10 +150,19 @@ export function BreadcrumbTrail({
     });
 
   return (
-    <nav ref={navRef} aria-label={label} className={['atl-crumbs', className].filter(Boolean).join(' ')}>
+    <nav
+      ref={navRef}
+      aria-label={label}
+      className={['atl-crumbs', className].filter(Boolean).join(' ')}
+    >
       <ol className="atl-crumbs__list">{renderItems(false)}</ol>
 
-      <ol ref={measureRef} className="atl-crumbs__list atl-crumbs__measure" aria-hidden="true" inert>
+      <ol
+        ref={measureRef}
+        className="atl-crumbs__list atl-crumbs__measure"
+        aria-hidden="true"
+        inert
+      >
         {renderItems(true)}
         <li className="atl-crumbs__item">
           <span className="atl-crumbs__more">

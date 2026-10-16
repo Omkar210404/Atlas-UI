@@ -1,0 +1,122 @@
+@layer atlas.components {
+  .atl-switch {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-m);
+    min-height: var(--target-comfort);
+  }
+
+  .atl-switch[data-label-position='start'] {
+    justify-content: flex-start;
+  }
+
+  .atl-switch__text {
+    display: grid;
+    min-width: 0;
+  }
+
+  .atl-switch__label {
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .atl-switch[data-disabled] .atl-switch__label {
+    cursor: not-allowed;
+  }
+
+  .atl-switch__description {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  .atl-switch__control {
+    --atl-switch-w: 46px;
+    --atl-switch-h: 28px;
+    --atl-switch-pad: 3px;
+    position: relative;
+    flex: none;
+    width: var(--atl-switch-w);
+    height: var(--atl-switch-h);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-round);
+    background: var(--sea-1);
+    box-shadow: inset 0 0 0 1px var(--edge);
+    transition:
+      background-color var(--dur-step) var(--ease-anchor),
+      box-shadow var(--dur-step) var(--ease-anchor);
+  }
+
+  /* A larger invisible hit area, so the 28px track still gives a 44px target. */
+  .atl-switch__control::before {
+    content: '';
+    position: absolute;
+    inset: -8px -4px;
+  }
+
+  .atl-switch__control:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1px var(--ink-soft);
+  }
+
+  .atl-switch__control[aria-checked='true'] {
+    background: var(--ink);
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+
+  .atl-switch__control:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .atl-switch__thumb {
+    position: absolute;
+    top: var(--atl-switch-pad);
+    left: var(--atl-switch-pad);
+    display: grid;
+    place-items: center;
+    width: calc(var(--atl-switch-h) - 2 * var(--atl-switch-pad));
+    height: calc(var(--atl-switch-h) - 2 * var(--atl-switch-pad));
+    border-radius: 50%;
+    background: var(--ink-soft);
+    color: var(--ink);
+    transition:
+      translate var(--dur-current) var(--ease-current),
+      background-color var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-switch__control[aria-checked='true'] .atl-switch__thumb {
+    translate: calc(var(--atl-switch-w) - var(--atl-switch-h)) 0;
+    background: var(--sea-0);
+  }
+
+  .atl-switch__thumb svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0;
+    scale: 0.6;
+    transition:
+      opacity var(--dur-step) var(--ease-anchor),
+      scale var(--dur-step) var(--ease-anchor);
+  }
+
+  .atl-switch__control[aria-checked='true'] .atl-switch__thumb svg {
+    opacity: 1;
+    scale: 1;
+  }
+
+  @media (forced-colors: active) {
+    .atl-switch__control {
+      border: 1px solid ButtonText;
+    }
+    .atl-switch__thumb {
+      background: ButtonText;
+    }
+    .atl-switch__control[aria-checked='true'] .atl-switch__thumb {
+      background: Highlight;
+    }
+  }
+}

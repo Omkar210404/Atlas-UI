@@ -10,38 +10,65 @@ const viewport = { x: 0, y: 0, width: 1000, height: 800 };
 
 describe('place', () => {
   it('centres below the anchor by default', () => {
-    const p = place({ x: 400, y: 100, width: 100, height: 40 }, { width: 200, height: 100 }, viewport);
+    const p = place(
+      { x: 400, y: 100, width: 100, height: 40 },
+      { width: 200, height: 100 },
+      viewport,
+    );
     expect(p).toMatchObject({ side: 'bottom', x: 350, y: 148 });
     expect(p.arrow).toBe(100);
   });
 
   it('flips to the top when there is no room below', () => {
-    const p = place({ x: 400, y: 720, width: 100, height: 40 }, { width: 200, height: 100 }, viewport);
+    const p = place(
+      { x: 400, y: 720, width: 100, height: 40 },
+      { width: 200, height: 100 },
+      viewport,
+    );
     expect(p.side).toBe('top');
     expect(p.y).toBe(720 - 8 - 100);
   });
 
   it('keeps the preferred side when the opposite side is even smaller', () => {
-    const p = place({ x: 400, y: 350, width: 100, height: 40 }, { width: 200, height: 600 }, viewport);
+    const p = place(
+      { x: 400, y: 350, width: 100, height: 40 },
+      { width: 200, height: 600 },
+      viewport,
+    );
     expect(p.side).toBe('bottom');
   });
 
   it('shifts inside the viewport padding and moves the arrow to keep pointing at the anchor', () => {
-    const p = place({ x: 0, y: 100, width: 40, height: 40 }, { width: 200, height: 100 }, viewport, {
-      padding: 8,
-    });
+    const p = place(
+      { x: 0, y: 100, width: 40, height: 40 },
+      { width: 200, height: 100 },
+      viewport,
+      {
+        padding: 8,
+      },
+    );
     expect(p.x).toBe(8);
     expect(p.arrow).toBe(12);
   });
 
   it('places on the right and flips to the left at the edge', () => {
-    const right = place({ x: 100, y: 100, width: 40, height: 40 }, { width: 200, height: 100 }, viewport, {
-      side: 'right',
-    });
+    const right = place(
+      { x: 100, y: 100, width: 40, height: 40 },
+      { width: 200, height: 100 },
+      viewport,
+      {
+        side: 'right',
+      },
+    );
     expect(right).toMatchObject({ side: 'right', x: 148 });
-    const flipped = place({ x: 900, y: 100, width: 40, height: 40 }, { width: 200, height: 100 }, viewport, {
-      side: 'right',
-    });
+    const flipped = place(
+      { x: 900, y: 100, width: 40, height: 40 },
+      { width: 200, height: 100 },
+      viewport,
+      {
+        side: 'right',
+      },
+    );
     expect(flipped.side).toBe('left');
   });
 });

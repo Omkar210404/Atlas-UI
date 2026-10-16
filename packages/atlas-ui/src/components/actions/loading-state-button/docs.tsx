@@ -20,7 +20,10 @@ export const meta: ComponentMeta = {
     'Success returns to idle after `resetAfter` milliseconds (2400 by default); errors stay until the next press.',
   ],
   keyboard: [
-    { keys: ['Enter', 'Space'], action: 'Start the action, or retry after a failure. Ignored while busy.' },
+    {
+      keys: ['Enter', 'Space'],
+      action: 'Start the action, or retry after a failure. Ignored while busy.',
+    },
     { keys: ['Tab'], action: 'Move focus to and from the button. Focus stays on it while busy.' },
   ],
   accessibility: [
@@ -29,7 +32,8 @@ export const meta: ComponentMeta = {
     'Only the current label is exposed; the others are hidden from assistive technology.',
     'Success and failure are shown with an icon and a coloured edge as well as the label, so colour is never the only signal.',
   ],
-  reducedMotion: 'The spinner does not turn, and labels change without sliding. The label still says the work is in progress.',
+  reducedMotion:
+    'The spinner does not turn, and labels change without sliding. The label still says the work is in progress.',
   props: [
     {
       kind: 'select',
@@ -42,7 +46,17 @@ export const meta: ComponentMeta = {
         { value: 'error', label: 'Fails' },
       ],
     },
-    { kind: 'number', name: 'delay', label: 'Work time', description: 'How long the simulated save takes.', default: 1400, min: 200, max: 4000, step: 100, unit: 'ms' },
+    {
+      kind: 'number',
+      name: 'delay',
+      label: 'Work time',
+      description: 'How long the simulated save takes.',
+      default: 1400,
+      min: 200,
+      max: 4000,
+      step: 100,
+      unit: 'ms',
+    },
     {
       kind: 'select',
       name: 'variant',
@@ -69,9 +83,22 @@ export const meta: ComponentMeta = {
 };
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const labels = { idle: 'Save chart', loading: 'Saving…', success: 'Saved', error: 'Couldn’t save. Try again' };
+const labels = {
+  idle: 'Save chart',
+  loading: 'Saving…',
+  success: 'Saved',
+  error: 'Couldn’t save. Try again',
+};
 
-function Demo({ outcome = 'success', delay = 1400, variant = 'primary' }: { outcome?: string; delay?: number; variant?: ButtonVariant }) {
+function Demo({
+  outcome = 'success',
+  delay = 1400,
+  variant = 'primary',
+}: {
+  outcome?: string;
+  delay?: number;
+  variant?: ButtonVariant;
+}) {
   return (
     <LoadingStateButton
       variant={variant}
@@ -92,7 +119,12 @@ function Controlled() {
     <div style={{ display: 'grid', gap: 'var(--space-s)', justifyItems: 'center' }}>
       <LoadingStateButton
         variant="secondary"
-        labels={{ idle: 'Sync logbook', loading: 'Syncing…', success: 'Synced', error: 'Sync failed. Try again' }}
+        labels={{
+          idle: 'Sync logbook',
+          loading: 'Syncing…',
+          success: 'Synced',
+          error: 'Sync failed. Try again',
+        }}
         state={state}
         onStateChange={setState}
         onAction={() => wait(900)}
@@ -105,11 +137,30 @@ function Controlled() {
 export const docs: ComponentDocs = {
   meta,
   presets: [
-    { id: 'save', name: 'Save that succeeds', description: 'Idle, saving, saved, then back to idle.', render: () => <Demo /> },
-    { id: 'failure', name: 'Save that fails', description: 'Ends in the error state, ready to retry.', render: () => <Demo outcome="error" delay={900} /> },
-    { id: 'controlled', name: 'Controlled state', description: 'The page owns the state and shows it.', render: () => <Controlled /> },
+    {
+      id: 'save',
+      name: 'Save that succeeds',
+      description: 'Idle, saving, saved, then back to idle.',
+      render: () => <Demo />,
+    },
+    {
+      id: 'failure',
+      name: 'Save that fails',
+      description: 'Ends in the error state, ready to retry.',
+      render: () => <Demo outcome="error" delay={900} />,
+    },
+    {
+      id: 'controlled',
+      name: 'Controlled state',
+      description: 'The page owns the state and shows it.',
+      render: () => <Controlled />,
+    },
   ],
   Playground: ({ values }) => (
-    <Demo outcome={String(values.outcome)} delay={Number(values.delay)} variant={values.variant as ButtonVariant} />
+    <Demo
+      outcome={String(values.outcome)}
+      delay={Number(values.delay)}
+      variant={values.variant as ButtonVariant}
+    />
   ),
 };

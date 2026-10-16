@@ -41,7 +41,11 @@ export function SplitActionButton({
   const menuId = useId();
 
   usePopover(popoverRef, open);
-  const placement = usePlacement(triggerRef, popoverRef, open, { side: 'bottom', align: 'end', offset: 6 });
+  const placement = usePlacement(triggerRef, popoverRef, open, {
+    side: 'bottom',
+    align: 'end',
+    offset: 6,
+  });
   useDismiss({
     open,
     layerRef: popoverRef,
@@ -69,7 +73,13 @@ export function SplitActionButton({
 
   return (
     <div className="atl-split" data-variant={variant} data-open={open || undefined}>
-      <Button variant={variant} size={size} disabled={disabled} className="atl-split__main" onClick={onAction}>
+      <Button
+        variant={variant}
+        size={size}
+        disabled={disabled}
+        className="atl-split__main"
+        onClick={onAction}
+      >
         {label}
       </Button>
       <span className="atl-split__seam" aria-hidden="true" />
@@ -94,7 +104,9 @@ export function SplitActionButton({
           popover="manual"
           className="atl-menu-popover"
           // Transparent rather than hidden until placed, so the first item can take focus at once.
-          style={placement ? { left: placement.x, top: placement.y } : { left: 0, top: 0, opacity: 0 }}
+          style={
+            placement ? { left: placement.x, top: placement.y } : { left: 0, top: 0, opacity: 0 }
+          }
         >
           <MenuList
             id={menuId}

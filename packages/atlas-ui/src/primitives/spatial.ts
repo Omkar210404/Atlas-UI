@@ -23,7 +23,8 @@ export function nearestInDirection(from: Box, candidates: Box[], direction: Dire
     const c = centre(candidate);
     const dx = c.x - origin.x;
     const dy = c.y - origin.y;
-    const along = direction === 'left' ? -dx : direction === 'right' ? dx : direction === 'up' ? -dy : dy;
+    const along =
+      direction === 'left' ? -dx : direction === 'right' ? dx : direction === 'up' ? -dy : dy;
     const across = direction === 'left' || direction === 'right' ? Math.abs(dy) : Math.abs(dx);
     if (along <= 1) return;
     const score = along + across * 2;

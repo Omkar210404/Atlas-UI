@@ -56,9 +56,27 @@ export const meta: ComponentMeta = {
         { value: 'l', label: 'Large' },
       ],
     },
-    { kind: 'text', name: 'label', label: 'Label', description: 'What the button says.', default: 'Save chart' },
-    { kind: 'boolean', name: 'icon', label: 'Icon', description: 'Show a leading icon.', default: false },
-    { kind: 'boolean', name: 'disabled', label: 'Unavailable', description: 'Shown with aria-disabled.', default: false },
+    {
+      kind: 'text',
+      name: 'label',
+      label: 'Label',
+      description: 'What the button says.',
+      default: 'Save chart',
+    },
+    {
+      kind: 'boolean',
+      name: 'icon',
+      label: 'Icon',
+      description: 'Show a leading icon.',
+      default: false,
+    },
+    {
+      kind: 'boolean',
+      name: 'disabled',
+      label: 'Unavailable',
+      description: 'Shown with aria-disabled.',
+      default: false,
+    },
   ],
   files: ['Button.tsx', 'button.css', 'index.ts'],
   dependencies: { react: '>=19' },
@@ -88,13 +106,20 @@ function Counter() {
 export const docs: ComponentDocs = {
   meta,
   presets: [
-    { id: 'emphasis', name: 'Emphasis levels', description: 'Primary, secondary and quiet together.', render: () => <Counter /> },
+    {
+      id: 'emphasis',
+      name: 'Emphasis levels',
+      description: 'Primary, secondary and quiet together.',
+      render: () => <Counter />,
+    },
     {
       id: 'sizes',
       name: 'Sizes',
       description: 'Small, medium and large, plus an icon-only button.',
       render: () => (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-s)', alignItems: 'center' }}>
+        <div
+          style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-s)', alignItems: 'center' }}
+        >
           <Button size="s">Small</Button>
           <Button size="m">Medium</Button>
           <Button size="l" variant="primary" icon={<IconAnchor />}>

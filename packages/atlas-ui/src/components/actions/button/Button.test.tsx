@@ -36,7 +36,9 @@ describe('Button', () => {
       </>,
     );
     for (const name of ['S', 'M', 'L']) {
-      expect(screen.getByRole('button', { name }).getBoundingClientRect().height).toBeGreaterThanOrEqual(32);
+      expect(
+        screen.getByRole('button', { name }).getBoundingClientRect().height,
+      ).toBeGreaterThanOrEqual(32);
     }
   });
 

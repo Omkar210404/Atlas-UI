@@ -31,8 +31,27 @@ export const meta: ComponentMeta = {
   reducedMotion:
     'The button does not move and the field ring does not appear. It behaves exactly like Button.',
   props: [
-    { kind: 'number', name: 'strength', label: 'Strength', description: 'How far it follows the pointer.', default: 0.35, min: 0, max: 0.8, step: 0.05 },
-    { kind: 'number', name: 'reach', label: 'Reach', description: 'Distance beyond the edge where the pull starts.', default: 56, min: 16, max: 120, step: 4, unit: 'px' },
+    {
+      kind: 'number',
+      name: 'strength',
+      label: 'Strength',
+      description: 'How far it follows the pointer.',
+      default: 0.35,
+      min: 0,
+      max: 0.8,
+      step: 0.05,
+    },
+    {
+      kind: 'number',
+      name: 'reach',
+      label: 'Reach',
+      description: 'Distance beyond the edge where the pull starts.',
+      default: 56,
+      min: 16,
+      max: 120,
+      step: 4,
+      unit: 'px',
+    },
     {
       kind: 'select',
       name: 'variant',
@@ -51,7 +70,15 @@ export const meta: ComponentMeta = {
   registryDependencies: ['actions/button', 'primitives/use-reduced-motion', 'tokens'],
 };
 
-function Launch({ strength, reach, variant }: { strength?: number; reach?: number; variant?: ButtonVariant }) {
+function Launch({
+  strength,
+  reach,
+  variant,
+}: {
+  strength?: number;
+  reach?: number;
+  variant?: ButtonVariant;
+}) {
   const [launched, setLaunched] = useState(false);
   return (
     <div style={{ display: 'grid', gap: 'var(--space-s)', justifyItems: 'center' }}>
@@ -75,11 +102,30 @@ function Launch({ strength, reach, variant }: { strength?: number; reach?: numbe
 export const docs: ComponentDocs = {
   meta,
   presets: [
-    { id: 'call-to-action', name: 'Call to action', description: 'A large primary button with the default pull.', render: () => <Launch /> },
-    { id: 'gentle', name: 'Gentle pull', description: 'Low strength and a short reach, for secondary actions.', render: () => <Launch variant="secondary" strength={0.18} reach={32} /> },
-    { id: 'strong', name: 'Strong pull', description: 'A wide field that is easy to feel.', render: () => <Launch strength={0.5} reach={100} /> },
+    {
+      id: 'call-to-action',
+      name: 'Call to action',
+      description: 'A large primary button with the default pull.',
+      render: () => <Launch />,
+    },
+    {
+      id: 'gentle',
+      name: 'Gentle pull',
+      description: 'Low strength and a short reach, for secondary actions.',
+      render: () => <Launch variant="secondary" strength={0.18} reach={32} />,
+    },
+    {
+      id: 'strong',
+      name: 'Strong pull',
+      description: 'A wide field that is easy to feel.',
+      render: () => <Launch strength={0.5} reach={100} />,
+    },
   ],
   Playground: ({ values }) => (
-    <Launch strength={Number(values.strength)} reach={Number(values.reach)} variant={values.variant as ButtonVariant} />
+    <Launch
+      strength={Number(values.strength)}
+      reach={Number(values.reach)}
+      variant={values.variant as ButtonVariant}
+    />
   ),
 };

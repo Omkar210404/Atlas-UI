@@ -77,19 +77,58 @@ export const meta: ComponentMeta = {
   registryDependencies: ['primitives/roving', 'primitives/use-reduced-motion', 'tokens'],
 };
 
-function Demo({ magnify = true, maxScale = 1.55, reach = 132 }: { magnify?: boolean; maxScale?: number; reach?: number }) {
+function Demo({
+  magnify = true,
+  maxScale = 1.55,
+  reach = 132,
+}: {
+  magnify?: boolean;
+  maxScale?: number;
+  reach?: number;
+}) {
   const [night, setNight] = useState(true);
   const [current, setCurrent] = useState('charts');
   const go = (id: string) => () => setCurrent(id);
   return (
-    <FloatingDock label="Demo dock" floating={false} magnify={magnify} maxScale={maxScale} reach={reach}>
-      <DockItem label="Home" icon={<IconCompass />} current={current === 'home'} onClick={go('home')} />
-      <DockItem label="Charts" icon={<IconFolder />} current={current === 'charts'} onClick={go('charts')} />
-      <DockItem label="Harbours" icon={<IconAnchor />} current={current === 'harbours'} onClick={go('harbours')} />
-      <DockItem label="Alerts" icon={<IconBell />} current={current === 'alerts'} onClick={go('alerts')} />
+    <FloatingDock
+      label="Demo dock"
+      floating={false}
+      magnify={magnify}
+      maxScale={maxScale}
+      reach={reach}
+    >
+      <DockItem
+        label="Home"
+        icon={<IconCompass />}
+        current={current === 'home'}
+        onClick={go('home')}
+      />
+      <DockItem
+        label="Charts"
+        icon={<IconFolder />}
+        current={current === 'charts'}
+        onClick={go('charts')}
+      />
+      <DockItem
+        label="Harbours"
+        icon={<IconAnchor />}
+        current={current === 'harbours'}
+        onClick={go('harbours')}
+      />
+      <DockItem
+        label="Alerts"
+        icon={<IconBell />}
+        current={current === 'alerts'}
+        onClick={go('alerts')}
+      />
       <DockSeparator />
       <DockItem label="Search" icon={<IconSearch />} shortcut="Control+K" onClick={() => {}} />
-      <DockItem label="Night chart" icon={<IconTheme />} pressed={night} onClick={() => setNight((n) => !n)} />
+      <DockItem
+        label="Night chart"
+        icon={<IconTheme />}
+        pressed={night}
+        onClick={() => setNight((n) => !n)}
+      />
       <DockItem label="Settings" icon={<IconSettings />} disabled />
     </FloatingDock>
   );
@@ -118,6 +157,10 @@ export const docs: ComponentDocs = {
     },
   ],
   Playground: ({ values }) => (
-    <Demo magnify={Boolean(values.magnify)} maxScale={Number(values.maxScale)} reach={Number(values.reach)} />
+    <Demo
+      magnify={Boolean(values.magnify)}
+      maxScale={Number(values.maxScale)}
+      reach={Number(values.reach)}
+    />
   ),
 };

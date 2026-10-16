@@ -6,8 +6,10 @@ import { Button, type ButtonProps } from '../button/Button';
 import { glyphPath, glyphs, type GlyphName } from './glyphs';
 import './morphing-icon-button.css';
 
-export interface MorphingIconButtonProps
-  extends Omit<ButtonProps, 'icon' | 'children' | 'aria-pressed' | 'onChange'> {
+export interface MorphingIconButtonProps extends Omit<
+  ButtonProps,
+  'icon' | 'children' | 'aria-pressed' | 'onChange'
+> {
   /** Which pair of shapes to morph between. */
   glyph: GlyphName;
   /** Accessible name. It stays the same in both states; `aria-pressed` carries the state. */

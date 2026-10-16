@@ -83,10 +83,28 @@ const sample: CommandItem[] = [
   { id: 'harbours', label: 'Harbour guides', group: 'Places', icon: <IconAnchor /> },
   { id: 'logbook', label: 'Logbook entries', group: 'Places', icon: <IconFile />, hint: 'Ctrl L' },
   { id: 'crew', label: 'Crew list', group: 'Places', icon: <IconUser /> },
-  { id: 'new-entry', label: 'New logbook entry', group: 'Actions', icon: <IconFile />, keywords: ['create', 'add'] },
-  { id: 'alerts', label: 'Weather alerts', group: 'Actions', icon: <IconBell />, keywords: ['storm', 'wind'] },
+  {
+    id: 'new-entry',
+    label: 'New logbook entry',
+    group: 'Actions',
+    icon: <IconFile />,
+    keywords: ['create', 'add'],
+  },
+  {
+    id: 'alerts',
+    label: 'Weather alerts',
+    group: 'Actions',
+    icon: <IconBell />,
+    keywords: ['storm', 'wind'],
+  },
   { id: 'find', label: 'Find on chart', group: 'Actions', icon: <IconSearch /> },
-  { id: 'settings', label: 'Settings', group: 'Actions', icon: <IconSettings />, keywords: ['preferences'] },
+  {
+    id: 'settings',
+    label: 'Settings',
+    group: 'Actions',
+    icon: <IconSettings />,
+    keywords: ['preferences'],
+  },
   { id: 'export', label: 'Export route (coming later)', group: 'Actions', disabled: true },
 ];
 

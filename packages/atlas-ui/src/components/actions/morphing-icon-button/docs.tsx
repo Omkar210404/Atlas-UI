@@ -69,15 +69,30 @@ export const meta: ComponentMeta = {
   ],
   files: ['MorphingIconButton.tsx', 'glyphs.ts', 'morphing-icon-button.css', 'index.ts'],
   dependencies: { react: '>=19' },
-  registryDependencies: ['actions/button', 'motion/tween', 'primitives/use-controllable-state', 'tokens'],
+  registryDependencies: [
+    'actions/button',
+    'motion/tween',
+    'primitives/use-controllable-state',
+    'tokens',
+  ],
 };
 
 function Player() {
   const [playing, setPlaying] = useState(false);
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-m)' }}>
-      <MorphingIconButton glyph="play-pause" label="Play" variant="primary" size="l" pressed={playing} onPressedChange={setPlaying} />
-      <span style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--step-1)' }} aria-live="polite">
+      <MorphingIconButton
+        glyph="play-pause"
+        label="Play"
+        variant="primary"
+        size="l"
+        pressed={playing}
+        onPressedChange={setPlaying}
+      />
+      <span
+        style={{ fontFamily: 'var(--font-prose)', fontSize: 'var(--step-1)' }}
+        aria-live="polite"
+      >
         {playing ? 'Playing the tide recording' : 'Tide recording, paused'}
       </span>
     </div>
@@ -87,7 +102,12 @@ function Player() {
 export const docs: ComponentDocs = {
   meta,
   presets: [
-    { id: 'player', name: 'Play and pause', description: 'A controlled toggle with a status line beside it.', render: () => <Player /> },
+    {
+      id: 'player',
+      name: 'Play and pause',
+      description: 'A controlled toggle with a status line beside it.',
+      render: () => <Player />,
+    },
     {
       id: 'menu',
       name: 'Menu toggle',

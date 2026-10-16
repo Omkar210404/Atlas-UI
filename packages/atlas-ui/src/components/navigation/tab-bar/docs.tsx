@@ -104,7 +104,9 @@ function Demo({
       </TabBar>
       {shown.map((s) => (
         <TabPanel key={s.value} value={s.value}>
-          <p style={{ padding: 'var(--space-m) var(--space-2xs)', fontFamily: 'var(--font-prose)' }}>
+          <p
+            style={{ padding: 'var(--space-m) var(--space-2xs)', fontFamily: 'var(--font-prose)' }}
+          >
             {s.body}
           </p>
         </TabPanel>
@@ -132,7 +134,9 @@ export const docs: ComponentDocs = {
       id: 'manual',
       name: 'Manual activation',
       description: 'Arrow keys move focus; Enter or Space selects.',
-      render: () => <Demo variant="line" activation="manual" count={5} label="Harbour notes, manual" />,
+      render: () => (
+        <Demo variant="line" activation="manual" count={5} label="Harbour notes, manual" />
+      ),
     },
   ],
   Playground: ({ values }) => (

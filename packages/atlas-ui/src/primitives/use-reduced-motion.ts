@@ -18,7 +18,10 @@ function subscribe(onChange: () => void): () => void {
   const media = window.matchMedia(query);
   media.addEventListener('change', onChange);
   const observer = new MutationObserver(onChange);
-  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-motion'] });
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-motion'],
+  });
   return () => {
     media.removeEventListener('change', onChange);
     observer.disconnect();

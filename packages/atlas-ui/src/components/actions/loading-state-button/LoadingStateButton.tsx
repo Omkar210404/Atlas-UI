@@ -9,8 +9,10 @@ import './loading-state-button.css';
 
 export type LoadState = 'idle' | 'loading' | 'success' | 'error';
 
-export interface LoadingStateButtonProps
-  extends Omit<ButtonProps, 'children' | 'onClick' | 'icon'> {
+export interface LoadingStateButtonProps extends Omit<
+  ButtonProps,
+  'children' | 'onClick' | 'icon'
+> {
   /** What the button says in each state. Use the same verb throughout: Save, Saving…, Saved. */
   labels: Record<LoadState, string>;
   /** The work to do. A returned promise drives the states; a rejection shows the error state. */
@@ -26,7 +28,13 @@ export interface LoadingStateButtonProps
 
 function Spinner() {
   return (
-    <svg className="atl-load__spinner" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+    <svg
+      className="atl-load__spinner"
+      viewBox="0 0 20 20"
+      width="20"
+      height="20"
+      aria-hidden="true"
+    >
       <circle cx="10" cy="10" r="7" />
       <path d="M10 3a7 7 0 0 1 7 7" />
     </svg>
