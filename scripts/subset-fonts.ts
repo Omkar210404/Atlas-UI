@@ -29,7 +29,9 @@ const text = range(0x20, 0x7e) + '–—‘’“”…•·×−©←↑→↓�
 const fontsource = (pkg: string, file: string) =>
   require.resolve(`@fontsource-variable/${pkg}/files/${file}`);
 
-const fonts = [
+type Axes = Record<string, number | { min: number; max: number }>;
+
+const fonts: Array<{ out: string; src: string; axes: Axes }> = [
   {
     out: 'bricolage-grotesque.woff2',
     src: fontsource('bricolage-grotesque', 'bricolage-grotesque-latin-standard-normal.woff2'),

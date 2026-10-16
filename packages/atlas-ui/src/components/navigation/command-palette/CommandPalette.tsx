@@ -256,6 +256,8 @@ export function CommandPalette({
   let optionIndex = -1;
 
   return (
+    // Backdrop clicks are a pointer convenience; keyboard users close with Escape or the Close button.
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <dialog
       ref={dialogRef}
       className="atl-palette"
@@ -327,6 +329,9 @@ export function CommandPalette({
                   const index = optionIndex;
                   const isActive = !disabled && activeRow?.item.id === row.item.id;
                   return (
+                    // Options are reached from the input through aria-activedescendant, so they take
+                    // no focus or key handlers of their own (WAI-ARIA combobox pattern).
+                    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/interactive-supports-focus
                     <div
                       key={row.item.id}
                       id={optionId(row.item.id)}

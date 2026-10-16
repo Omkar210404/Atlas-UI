@@ -16,10 +16,7 @@ export function usePlacement(
   const { side, align, offset, padding } = options;
 
   useLayoutEffect(() => {
-    if (!open) {
-      setPlacement(null);
-      return;
-    }
+    if (!open) return;
     let frame = 0;
     const update = () => {
       const anchor = anchorRef.current;
@@ -58,5 +55,5 @@ export function usePlacement(
     };
   }, [open, anchorRef, floatingRef, side, align, offset, padding]);
 
-  return placement;
+  return open ? placement : null;
 }

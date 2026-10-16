@@ -1,0 +1,32 @@
+/* Subset by scripts/subset-fonts.ts. All three families are OFL-1.1. */
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('./bricolage-grotesque.woff2') format('woff2');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./newsreader.woff2') format('woff2');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Newsreader';
+  src: url('./newsreader-italic.woff2') format('woff2');
+  font-weight: 440;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('./jetbrains-mono.woff2') format('woff2');
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}

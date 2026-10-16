@@ -1,4 +1,5 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
+import { useLatest } from './use-latest';
 
 interface DismissOptions {
   open: boolean;
@@ -26,8 +27,7 @@ export function useDismiss({
   outside = true,
   focusOut = true,
 }: DismissOptions): void {
-  const dismiss = useRef(onDismiss);
-  dismiss.current = onDismiss;
+  const dismiss = useLatest(onDismiss);
 
   useEffect(() => {
     if (!open) return;
@@ -55,5 +55,5 @@ export function useDismiss({
       document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('focusin', onFocusIn);
     };
-  }, [open, escape, outside, focusOut, layerRef, triggerRef]);
+  }, [open, escape, outside, focusOut, layerRef, triggerRef, dismiss]);
 }

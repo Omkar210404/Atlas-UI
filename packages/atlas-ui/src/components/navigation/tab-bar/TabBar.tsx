@@ -122,6 +122,8 @@ export function TabBar({ label, variant = 'line', className, children }: TabBarP
   };
 
   return (
+    // The tabs inside are focusable; the list only handles their arrow keys.
+    // eslint-disable-next-line jsx-a11y/interactive-supports-focus
     <div
       ref={listRef}
       role="tablist"

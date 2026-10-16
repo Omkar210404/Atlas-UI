@@ -1,0 +1,394 @@
+@layer atlas.site {
+  :root {
+    --header-h: 68px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  :root[data-view='spatial'][data-level='atlas'] body,
+  :root[data-view='spatial'][data-level='region'] body {
+    overflow: hidden;
+  }
+
+  .skip-link {
+    position: fixed;
+    top: var(--space-xs);
+    left: var(--space-xs);
+    z-index: 100;
+    padding: var(--space-xs) var(--space-m);
+    border-radius: var(--radius-control);
+    background: var(--ink);
+    color: var(--sea-0);
+    font-weight: 600;
+    translate: 0 -200%;
+  }
+
+  .skip-link:focus-visible {
+    translate: 0 0;
+  }
+
+  .main:focus {
+    outline: none;
+  }
+
+  /* Header ------------------------------------------------------------------ */
+
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    height: var(--header-h);
+    padding: 0 var(--space-m);
+    background: linear-gradient(var(--sea) 62%, transparent);
+    pointer-events: none;
+  }
+
+  .site-header > * {
+    pointer-events: auto;
+  }
+
+  :root:not([data-level='atlas']):not([data-level='region']) .site-header,
+  :root[data-view='simple'] .site-header {
+    background: var(--sea);
+    box-shadow: inset 0 -1px 0 color-mix(in oklch, var(--isobath) 45%, transparent);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    flex: none;
+    min-height: var(--target-comfort);
+    padding-inline: var(--space-2xs) var(--space-xs);
+    border-radius: var(--radius-control);
+    color: var(--ink);
+    font-weight: 650;
+    font-size: var(--step-0);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  .brand__mark {
+    color: var(--isobath);
+  }
+
+  .site-header__trail {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .view-toggle,
+  .mini-toggle {
+    display: inline-flex;
+    flex: none;
+    gap: 2px;
+    margin: 0;
+    padding: 3px;
+    border: 0;
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);
+  }
+
+  .view-toggle label,
+  .mini-toggle label {
+    position: relative;
+    display: inline-grid;
+  }
+
+  .view-toggle input,
+  .mini-toggle input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .view-toggle span,
+  .mini-toggle span {
+    display: inline-grid;
+    place-items: center;
+    min-height: 36px;
+    padding: 0 var(--space-s);
+    border-radius: calc(var(--radius-panel) - 3px);
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    font-weight: 550;
+    transition:
+      background-color var(--dur-tick) var(--ease-anchor),
+      color var(--dur-tick) var(--ease-anchor);
+  }
+
+  .view-toggle input:hover + span,
+  .mini-toggle input:hover + span {
+    color: var(--ink);
+  }
+
+  .view-toggle input:checked + span,
+  .mini-toggle input:checked + span {
+    background: var(--reef);
+    color: var(--ink);
+    box-shadow:
+      inset 0 0 0 1px var(--edge),
+      inset 0 -2px 0 var(--chart-magenta);
+  }
+
+  .view-toggle input:focus-visible + span,
+  .mini-toggle input:focus-visible + span {
+    outline: var(--focus-ring);
+    outline-offset: 1px;
+  }
+
+  .mini-toggle__legend {
+    float: left;
+    align-self: center;
+    margin-right: var(--space-xs);
+    padding-left: var(--space-xs);
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+  }
+
+  /* Notice for automatic Simple view --------------------------------------- */
+
+  .notice {
+    position: fixed;
+    top: calc(var(--header-h) + var(--space-xs));
+    left: 50%;
+    z-index: 15;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs) var(--space-s);
+    width: min(44rem, calc(100% - 2 * var(--space-m)));
+    padding: var(--space-xs) var(--space-xs) var(--space-xs) var(--space-m);
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: var(--elev-overlay);
+    translate: -50% 0;
+  }
+
+  .notice p {
+    flex: 1 1 16rem;
+  }
+
+  .notice button {
+    min-height: 36px;
+    padding: 0 var(--space-s);
+    border: 0;
+    border-radius: var(--radius-control);
+    font-weight: 550;
+  }
+
+  .notice__action {
+    background: var(--chart-magenta);
+    color: var(--on-magenta);
+  }
+
+  .notice__close {
+    background: var(--ink-wash);
+    color: var(--ink);
+  }
+
+  /* Cartouche on the atlas --------------------------------------------------- */
+
+  .cartouche {
+    position: fixed;
+    top: calc(var(--header-h) + var(--space-xs));
+    left: var(--space-l);
+    z-index: 3;
+    display: grid;
+    gap: var(--space-xs);
+    max-width: min(27rem, calc(100% - 2 * var(--space-l)));
+    pointer-events: none;
+  }
+
+  .cartouche kbd {
+    pointer-events: auto;
+  }
+
+  .cartouche__title {
+    font-size: clamp(var(--step-3), 3.4vw, var(--step-5));
+    font-weight: 650;
+    letter-spacing: -0.025em;
+    line-height: 1;
+  }
+
+  .cartouche__lede {
+    font-family: var(--font-prose);
+    font-size: var(--step-1);
+    line-height: 1.35;
+  }
+
+  .cartouche__meta {
+    color: var(--ink-soft);
+    font-size: var(--step--1);
+    max-width: 34ch;
+  }
+
+  .cartouche__title:focus {
+    outline: none;
+  }
+
+  /* Inset map and scale bar ------------------------------------------------- */
+
+  .inset-map {
+    position: fixed;
+    top: calc(var(--header-h) + var(--space-xs));
+    right: var(--space-m);
+    z-index: 9;
+    width: 152px;
+    padding: 6px;
+    border-radius: var(--radius-panel);
+    background: var(--shoal);
+    box-shadow: var(--elev-overlay);
+  }
+
+  :root[data-level='region'][data-view='spatial'] .inset-map {
+    display: none;
+  }
+
+  .inset-map svg {
+    width: 100%;
+    height: auto;
+  }
+
+  .inset-map__frame {
+    fill: var(--sea-1);
+    stroke: color-mix(in oklch, var(--isobath) 60%, transparent);
+  }
+
+  .inset-map__island path {
+    fill: var(--reef);
+    stroke: var(--isobath);
+    stroke-width: 1;
+    transition: fill var(--dur-tick) var(--ease-anchor);
+  }
+
+  .inset-map__island:hover path {
+    fill: color-mix(in oklch, var(--reef), var(--ink) 20%);
+  }
+
+  .inset-map__island[aria-current] path {
+    fill: var(--magenta-wash);
+    stroke: var(--chart-magenta);
+    stroke-width: 2;
+  }
+
+  .inset-map__island:focus-visible {
+    outline: none;
+  }
+
+  .inset-map__island:focus-visible path {
+    stroke: var(--chart-magenta);
+    stroke-width: 3;
+  }
+
+  .scale-bar {
+    position: fixed;
+    left: var(--space-l);
+    bottom: var(--space-l);
+    z-index: 9;
+    width: 184px;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    pointer-events: none;
+  }
+
+  .scale-bar__track {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    height: 6px;
+    box-shadow: inset 0 0 0 1px var(--ink-soft);
+  }
+
+  .scale-bar__segment[data-filled] {
+    background: var(--ink-soft);
+  }
+
+  .scale-bar__segment[data-filled]:last-child,
+  .scale-bar__segment[data-filled]:has(+ :not([data-filled])) {
+    background: var(--chart-magenta);
+  }
+
+  .scale-bar__labels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-top: 4px;
+  }
+
+  .scale-bar__labels [data-current] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  @media (width < 760px) {
+    .scale-bar,
+    .inset-map,
+    .brand__name {
+      display: none;
+    }
+
+    .site-header {
+      gap: var(--space-xs);
+      padding-inline: var(--space-xs);
+    }
+
+    .view-toggle span {
+      padding-inline: var(--space-xs);
+    }
+
+    .cartouche {
+      left: var(--space-m);
+      max-width: calc(100% - 2 * var(--space-m));
+    }
+  }
+
+  /* View transitions --------------------------------------------------------- */
+
+  ::view-transition-group(*) {
+    animation-duration: var(--dur-voyage);
+    animation-timing-function: var(--ease-drift);
+  }
+
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: var(--dur-glide);
+  }
+
+  :root[data-zoom='in']::view-transition-new(root) {
+    animation-name: atlas-zoom-in;
+  }
+
+  :root[data-zoom='out']::view-transition-new(root) {
+    animation-name: atlas-zoom-out;
+  }
+
+  @keyframes atlas-zoom-in {
+    from {
+      opacity: 0;
+      scale: 0.985;
+    }
+  }
+
+  @keyframes atlas-zoom-out {
+    from {
+      opacity: 0;
+      scale: 1.015;
+    }
+  }
+
+  /* The dock and inset map stay put while pages change underneath them. */
+  .site-dock {
+    view-transition-name: site-dock;
+  }
+
+  .site-header {
+    view-transition-name: site-header;
+  }
+}

@@ -1,0 +1,192 @@
+@layer atlas.site {
+  .chart {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: 100dvh;
+    max-width: none;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+    overflow: hidden;
+  }
+
+  .chart[data-dragging] {
+    cursor: grabbing;
+  }
+
+  .chart__graticule {
+    fill: none;
+    stroke: var(--isobath);
+    stroke-opacity: 0.16;
+    stroke-width: 1;
+  }
+
+  .island {
+    transition: opacity var(--dur-voyage) var(--ease-drift);
+  }
+
+  .island[data-dimmed] {
+    opacity: 0.3;
+  }
+
+  .island__link {
+    cursor: pointer;
+    -webkit-user-drag: none;
+  }
+
+  .chart[data-dragging] .island__link {
+    cursor: grabbing;
+  }
+
+  .island__link:focus-visible {
+    outline: none;
+  }
+
+  /* A dashed depth contour just offshore. On focus it becomes the magenta focus ring. */
+  .island__halo {
+    fill: none;
+    stroke: var(--isobath);
+    stroke-opacity: 0.45;
+    stroke-width: 1;
+    stroke-dasharray: 3 5;
+    transform-box: fill-box;
+    transform-origin: center;
+    scale: 1.07;
+    transition:
+      stroke var(--dur-step) var(--ease-anchor),
+      stroke-width var(--dur-step) var(--ease-anchor);
+  }
+
+  .island__link:focus-visible .island__halo {
+    stroke: var(--chart-magenta);
+    stroke-opacity: 1;
+    stroke-width: 3;
+    stroke-dasharray: none;
+  }
+
+  .island__coast {
+    fill: var(--shoal);
+    stroke: var(--isobath);
+    stroke-width: 1.25;
+    transition:
+      fill var(--dur-step) var(--ease-anchor),
+      stroke var(--dur-step) var(--ease-anchor);
+  }
+
+  /* Hypsometric tint: each ring a little higher, a little nearer the reef colour. */
+  .island__ring {
+    fill: color-mix(in oklch, var(--reef) calc(22% + var(--ring) * 18%), var(--shoal));
+    stroke: var(--isobath);
+    stroke-opacity: calc(0.8 - var(--ring) * 0.12);
+    stroke-width: 1;
+    transition: fill var(--dur-step) var(--ease-anchor);
+  }
+
+  .island__link:hover .island__coast,
+  .island__link:focus-visible .island__coast {
+    fill: color-mix(in oklch, var(--shoal), var(--reef) 45%);
+    stroke: var(--ink-soft);
+  }
+
+  .island__sounding circle:first-child {
+    fill: var(--isobath);
+  }
+
+  .island__sounding[data-charted] circle:first-child {
+    fill: var(--ink);
+  }
+
+  .island__sounding-ring {
+    fill: none;
+    stroke: var(--ink-soft);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    opacity: 0;
+    transition: opacity var(--dur-glide) var(--ease-anchor);
+  }
+
+  .island[data-active] .island__sounding-ring {
+    opacity: 1;
+  }
+
+  .island__sounding[data-hover] .island__sounding-ring {
+    stroke: var(--chart-magenta);
+    stroke-dasharray: none;
+    stroke-width: 2;
+  }
+
+  .island__sounding[data-hover] circle:first-child {
+    fill: var(--chart-magenta);
+  }
+
+  /* Hydrographic lettering: letter-spaced italic serif set along the coast. */
+  .island__label {
+    fill: var(--ink);
+    font-family: var(--font-prose);
+    font-style: italic;
+    font-weight: 440;
+    letter-spacing: 0.14em;
+    paint-order: stroke;
+    stroke: var(--sea);
+    stroke-width: 0.16em;
+    stroke-linejoin: round;
+    pointer-events: none;
+  }
+
+  .island:not([data-charted]) .island__label {
+    fill: var(--ink-soft);
+  }
+
+  /* First visit only: the chart is drawn in, coast first, then the contours. */
+  .chart[data-unfolding] .island__coast,
+  .chart[data-unfolding] .island__ring {
+    stroke-dasharray: 1;
+    animation:
+      atlas-draw 1100ms var(--ease-drift) both,
+      atlas-fill 700ms var(--ease-anchor) both;
+    animation-delay:
+      calc(var(--order) * 70ms + var(--ring, 0) * 90ms),
+      calc(500ms + var(--order) * 70ms + var(--ring, 0) * 90ms);
+  }
+
+  .chart[data-unfolding] .island__label,
+  .chart[data-unfolding] .island__halo,
+  .chart[data-unfolding] .island__sounding {
+    animation: atlas-fade 600ms var(--ease-anchor) both;
+    animation-delay: calc(700ms + var(--order) * 70ms);
+  }
+
+  @keyframes atlas-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes atlas-fill {
+    from {
+      fill-opacity: 0;
+    }
+  }
+
+  @keyframes atlas-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .island__coast {
+      stroke: CanvasText;
+    }
+    .island__link:focus-visible .island__halo {
+      stroke: Highlight;
+    }
+  }
+}

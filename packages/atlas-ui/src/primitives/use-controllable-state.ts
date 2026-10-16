@@ -1,4 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useLatest } from './use-latest';
 
 interface Options<T> {
   value?: T | undefined;
@@ -15,12 +16,10 @@ export function useControllableState<T>({
   defaultValue,
   onChange,
 }: Options<T>): [T, (next: T | ((previous: T) => T)) => void] {
-  const isControlled = useRef(value !== undefined).current;
+  const [isControlled] = useState(value !== undefined);
   const [internal, setInternal] = useState(defaultValue);
   const current = isControlled ? (value as T) : internal;
-
-  const latest = useRef({ current, onChange });
-  latest.current = { current, onChange };
+  const latest = useLatest({ current, onChange });
 
   const setValue = useCallback(
     (next: T | ((previous: T) => T)) => {
@@ -30,7 +29,7 @@ export function useControllableState<T>({
       if (!isControlled) setInternal(resolved);
       latest.current.onChange?.(resolved);
     },
-    [isControlled],
+    [isControlled, latest],
   );
 
   return [current, setValue];

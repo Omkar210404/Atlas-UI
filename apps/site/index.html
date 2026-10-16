@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" data-theme="night">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark light" />
+    <title>atlas-ui: an atlas of interfaces</title>
+    <meta
+      name="description"
+      content="Original, accessible React components, shown on a chart you can zoom through."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <script>
+      // Apply saved theme and motion choices before first paint, so there is no flash.
+      try {
+        var p = JSON.parse(localStorage.getItem('atlas-ui:prefs') || 'null');
+        document.documentElement.dataset.theme = p && p.theme === 'day' ? 'day' : 'night';
+        if (p && (p.motion === 'reduce' || p.motion === 'full')) {
+          document.documentElement.dataset.motion = p.motion;
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      <p style="padding: 1rem; font-family: system-ui">
+        atlas-ui needs JavaScript to show its live components. The source is on GitHub.
+      </p>
+    </noscript>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>
