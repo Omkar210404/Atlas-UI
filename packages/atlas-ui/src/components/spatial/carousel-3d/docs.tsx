@@ -72,7 +72,7 @@ const slides = (count: number): CarouselSlide[] =>
         >
           Harbour guide {i + 1}
         </p>
-        <h4 style={{ fontSize: 'var(--step-2)' }}>{name}</h4>
+        <h3 style={{ fontSize: 'var(--step-2)' }}>{name}</h3>
         <a href={`#${name.toLowerCase()}`}>Read the guide</a>
       </div>
     ),

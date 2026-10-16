@@ -64,7 +64,7 @@ function Card({ maxTilt, sheen }: { maxTilt?: number; sheen?: boolean }) {
           >
             Chart 32
           </p>
-          <h4 style={{ fontSize: 'var(--step-2)' }}>Falmouth Harbour</h4>
+          <h3 style={{ fontSize: 'var(--step-2)' }}>Falmouth Harbour</h3>
           <p style={{ color: 'var(--ink-soft)' }}>1 : 12,500. Soundings in metres.</p>
           <Button size="s" style={{ justifySelf: 'start' }}>
             Open chart

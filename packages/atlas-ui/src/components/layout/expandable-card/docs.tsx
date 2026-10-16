@@ -72,7 +72,7 @@ export const docs: ComponentDocs = {
       render: () => (
         <div style={{ display: 'grid', gap: 'var(--space-s)', width: 'min(28rem, 100%)' }}>
           {harbours.map((h) => (
-            <ExpandableCard key={h.name} title={h.name} summary={h.summary} headingLevel={4}>
+            <ExpandableCard key={h.name} title={h.name} summary={h.summary} headingLevel={3}>
               <p>{h.body}</p>
             </ExpandableCard>
           ))}
@@ -87,7 +87,7 @@ export const docs: ComponentDocs = {
         title="Fowey"
         summary={harbours[0]!.summary}
         defaultOpen={Boolean(values.defaultOpen)}
-        headingLevel={4}
+        headingLevel={3}
       >
         <p>{harbours[0]!.body}</p>
       </ExpandableCard>

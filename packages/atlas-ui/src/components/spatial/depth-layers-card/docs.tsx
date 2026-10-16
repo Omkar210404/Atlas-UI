@@ -96,7 +96,7 @@ function Card({ spread }: { spread?: number }) {
   return (
     <div style={{ width: 'min(20rem, 100%)' }}>
       <DepthLayersCard layers={layers} spread={spread}>
-        <h4 style={{ fontSize: 'var(--step-1)' }}>Fowey approaches</h4>
+        <h3 style={{ fontSize: 'var(--step-1)' }}>Fowey approaches</h3>
         <p style={{ color: 'var(--ink-soft)', fontSize: 'var(--step--1)' }}>
           Four plates: sea, land, contours, names.
         </p>

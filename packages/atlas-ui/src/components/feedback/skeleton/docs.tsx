@@ -92,7 +92,7 @@ function Loader() {
         placeholder={<Card media={false} lines={2} />}
       >
         <div style={{ width: 'min(22rem, 100%)' }}>
-          <h4 style={{ fontSize: 'var(--step-1)' }}>Fowey</h4>
+          <h3 style={{ fontSize: 'var(--step-1)' }}>Fowey</h3>
           <p style={{ fontFamily: 'var(--font-prose)', color: 'var(--ink-soft)' }}>
             River estuary with all-tide access and visitor moorings on the east bank.
           </p>
