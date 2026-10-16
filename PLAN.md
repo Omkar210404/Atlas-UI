@@ -4,7 +4,7 @@
 
 A collection of original React UI components, and a showcase site built only from those components. You explore the site like a chart: you zoom from a category region, to a type, to a component.
 
-Status: **draft, waiting for approval.** Nothing is built yet.
+Status: **approved 2026-10-16.** M1 (foundation, spatial shell, Navigation category) is built and waiting for look-and-feel approval. See §13 for what changed from this plan during M1.
 
 ---
 
@@ -34,7 +34,7 @@ Status: **draft, waiting for approval.** Nothing is built yet.
 | axe-core / @axe-core/playwright | 4.14.0 | |
 | eslint | **9.39.5** | ESLint 10 is out, but `eslint-plugin-jsx-a11y@6.10` doesn't support it yet. I'm keeping the a11y lint rules. |
 | typescript-eslint, eslint-plugin-react-hooks | 8.71.2, 7.1.1 | |
-| size-limit + @size-limit/preset-app | 14.2.0 | Bundle budget gate. |
+| esbuild | 0.28.2 | Per-component bundles for the budget gate (`scripts/check-budgets.ts`). Replaced size-limit during M1, see §13. |
 | lighthouse | 13.5.0 | Run from a Node script against `vite preview`. |
 | web-vitals | 6.2.3 | Lab INP/CLS/LCP capture inside Playwright. |
 | shiki | build-time only | Syntax highlighting happens at build time, so no highlighter ships to the browser. |
@@ -67,7 +67,7 @@ An *atlas* is a cartographic object, so the visual language comes from **nautica
 
 ### 1.2 Colour
 
-Two themes, named after chart modes. Values are sRGB hex for reference. Tokens are authored in `oklch()`, and states are derived with `color-mix()`.
+Two themes, named after chart modes. Base colours are authored as sRGB hex in `tokens.ts` (so the contrast test can compute exact ratios), and states are derived with `color-mix(in oklch, …)`.
 
 **Night chart (dark).** Designed first.
 
@@ -166,7 +166,6 @@ Tokens are authored in `packages/atlas-ui/src/tokens/tokens.ts` (typed, the sing
 
 | Group | Examples |
 |---|---|
-| Colour (primitive) | `--c-navy-950 … --c-navy-50`, `--c-magenta-*`, `--c-sea-*` (oklch ramps) |
 | Colour (semantic) | `--deep`, `--shoal`, `--reef`, `--ink`, `--ink-soft`, `--edge`, `--isobath`, `--chart-magenta`, `--starboard`, `--port`, `--caution`, `--focus-ring` |
 | Type | `--font-ui`, `--font-prose`, `--font-code`, `--step--1 … --step-6`, `--leading-ui`, `--leading-prose`, `--measure` |
 | Space | `--space-3xs … --space-4xl` |
@@ -403,10 +402,10 @@ All numbers are measured on real runs and reported with the date, machine and co
 
 | Metric | Budget | How it's measured | Gate? |
 |---|---|---|---|
-| Initial JS, atlas route (gzip) | ≤ 110 KB | size-limit on built entry and route chunks | **CI fails** |
-| Initial CSS (gzip) | ≤ 25 KB | size-limit | **CI fails** |
-| Per component, JS + CSS (gzip, excluding react/motion) | ≤ 6 KB | size-limit, one entry per component | **CI fails** |
-| Lazy 3D chunk (three/webgpu + scenes, gzip) | ≤ 250 KB, never on the initial route | size-limit, plus an e2e check that it doesn't load in Simple view | **CI fails** |
+| Initial JS, atlas route (gzip) | ≤ 110 KB | `scripts/check-budgets.ts`: entry script + modulepreloads read from the built index.html | **CI fails** |
+| Initial CSS (gzip) | ≤ 25 KB | `check-budgets.ts` | **CI fails** |
+| Per component, JS + CSS (gzip, excluding react/motion) | ≤ 6 KB | `check-budgets.ts`: esbuild bundle per component, minified, React external | **CI fails** |
+| Lazy 3D chunk (three/webgpu + scenes, gzip) | ≤ 250 KB, never on the initial route | `check-budgets.ts`, plus an e2e check that it doesn't load in Simple view | **CI fails** |
 | Fonts preloaded | ≤ 2 files, ≤ 90 KB | build manifest check | report |
 | LCP | ≤ 2.0 s | Lighthouse 13, mobile preset (simulated throttling), 3 runs, median | report |
 | CLS | ≤ 0.05 | Lighthouse and web-vitals in Playwright | report |
@@ -429,7 +428,7 @@ Lighthouse and frame numbers are noisy on shared CI runners, so they're reported
 | Smoke | Playwright (Chromium, Firefox, WebKit) | Atlas → Region → Type → Spec and back, by mouse and by keyboard only; palette jump; Spatial ↔ Simple toggle; auto-Simple under emulated reduced motion; deep-link reload on the Pages base path. |
 | Performance | Playwright + web-vitals, Lighthouse script | Section 7 numbers, written to `reports/perf.md`. |
 
-**CI (`.github/workflows/ci.yml`, Node 24):** install → lint → typecheck → tokens drift check → unit tests → build (lib + site) → size-limit (**gate**) → registry drift check → Playwright axe + smoke (**axe gate**) → visual (Chromium). Reports are uploaded as artifacts.
+**CI (`.github/workflows/ci.yml`, Node 24):** install → lint → typecheck → tokens drift check → unit tests → build (lib + site) → bundle budgets (**gate**) → registry drift check → Playwright axe + smoke (**axe gate**) → visual (Chromium). Reports are uploaded as artifacts.
 
 **Deploy (`pages.yml`):** builds the site with `base: /atlas-ui/` and deploys to GitHub Pages on push to `main`.
 
@@ -489,3 +488,20 @@ Commits stay small and descriptive, with **no Co-Authored-By or Claude-Session t
 2. **Default theme.** Night chart (dark) on first visit, as planned, or follow the OS setting?
 3. **Vertical-slice category.** Navigation, as recommended, or another one?
 4. **Auto-Simple under reduced motion.** The brief says to switch to Simple automatically. I'll do that, but still let reduced-motion users choose Spatial, with crossfades only. Is that OK?
+
+---
+
+## 13. Changes during M1
+
+Recorded so the plan stays an honest description of the code.
+
+- **Decisions (§12), taken as recommended:** a type is a component family; Night chart (dark) on first visit; Navigation is the slice; Simple view is automatic under reduced motion, with a button to choose Spatial anyway.
+- **Bundle budgets:** size-limit's config validation would not let site chunks skip bundling, and bundling already-built chunks gives wrong numbers. `scripts/check-budgets.ts` replaces it: it reads the built `index.html` for the true initial load and bundles each component with esbuild.
+- **Colour authoring:** base colours are hex in `tokens.ts` rather than oklch, so the contrast test works on exact values. Derived states still use `color-mix(in oklch, …)`.
+- **Fonts:** the Fontsource Latin files were 128–143 KB each. `scripts/subset-fonts.ts` narrows axes to what the design uses (Bricolage width fixed at 100; Newsreader Italic weight fixed at 440), bringing the two preloaded fonts to 83.8 KB together.
+- **Camera vs. view transitions:** Atlas ↔ Region is a camera move on one persistent SVG (vector-sharp at every frame). Region → Type and Type → Spec use shared-element view transitions (`type-<slug>` card → header, `stage-<slug>` preset → stage).
+- **WebKit:** in Playwright's WebKit build (Windows, October 2026) the page process crashed on view transitions that start or end on the chart. I could not isolate the trigger (an empty SVG in the same place did not crash in isolation). WebKit swaps those pages without a transition; Type ↔ Spec still animates there. Chromium and Firefox are unaffected.
+- **`motion` not used yet:** the slice needed no physics or layout animation beyond CSS and a small token-driven tween (`motion/tween.ts`), so the `motion` package was removed until a component needs it (Actions, Feedback and Layout are the likely first users).
+- **Visual baselines:** no Docker or WSL on this machine, so Windows baselines are local only (git-ignored). CI writes the Linux baselines on its first run and uploads them as an artifact to commit.
+- **Playground controls:** token-styled native inputs, as planned, until the Inputs category lands in M2.
+
