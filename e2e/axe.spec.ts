@@ -53,13 +53,15 @@ for (const theme of themes) {
       });
 
       test(`${slug}: spec sheet, every reference tab`, async ({ page }) => {
+        // Five full axe passes on one page.
+        test.setTimeout(90_000);
         await usePrefs(page, { theme });
         await page.goto(`${category}/${slug}/spec`);
         await expect(page.getByRole('tablist', { name: 'Reference' })).toBeVisible();
         await expectNoViolations(page, `${slug} spec sheet`);
         for (const tab of ['Source', 'Keyboard', 'Accessibility', 'Reduced motion']) {
           await page.getByRole('tab', { name: tab, exact: true }).click();
-          if (tab === 'Source') await expect(page.locator('.code-panel__body pre')).toBeVisible();
+          if (tab === 'Source') await expect(page.locator('.atl-code__body pre')).toBeVisible();
           await expectNoViolations(page, `${slug} spec sheet, ${tab} tab`);
         }
       });

@@ -37,16 +37,25 @@ export async function usePrefs(
   }, prefs);
 }
 
-/** Waits for fonts and for running CSS transitions and animations to finish. */
+/**
+ * Waits for fonts and for running CSS transitions and animations to finish, for at most 3 s
+ * so a page that keeps animating cannot hold a test until it times out.
+ */
 export async function settle(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
-    await Promise.all(
+    const finished = Promise.all(
       document
         .getAnimations()
-        // Infinite animations (spinners, carets) never finish; only wait for the rest.
-        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        // Infinite animations (spinners, carets) never finish, and scroll-driven ones only
+        // move when the page scrolls; only wait for time-based animations that end.
+        .filter(
+          (animation) =>
+            animation.timeline === document.timeline &&
+            animation.effect?.getTiming().iterations !== Infinity,
+        )
         .map((animation) => animation.finished.catch(() => undefined)),
     );
+    await Promise.race([finished, new Promise((resolve) => setTimeout(resolve, 3000))]);
   });
 }
