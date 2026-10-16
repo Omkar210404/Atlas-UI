@@ -7,8 +7,8 @@ import { IconFolder } from '../../../icons/folder';
 import { IconSearch } from '../../../icons/search';
 import { IconSettings } from '../../../icons/settings';
 import { IconUser } from '../../../icons/user';
+import { Button } from '../../actions/button/Button';
 import { CommandPalette, type CommandItem } from './CommandPalette';
-import '../../../docs/demo.css';
 
 export const meta: ComponentMeta = {
   slug: 'command-palette',
@@ -124,9 +124,9 @@ function Demo({
   const items = grouped ? sample : sample.map(({ group: _group, ...item }) => item);
   return (
     <div style={{ display: 'grid', gap: 'var(--space-s)', justifyItems: 'start' }}>
-      <button type="button" className="atl-demo-button" onClick={() => setOpen(true)}>
-        <IconSearch size={18} /> {label}
-      </button>
+      <Button icon={<IconSearch />} onClick={() => setOpen(true)}>
+        {label}
+      </Button>
       <p style={{ color: 'var(--ink-soft)', fontSize: 'var(--step--1)' }} aria-live="polite">
         {picked ? `Opened: ${picked}` : 'Nothing opened yet.'}
       </p>

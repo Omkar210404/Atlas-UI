@@ -1,3 +1,4 @@
+import { SegmentedControl } from 'atlas-ui/inputs/segmented-control';
 import { BreadcrumbTrail, type Crumb } from 'atlas-ui/navigation/breadcrumb-trail';
 import { findCategory, findType } from '../catalog';
 import type { ViewChoice } from '../prefs';
@@ -65,21 +66,19 @@ export function Header({ route, view, onViewChange }: HeaderProps) {
         }}
       />
 
-      <fieldset className="view-toggle">
-        <legend className="atl-visually-hidden">View</legend>
-        {(['spatial', 'simple'] as const).map((option) => (
-          <label key={option} className="view-toggle__option">
-            <input
-              type="radio"
-              name="site-view"
-              value={option}
-              checked={view === option}
-              onChange={() => onViewChange(option)}
-            />
-            <span>{option === 'spatial' ? 'Spatial' : 'Simple'}</span>
-          </label>
-        ))}
-      </fieldset>
+      <SegmentedControl
+        className="view-toggle"
+        label="View"
+        hideLabel
+        size="s"
+        name="site-view"
+        value={view}
+        onValueChange={(v) => onViewChange(v as ViewChoice)}
+        options={[
+          { value: 'spatial', label: 'Spatial' },
+          { value: 'simple', label: 'Simple' },
+        ]}
+      />
     </header>
   );
 }

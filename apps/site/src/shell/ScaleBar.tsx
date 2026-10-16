@@ -18,7 +18,11 @@ export function ScaleBar({ route }: { route: Route }) {
     <div className="scale-bar" aria-hidden="true">
       <div className="scale-bar__track">
         {steps.map((step, i) => (
-          <span key={step.level} className="scale-bar__segment" data-filled={i <= index || undefined} />
+          <span
+            key={step.level}
+            className="scale-bar__segment"
+            data-filled={i <= index || undefined}
+          />
         ))}
       </div>
       <div className="scale-bar__labels">

@@ -24,15 +24,17 @@ export function TypePage({ category, type }: { category: Category; type: TypeEnt
             <a className="primary-link" href={href(spec)} onClick={(e) => onLinkClick(e, spec)}>
               Open the spec sheet
             </a>
-            <span className="type-header__hint">Props, source, keyboard map and accessibility notes.</span>
+            <span className="type-header__hint">
+              Props, source, keyboard map and accessibility notes.
+            </span>
           </p>
         ) : null}
       </header>
 
       {docs === null ? (
         <p className="page__lede">
-          This type is not charted yet. It arrives in a later batch; the rest of {category.name} is on
-          the{' '}
+          This type is not charted yet. It arrives in a later batch; the rest of {category.name} is
+          on the{' '}
           <a href={href(region)} onClick={(e) => onLinkClick(e, region)}>
             region chart
           </a>
@@ -59,7 +61,9 @@ export function TypePage({ category, type }: { category: Category; type: TypeEnt
                     </figcaption>
                   </figure>
                 ))
-              : [0, 1, 2].map((i) => <div key={i} className="specimen specimen--loading" aria-hidden="true" />)}
+              : [0, 1, 2].map((i) => (
+                  <div key={i} className="specimen specimen--loading" aria-hidden="true" />
+                ))}
           </div>
         </section>
       )}

@@ -13,7 +13,10 @@ export function InsetMap({ route }: { route: Route }) {
 
   return (
     <nav className="inset-map" aria-label="Inset map">
-      <svg viewBox={`${world.x - 40} ${world.y - 40} ${world.width + 80} ${world.height + 80}`} role="presentation">
+      <svg
+        viewBox={`${world.x - 40} ${world.y - 40} ${world.width + 80} ${world.height + 80}`}
+        role="presentation"
+      >
         <rect
           className="inset-map__frame"
           x={world.x - 40}
@@ -35,7 +38,9 @@ export function InsetMap({ route }: { route: Route }) {
               aria-current={isCurrent ? 'location' : undefined}
               data-region-link={category.slug}
               className="inset-map__island"
-              onClick={(event) => onLinkClick(event as unknown as React.MouseEvent<HTMLElement>, to)}
+              onClick={(event) =>
+                onLinkClick(event as unknown as React.MouseEvent<HTMLElement>, to)
+              }
             >
               <path d={island.coast} vectorEffect="non-scaling-stroke" />
             </a>

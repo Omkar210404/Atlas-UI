@@ -95,7 +95,8 @@ export function previousRoute(): Route | null {
 const onChart = (route: Route) => route.level === 'atlas' || route.level === 'region';
 
 const webKitOnly =
-  /AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg|Firefox/.test(navigator.userAgent);
+  /AppleWebKit/.test(navigator.userAgent) &&
+  !/Chrome|Chromium|Edg|Firefox/.test(navigator.userAgent);
 
 let transitionOverride: ((route: Route) => boolean) | null = null;
 

@@ -88,76 +88,8 @@
     min-width: 0;
   }
 
-  .view-toggle,
-  .mini-toggle {
-    display: inline-flex;
+  .view-toggle {
     flex: none;
-    gap: 2px;
-    margin: 0;
-    padding: 3px;
-    border: 0;
-    border-radius: var(--radius-panel);
-    background: var(--shoal);
-    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);
-  }
-
-  .view-toggle label,
-  .mini-toggle label {
-    position: relative;
-    display: inline-grid;
-  }
-
-  .view-toggle input,
-  .mini-toggle input {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    opacity: 0;
-    cursor: pointer;
-  }
-
-  .view-toggle span,
-  .mini-toggle span {
-    display: inline-grid;
-    place-items: center;
-    min-height: 36px;
-    padding: 0 var(--space-s);
-    border-radius: calc(var(--radius-panel) - 3px);
-    color: var(--ink-soft);
-    font-size: var(--step--1);
-    font-weight: 550;
-    transition:
-      background-color var(--dur-tick) var(--ease-anchor),
-      color var(--dur-tick) var(--ease-anchor);
-  }
-
-  .view-toggle input:hover + span,
-  .mini-toggle input:hover + span {
-    color: var(--ink);
-  }
-
-  .view-toggle input:checked + span,
-  .mini-toggle input:checked + span {
-    background: var(--reef);
-    color: var(--ink);
-    box-shadow:
-      inset 0 0 0 1px var(--edge),
-      inset 0 -2px 0 var(--chart-magenta);
-  }
-
-  .view-toggle input:focus-visible + span,
-  .mini-toggle input:focus-visible + span {
-    outline: var(--focus-ring);
-    outline-offset: 1px;
-  }
-
-  .mini-toggle__legend {
-    float: left;
-    align-self: center;
-    margin-right: var(--space-xs);
-    padding-left: var(--space-xs);
-    color: var(--ink-soft);
-    font-size: var(--step--1);
   }
 
   /* Notice for automatic Simple view --------------------------------------- */
@@ -181,24 +113,6 @@
 
   .notice p {
     flex: 1 1 16rem;
-  }
-
-  .notice button {
-    min-height: 36px;
-    padding: 0 var(--space-s);
-    border: 0;
-    border-radius: var(--radius-control);
-    font-weight: 550;
-  }
-
-  .notice__action {
-    background: var(--chart-magenta);
-    color: var(--on-magenta);
-  }
-
-  .notice__close {
-    background: var(--ink-wash);
-    color: var(--ink);
   }
 
   /* Cartouche on the atlas --------------------------------------------------- */
@@ -342,10 +256,6 @@
 
     .site-header {
       gap: var(--space-xs);
-      padding-inline: var(--space-xs);
-    }
-
-    .view-toggle span {
       padding-inline: var(--space-xs);
     }
 

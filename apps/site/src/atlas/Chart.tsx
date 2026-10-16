@@ -16,7 +16,16 @@ import { useLatest } from 'atlas-ui/primitives/use-latest';
 import { prefersReducedMotion } from 'atlas-ui/primitives/use-reduced-motion';
 import { categories, isCharted } from '../catalog';
 import { href, navigate, onLinkClick, type Route } from '../router';
-import { fit, lerpCamera, project, scaleOf, unproject, viewBox, type Camera, type Size } from './camera';
+import {
+  fit,
+  lerpCamera,
+  project,
+  scaleOf,
+  unproject,
+  viewBox,
+  type Camera,
+  type Size,
+} from './camera';
 import { buildLayout, type Island, type Layout } from './geometry';
 import './chart.css';
 
@@ -114,7 +123,9 @@ export function Chart({ route, layout, children }: ChartProps) {
   });
   const listeners = useRef(new Set<() => void>());
   const cancel = useRef<() => void>(() => {});
-  const drag = useRef<{ x: number; y: number; camera: Camera; moved: boolean; id: number } | null>(null);
+  const drag = useRef<{ x: number; y: number; camera: Camera; moved: boolean; id: number } | null>(
+    null,
+  );
   const velocity = useRef({ x: 0, y: 0, t: 0 });
   const suppressClick = useRef(false);
   const zoomAccumulator = useRef(0);
@@ -123,7 +134,10 @@ export function Chart({ route, layout, children }: ChartProps) {
   const apply = useCallback((camera: Camera) => {
     state.current.camera = camera;
     svgRef.current?.setAttribute('viewBox', viewBox(camera, state.current.viewport));
-    svgRef.current?.style.setProperty('--chart-scale', String(scaleOf(camera, state.current.viewport)));
+    svgRef.current?.style.setProperty(
+      '--chart-scale',
+      String(scaleOf(camera, state.current.viewport)),
+    );
     listeners.current.forEach((listener) => listener());
   }, []);
 
@@ -187,7 +201,12 @@ export function Chart({ route, layout, children }: ChartProps) {
       }
       cancel.current();
       const s = scaleOf(camera, viewport);
-      apply(clampCamera({ ...camera, x: camera.x + event.deltaX / s, y: camera.y + event.deltaY / s }, layout));
+      apply(
+        clampCamera(
+          { ...camera, x: camera.x + event.deltaX / s, y: camera.y + event.deltaY / s },
+          layout,
+        ),
+      );
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -220,7 +239,10 @@ export function Chart({ route, layout, children }: ChartProps) {
     const s = scaleOf(d.camera, state.current.viewport);
     const now = performance.now();
     const previous = state.current.camera;
-    const next = clampCamera({ ...d.camera, x: d.camera.x - dx / s, y: d.camera.y - dy / s }, layout);
+    const next = clampCamera(
+      { ...d.camera, x: d.camera.x - dx / s, y: d.camera.y - dy / s },
+      layout,
+    );
     const dt = Math.max(now - velocity.current.t, 1);
     velocity.current = { x: (next.x - previous.x) / dt, y: (next.y - previous.y) / dt, t: now };
     apply(next);
@@ -269,7 +291,9 @@ export function Chart({ route, layout, children }: ChartProps) {
     const direction = directions[event.key];
     const target = event.target as Element;
     if (!direction || !target.matches('[data-island-link]')) return;
-    const links = Array.from(event.currentTarget.querySelectorAll<SVGAElement>('[data-island-link]'));
+    const links = Array.from(
+      event.currentTarget.querySelectorAll<SVGAElement>('[data-island-link]'),
+    );
     const others = links.filter((l) => l !== target);
     const index = nearestInDirection(
       target.getBoundingClientRect(),
@@ -288,7 +312,10 @@ export function Chart({ route, layout, children }: ChartProps) {
     const rect = target.getBoundingClientRect();
     const { camera, viewport } = state.current;
     const inside =
-      rect.top >= HEADER && rect.bottom <= viewport.height - DOCK && rect.left >= 0 && rect.right <= viewport.width;
+      rect.top >= HEADER &&
+      rect.bottom <= viewport.height - DOCK &&
+      rect.left >= 0 &&
+      rect.right <= viewport.width;
     if (inside) return;
     const centre = unproject(
       { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
@@ -350,7 +377,12 @@ export function Chart({ route, layout, children }: ChartProps) {
         onKeyDown={onKeyDown}
         onFocus={onFocus}
       >
-        <path className="chart__graticule" d={graticule} vectorEffect="non-scaling-stroke" aria-hidden="true" />
+        <path
+          className="chart__graticule"
+          d={graticule}
+          vectorEffect="non-scaling-stroke"
+          aria-hidden="true"
+        />
         {layout.islands.map((island, index) => (
           <IslandShape
             key={island.slug}
@@ -403,7 +435,12 @@ function IslandShape({
   const shape = (
     <>
       <path className="island__halo" d={island.coast} vectorEffect="non-scaling-stroke" />
-      <path className="island__coast" d={island.coast} pathLength={1} vectorEffect="non-scaling-stroke" />
+      <path
+        className="island__coast"
+        d={island.coast}
+        pathLength={1}
+        vectorEffect="non-scaling-stroke"
+      />
       {island.rings.map((d, i) => (
         <path
           key={i}
@@ -418,7 +455,12 @@ function IslandShape({
         const type = category.types[i];
         const isOn = type ? isCharted(category.slug, type.slug) : false;
         return (
-          <g key={i} className="island__sounding" data-charted={isOn || undefined} data-type={type?.slug}>
+          <g
+            key={i}
+            className="island__sounding"
+            data-charted={isOn || undefined}
+            data-type={type?.slug}
+          >
             <circle cx={p.x} cy={p.y} r={island.radius * 0.035} />
             <circle
               className="island__sounding-ring"
@@ -468,7 +510,10 @@ function IslandShape({
 }
 
 /** Screen position of a sounding on the active island, kept in sync with the camera. */
-export function useSoundingPositions(slug: string, onChange: (points: { x: number; y: number }[]) => void) {
+export function useSoundingPositions(
+  slug: string,
+  onChange: (points: { x: number; y: number }[]) => void,
+) {
   const api = useChartCamera();
   const latest = useLatest(onChange);
   useEffect(() => {

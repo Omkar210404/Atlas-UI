@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { ComponentDocs, ComponentMeta } from '../../../docs/types';
+import { Button } from '../../actions/button/Button';
 import { BreadcrumbTrail, type Crumb } from './BreadcrumbTrail';
-import '../../../docs/demo.css';
 
 export const meta: ComponentMeta = {
   slug: 'breadcrumb-trail',
@@ -90,15 +90,13 @@ function Demo({ depth, width, label }: { depth: number; width: number; label: st
           }}
         />
       </div>
-      <button
-        type="button"
-        className="atl-demo-button"
+      <Button
         style={{ justifySelf: 'start' }}
         disabled={trail.length >= path.length}
         onClick={() => setTrail(path.slice(0, trail.length + 1))}
       >
         Go one level deeper
-      </button>
+      </Button>
     </div>
   );
 }

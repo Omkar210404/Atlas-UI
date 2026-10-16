@@ -84,12 +84,12 @@ for (const entry of components) {
     format: 'esm',
     write: false,
     outdir: 'out',
-    external: ['react', 'react-dom', 'react/jsx-runtime'],
+    external: ['react', 'react-dom', 'react/jsx-runtime', 'motion', 'motion/react'],
     logLevel: 'silent',
   });
   const bytes = out.outputFiles.reduce((sum, file) => sum + gz(file.contents), 0);
   results.push({
-    name: `${category}/${slug}: JS + CSS, without React`,
+    name: `${category}/${slug}: JS + CSS, without React or motion`,
     bytes,
     limit: 6 * KB,
     measure: 'gzip',
@@ -99,12 +99,12 @@ for (const entry of components) {
 // Report -----------------------------------------------------------------------------------------
 const pad = (s: string, n: number) => s.padEnd(n);
 let failed = false;
-console.log(`\n${pad('Budget', 56)}${pad('Size', 12)}${pad('Limit', 12)}Result`);
+console.log(`\n${pad('Budget', 64)}${pad('Size', 12)}${pad('Limit', 12)}Result`);
 for (const r of results) {
   const ok = r.bytes <= r.limit;
   if (!ok) failed = true;
   console.log(
-    `${pad(r.name, 56)}${pad(`${(r.bytes / KB).toFixed(1)} KB`, 12)}${pad(`${r.limit / KB} KB`, 12)}${ok ? 'ok' : 'OVER BUDGET'} (${r.measure})`,
+    `${pad(r.name, 64)}${pad(`${(r.bytes / KB).toFixed(1)} KB`, 12)}${pad(`${r.limit / KB} KB`, 12)}${ok ? 'ok' : 'OVER BUDGET'} (${r.measure})`,
   );
 }
 

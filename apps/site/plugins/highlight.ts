@@ -17,7 +17,11 @@ const ENDING = '.source.js';
  */
 export function highlight(): Plugin {
   let highlighter: Promise<Highlighter> | null = null;
-  const theme = createCssVariablesTheme({ name: 'atlas', variablePrefix: '--code-', fontStyle: true });
+  const theme = createCssVariablesTheme({
+    name: 'atlas',
+    variablePrefix: '--code-',
+    fontStyle: true,
+  });
 
   return {
     name: 'atlas-highlight',

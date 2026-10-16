@@ -42,7 +42,11 @@ export async function settle(page: Page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.all(
-      document.getAnimations().map((animation) => animation.finished.catch(() => undefined)),
+      document
+        .getAnimations()
+        // Infinite animations (spinners, carets) never finish; only wait for the rest.
+        .filter((animation) => animation.effect?.getTiming().iterations !== Infinity)
+        .map((animation) => animation.finished.catch(() => undefined)),
     );
   });
 }

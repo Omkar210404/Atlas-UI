@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Button } from 'atlas-ui/actions/button';
 import { contrastRatio } from 'atlas-ui/tokens/contrast';
 import { cubicBezier } from 'atlas-ui/motion/tween';
 import {
@@ -48,7 +49,10 @@ function Swatches() {
               <span role="cell" key={theme} className="swatch">
                 <span
                   className="swatch__chip"
-                  style={{ background: colour, boxShadow: `inset 0 0 0 1px ${themes[theme].isobath}` }}
+                  style={{
+                    background: colour,
+                    boxShadow: `inset 0 0 0 1px ${themes[theme].isobath}`,
+                  }}
                   aria-hidden="true"
                 />
                 <span className="swatch__value">{colour}</span>
@@ -62,7 +66,13 @@ function Swatches() {
   );
 }
 
-function EaseCurve({ name, curve }: { name: string; curve: readonly [number, number, number, number] }) {
+function EaseCurve({
+  name,
+  curve,
+}: {
+  name: string;
+  curve: readonly [number, number, number, number];
+}) {
   const [played, setPlayed] = useState(false);
   const fn = cubicBezier(...curve);
   const points = Array.from({ length: 41 }, (_, i) => {
@@ -86,9 +96,9 @@ function EaseCurve({ name, curve }: { name: string; curve: readonly [number, num
           style={{ transitionTimingFunction: `cubic-bezier(${curve.join(',')})` }}
         />
       </div>
-      <button type="button" className="text-button" onClick={() => setPlayed((p) => !p)}>
+      <Button variant="quiet" size="s" className="ease__play" onClick={() => setPlayed((p) => !p)}>
         Play {name}
-      </button>
+      </Button>
     </figure>
   );
 }
@@ -134,8 +144,8 @@ export function Principles() {
         </h2>
         <p className="prose">
           Every text colour reaches at least 4.5:1 on every surface in both themes, and control
-          boundaries reach 3:1. A test computes each pair from the token file and fails the build
-          if one drops below.
+          boundaries reach 3:1. A test computes each pair from the token file and fails the build if
+          one drops below.
         </p>
         <Swatches />
       </section>
@@ -146,8 +156,12 @@ export function Principles() {
         </h2>
         <div className="type-specimens">
           <div className="type-specimen">
-            <p className="type-specimen__sample type-specimen__sample--display">Bricolage Grotesque</p>
-            <p className="type-specimen__note">Display and interface. Weight 400–700, optical sizes.</p>
+            <p className="type-specimen__sample type-specimen__sample--display">
+              Bricolage Grotesque
+            </p>
+            <p className="type-specimen__note">
+              Display and interface. Weight 400–700, optical sizes.
+            </p>
           </div>
           <div className="type-specimen">
             <p className="type-specimen__sample type-specimen__sample--prose">
@@ -157,7 +171,9 @@ export function Principles() {
           </div>
           <div className="type-specimen">
             <p className="type-specimen__sample type-specimen__sample--label">Newsreader Italic</p>
-            <p className="type-specimen__note">Hydrographic labels: region names and group headings.</p>
+            <p className="type-specimen__note">
+              Hydrographic labels: region names and group headings.
+            </p>
           </div>
           <div className="type-specimen">
             <p className="type-specimen__sample type-specimen__sample--code">JetBrains Mono</p>
@@ -198,7 +214,13 @@ export function Principles() {
               <code>--radius-{name}</code>
               <span>
                 {name === 'round' ? 'fully round' : `${px}px`}
-                {name === 'control' ? ', for controls' : name === 'panel' ? ', for panels' : name === 'overlay' ? ', for overlays' : ''}
+                {name === 'control'
+                  ? ', for controls'
+                  : name === 'panel'
+                    ? ', for panels'
+                    : name === 'overlay'
+                      ? ', for overlays'
+                      : ''}
               </span>
             </li>
           ))}
@@ -230,27 +252,37 @@ export function Principles() {
           </thead>
           <tbody>
             <tr>
-              <td><code>--dur-tick</code></td>
+              <td>
+                <code>--dur-tick</code>
+              </td>
               <td>{durations.tick}ms</td>
               <td>Hover and press feedback</td>
             </tr>
             <tr>
-              <td><code>--dur-step</code></td>
+              <td>
+                <code>--dur-step</code>
+              </td>
               <td>{durations.step}ms</td>
               <td>Small state changes</td>
             </tr>
             <tr>
-              <td><code>--dur-glide</code></td>
+              <td>
+                <code>--dur-glide</code>
+              </td>
               <td>{durations.glide}ms</td>
               <td>Panels, menus and overlays</td>
             </tr>
             <tr>
-              <td><code>--dur-voyage</code></td>
+              <td>
+                <code>--dur-voyage</code>
+              </td>
               <td>{durations.voyage}ms</td>
               <td>Zooming between levels</td>
             </tr>
             <tr>
-              <td><code>--ease-current</code></td>
+              <td>
+                <code>--ease-current</code>
+              </td>
               <td>
                 spring {springs.current.stiffness}/{springs.current.damping}
               </td>

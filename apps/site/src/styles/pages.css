@@ -105,23 +105,6 @@
     filter: brightness(1.08);
   }
 
-  .text-button {
-    min-height: var(--target-min);
-    padding: var(--space-3xs) var(--space-2xs);
-    border: 0;
-    border-radius: var(--radius-control);
-    background: none;
-    color: var(--ink-soft);
-    font-size: var(--step--1);
-    text-decoration: underline;
-    text-decoration-color: var(--isobath);
-    text-underline-offset: 0.25em;
-  }
-
-  .text-button:hover {
-    color: var(--ink);
-  }
-
   /* Type level --------------------------------------------------------------- */
 
   .type-header {
@@ -200,7 +183,11 @@
     padding: var(--space-xl) var(--space-l);
     background-image:
       linear-gradient(color-mix(in oklch, var(--isobath) 14%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklch, var(--isobath) 14%, transparent) 1px, transparent 1px);
+      linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--isobath) 14%, transparent) 1px,
+        transparent 1px
+      );
     background-size: 32px 32px;
     background-position: -1px -1px;
   }
@@ -277,7 +264,11 @@
     color: var(--ink);
     background-image:
       linear-gradient(color-mix(in oklch, var(--isobath) 14%, transparent) 1px, transparent 1px),
-      linear-gradient(90deg, color-mix(in oklch, var(--isobath) 14%, transparent) 1px, transparent 1px);
+      linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--isobath) 14%, transparent) 1px,
+        transparent 1px
+      );
     background-size: 32px 32px;
     box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);
   }
@@ -314,7 +305,7 @@
     box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--isobath) 55%, transparent);
   }
 
-  .playground .text-button {
+  .playground__reset {
     justify-self: start;
   }
 
@@ -329,50 +320,6 @@
   .control {
     display: grid;
     gap: var(--space-2xs);
-  }
-
-  .control__label {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-xs);
-    font-weight: 550;
-  }
-
-  .control__value {
-    color: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-
-  .control__check {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    min-height: var(--target-min);
-    font-weight: 550;
-    cursor: pointer;
-  }
-
-  .control__check input {
-    width: 20px;
-    height: 20px;
-    margin: 0;
-    accent-color: var(--chart-magenta);
-  }
-
-  .control__select,
-  .control__text {
-    min-height: 40px;
-    padding: 0 var(--space-s);
-    border: 0;
-    border-radius: var(--radius-control);
-    background: var(--sea-1);
-    box-shadow: inset 0 0 0 1px var(--edge);
-  }
-
-  .control__range {
-    width: 100%;
-    min-height: var(--target-min);
-    accent-color: var(--chart-magenta);
   }
 
   .control__hint {
@@ -493,28 +440,13 @@
     font-size: var(--step--1);
   }
 
+  .code-panel__copy {
+    margin-left: auto;
+  }
+
   .code-panel__lines {
     color: var(--ink-soft);
     font-size: var(--step--1);
-  }
-
-  .code-panel__copy {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2xs);
-    min-height: 36px;
-    margin-left: auto;
-    padding: 0 var(--space-s);
-    border: 0;
-    border-radius: var(--radius-control);
-    background: var(--reef);
-    color: var(--ink);
-    font-weight: 550;
-    font-size: var(--step--1);
-  }
-
-  .code-panel__copy:hover:not(:disabled) {
-    background: color-mix(in oklch, var(--reef), var(--ink) 10%);
   }
 
   .code-panel__body pre {
@@ -817,6 +749,10 @@
     stroke-width: 2;
   }
 
+  .ease__play {
+    justify-self: start;
+  }
+
   .ease figcaption {
     display: grid;
   }
@@ -857,10 +793,6 @@
 
   :root[data-motion='reduce'] .ease__dot {
     transition-duration: 0ms;
-  }
-
-  .ease .text-button {
-    justify-self: start;
   }
 
   @media (width < 760px) {

@@ -73,6 +73,10 @@
     animation: atl-load-turn 900ms linear infinite;
   }
 
+  .atl-load__face:not([data-active]) .atl-load__spinner {
+    animation: none;
+  }
+
   .atl-load__spinner circle {
     opacity: 0.3;
   }

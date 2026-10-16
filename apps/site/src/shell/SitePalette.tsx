@@ -79,10 +79,25 @@ export function SitePalette({ view }: { view: ViewChoice }) {
       }
     }
     add(
-      { id: 'page:principles', label: 'Principles', group: 'Pages', icon: <IconSetSquare />, keywords: ['tokens', 'colour', 'type', 'motion'] },
+      {
+        id: 'page:principles',
+        label: 'Principles',
+        group: 'Pages',
+        icon: <IconSetSquare />,
+        keywords: ['tokens', 'colour', 'type', 'motion'],
+      },
       { level: 'principles' },
     );
-    add({ id: 'pref:atlas', label: 'Back to the atlas', group: 'Pages', icon: <IconChart />, keywords: ['home', 'map'] }, { level: 'atlas' });
+    add(
+      {
+        id: 'pref:atlas',
+        label: 'Back to the atlas',
+        group: 'Pages',
+        icon: <IconChart />,
+        keywords: ['home', 'map'],
+      },
+      { level: 'atlas' },
+    );
     add({
       id: 'pref:theme',
       label: prefs.theme === 'night' ? 'Switch to the light theme' : 'Switch to the dark theme',
@@ -109,7 +124,8 @@ export function SitePalette({ view }: { view: ViewChoice }) {
   const onSelect = (item: CommandItem) => {
     if (item.id === 'pref:theme') setPref('theme', prefs.theme === 'night' ? 'day' : 'night');
     else if (item.id === 'pref:view') setPref('view', view === 'simple' ? 'spatial' : 'simple');
-    else if (item.id === 'pref:motion') setPref('motion', prefs.motion === 'reduce' ? 'system' : 'reduce');
+    else if (item.id === 'pref:motion')
+      setPref('motion', prefs.motion === 'reduce' ? 'system' : 'reduce');
     const route = routes.get(item.id);
     if (route) {
       const next = [item.id, ...recents.filter((id) => id !== item.id)].slice(0, 4);

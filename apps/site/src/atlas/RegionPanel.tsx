@@ -10,12 +10,14 @@ function useCategoryDocs(category: Category) {
   useEffect(() => {
     let alive = true;
     const charted = category.types.filter((t) => isCharted(category.slug, t.slug));
-    Promise.all(charted.map(async (t) => [t.slug, await loadDocs(category.slug, t.slug)] as const)).then(
-      (entries) => {
-        if (!alive) return;
-        setDocs(Object.fromEntries(entries.filter((e): e is [string, ComponentDocs] => e[1] !== null)));
-      },
-    );
+    Promise.all(
+      charted.map(async (t) => [t.slug, await loadDocs(category.slug, t.slug)] as const),
+    ).then((entries) => {
+      if (!alive) return;
+      setDocs(
+        Object.fromEntries(entries.filter((e): e is [string, ComponentDocs] => e[1] !== null)),
+      );
+    });
     return () => {
       alive = false;
     };
@@ -49,10 +51,7 @@ export function RegionPanel({ category }: { category: Category }) {
       const to = { x: rect.left, y: rect.top + Math.min(28, rect.height / 2) };
       const visible = rect.bottom > 72 && rect.top < window.innerHeight - 80;
       const elbow = to.x - 28;
-      path.setAttribute(
-        'd',
-        visible ? `M${from.x} ${from.y}L${elbow} ${to.y}H${to.x}` : '',
-      );
+      path.setAttribute('d', visible ? `M${from.x} ${from.y}L${elbow} ${to.y}H${to.x}` : '');
     });
   };
 
@@ -119,7 +118,11 @@ export function RegionPanel({ category }: { category: Category }) {
                 >
                   <h2 className="type-card__name">
                     {ready ? (
-                      <a className="type-card__link" href={href(to)} onClick={(e) => onLinkClick(e, to)}>
+                      <a
+                        className="type-card__link"
+                        href={href(to)}
+                        onClick={(e) => onLinkClick(e, to)}
+                      >
                         {type.name}
                       </a>
                     ) : (
@@ -132,7 +135,9 @@ export function RegionPanel({ category }: { category: Category }) {
                       {preset ? preset.render() : <span className="type-card__loading" />}
                     </div>
                   ) : (
-                    <p className="type-card__status">Not charted yet. It arrives in a later batch.</p>
+                    <p className="type-card__status">
+                      Not charted yet. It arrives in a later batch.
+                    </p>
                   )}
                 </article>
               </li>

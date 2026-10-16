@@ -13,7 +13,11 @@ const sources = import.meta.glob<Source>(
   { query: '?highlight' },
 );
 
-export async function loadSource(category: string, slug: string, file: string): Promise<Source | null> {
+export async function loadSource(
+  category: string,
+  slug: string,
+  file: string,
+): Promise<Source | null> {
   const load = sources[`../../../../packages/atlas-ui/src/components/${category}/${slug}/${file}`];
   if (!load) return null;
   const module = await load();

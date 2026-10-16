@@ -197,12 +197,21 @@ const tall: Placement[] = [
 
 export function buildLayout(name: 'wide' | 'tall', typeCounts: Record<string, number>): Layout {
   const placements = name === 'wide' ? wide : tall;
-  const world = name === 'wide' ? { x: 0, y: 0, width: 1600, height: 1000 } : { x: 0, y: 0, width: 800, height: 1700 };
+  const world =
+    name === 'wide'
+      ? { x: 0, y: 0, width: 1600, height: 1000 }
+      : { x: 0, y: 0, width: 800, height: 1700 };
   return {
     name,
     world,
     islands: placements.map((p) =>
-      makeIsland(p.slug, { x: p.x, y: p.y }, p.r, typeCounts[p.slug] ?? 4, name === 'wide' ? 1 : 1.35),
+      makeIsland(
+        p.slug,
+        { x: p.x, y: p.y },
+        p.r,
+        typeCounts[p.slug] ?? 4,
+        name === 'wide' ? 1 : 1.35,
+      ),
     ),
   };
 }

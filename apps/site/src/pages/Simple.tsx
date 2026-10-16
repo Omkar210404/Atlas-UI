@@ -36,16 +36,24 @@ export function SimpleAtlas() {
           An atlas of interfaces.
         </h1>
         <p className="page__lede">
-          Original React components, grouped into eight regions. {chartedCount} of {plannedCount} are
-          charted so far.
+          Original React components, grouped into eight regions. {chartedCount} of {plannedCount}{' '}
+          are charted so far.
         </p>
       </header>
       {categories.map((category) => {
         const to: Route = { level: 'region', category: category.slug };
         return (
-          <section key={category.slug} className="simple__region" aria-labelledby={`region-${category.slug}`}>
+          <section
+            key={category.slug}
+            className="simple__region"
+            aria-labelledby={`region-${category.slug}`}
+          >
             <h2 id={`region-${category.slug}`}>
-              <a href={href(to)} data-region-link={category.slug} onClick={(e) => onLinkClick(e, to)}>
+              <a
+                href={href(to)}
+                data-region-link={category.slug}
+                onClick={(e) => onLinkClick(e, to)}
+              >
                 {category.name}
               </a>
             </h2>

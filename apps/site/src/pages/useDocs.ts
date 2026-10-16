@@ -4,7 +4,10 @@ import { loadDocs, peekDocs } from '../catalog';
 
 /** Loads a component's docs module. `undefined` while loading, `null` if not charted. */
 export function useDocs(category: string, slug: string): ComponentDocs | null | undefined {
-  const [state, setState] = useState(() => ({ key: `${category}/${slug}`, docs: peekDocs(category, slug) }));
+  const [state, setState] = useState(() => ({
+    key: `${category}/${slug}`,
+    docs: peekDocs(category, slug),
+  }));
   const key = `${category}/${slug}`;
   const docs = state.key === key ? state.docs : peekDocs(category, slug);
 

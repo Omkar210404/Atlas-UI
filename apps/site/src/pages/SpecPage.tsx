@@ -2,6 +2,8 @@ import { Fragment, useEffect, useState } from 'react';
 import { defaultValues, type ComponentDocs, type PlaygroundValues } from 'atlas-ui/docs/types';
 import { IconCheck } from 'atlas-ui/icons/check';
 import { IconCopy } from 'atlas-ui/icons/copy';
+import { Button } from 'atlas-ui/actions/button';
+import { SegmentedControl } from 'atlas-ui/inputs/segmented-control';
 import { Tab, TabBar, TabPanel, Tabs } from 'atlas-ui/navigation/tab-bar';
 import { announce } from 'atlas-ui/primitives/announce';
 import type { Category, TypeEntry } from '../catalog';
@@ -11,7 +13,9 @@ import { useDocs } from './useDocs';
 
 type StageTheme = 'page' | 'night' | 'day' | 'both';
 
-const mac = typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
+const mac =
+  typeof navigator !== 'undefined' &&
+  /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
 
 function Keys({ combo }: { combo: string }) {
   const names: Record<string, string> = {
@@ -28,7 +32,9 @@ function Keys({ combo }: { combo: string }) {
       {parts.map((part, i) => (
         <Fragment key={i}>
           {i > 0 ? <span aria-hidden="true">+</span> : null}
-          <kbd aria-label={part === 'Mod' ? (mac ? 'Command' : 'Control') : part}>{names[part] ?? part}</kbd>
+          <kbd aria-label={part === 'Mod' ? (mac ? 'Command' : 'Control') : part}>
+            {names[part] ?? part}
+          </kbd>
         </Fragment>
       ))}
     </span>
@@ -46,21 +52,19 @@ function Stage({ docs, slug }: { docs: ComponentDocs; slug: string }) {
         <h2 id="stage-title" className="section-title">
           Live preview
         </h2>
-        <fieldset className="mini-toggle">
-          <legend className="mini-toggle__legend">Preview theme</legend>
-          {(['page', 'night', 'day', 'both'] as const).map((option) => (
-            <label key={option}>
-              <input
-                type="radio"
-                name={`stage-theme-${slug}`}
-                value={option}
-                checked={theme === option}
-                onChange={() => setTheme(option)}
-              />
-              <span>{{ page: 'Page', night: 'Dark', day: 'Light', both: 'Both' }[option]}</span>
-            </label>
-          ))}
-        </fieldset>
+        <SegmentedControl
+          className="stage__themes"
+          label="Preview theme"
+          size="s"
+          value={theme}
+          onValueChange={(v) => setTheme(v as StageTheme)}
+          options={[
+            { value: 'page', label: 'Page' },
+            { value: 'night', label: 'Dark' },
+            { value: 'day', label: 'Light' },
+            { value: 'both', label: 'Both' },
+          ]}
+        />
       </div>
       <Tabs value={preset} onValueChange={setPreset}>
         <TabBar label="Presets" variant="chip">
@@ -79,9 +83,15 @@ function Stage({ docs, slug }: { docs: ComponentDocs; slug: string }) {
                   key={t}
                   className="stage__frame"
                   data-theme={t === 'page' ? undefined : t}
-                  style={p.id === docs.presets[0]?.id && t === themes[0] ? { viewTransitionName: `stage-${slug}` } : undefined}
+                  style={
+                    p.id === docs.presets[0]?.id && t === themes[0]
+                      ? { viewTransitionName: `stage-${slug}` }
+                      : undefined
+                  }
                 >
-                  {themes.length > 1 ? <span className="stage__frame-label">{t === 'night' ? 'Dark' : 'Light'}</span> : null}
+                  {themes.length > 1 ? (
+                    <span className="stage__frame-label">{t === 'night' ? 'Dark' : 'Light'}</span>
+                  ) : null}
                   {p.render(themes.length > 1 ? (t === 'night' ? 'dark' : 'light') : undefined)}
                 </div>
               ))}
@@ -111,9 +121,14 @@ function PlaygroundSection({ docs }: { docs: ComponentDocs }) {
           <Playground values={values} />
         </div>
       </div>
-      <button type="button" className="text-button" onClick={() => setValues(defaultValues(docs.meta))}>
+      <Button
+        variant="quiet"
+        size="s"
+        className="playground__reset"
+        onClick={() => setValues(defaultValues(docs.meta))}
+      >
         Reset props
-      </button>
+      </Button>
     </section>
   );
 }
@@ -143,7 +158,10 @@ function CodePanel({ category, slug, file }: { category: string; slug: string; f
       setCopied(true);
       announce(`Copied ${file}`);
     } catch {
-      announce('Copying was blocked by the browser. Select the code and copy it instead.', 'assertive');
+      announce(
+        'Copying was blocked by the browser. Select the code and copy it instead.',
+        'assertive',
+      );
     }
   };
 
@@ -154,10 +172,15 @@ function CodePanel({ category, slug, file }: { category: string; slug: string; f
         {source ? (
           <span className="code-panel__lines">{source.code.split('\n').length} lines</span>
         ) : null}
-        <button type="button" className="code-panel__copy" onClick={copy} disabled={!source}>
-          {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+        <Button
+          size="s"
+          className="code-panel__copy"
+          onClick={copy}
+          disabled={!source}
+          icon={copied ? <IconCheck /> : <IconCopy />}
+        >
           {copied ? 'Copied' : 'Copy'}
-        </button>
+        </Button>
       </div>
       {source ? (
         <div
@@ -166,7 +189,9 @@ function CodePanel({ category, slug, file }: { category: string; slug: string; f
           dangerouslySetInnerHTML={{ __html: source.html }}
         />
       ) : (
-        <p className="code-panel__loading">{source === null ? 'Source not found.' : 'Loading source…'}</p>
+        <p className="code-panel__loading">
+          {source === null ? 'Source not found.' : 'Loading source…'}
+        </p>
       )}
     </div>
   );
@@ -178,8 +203,8 @@ function SourceSection({ docs }: { docs: ComponentDocs }) {
   return (
     <div className="reference__body">
       <p className="prose">
-        Copy these files into your project, next to the shared atlas-ui files listed below.
-        Needs {deps.map(([name, range]) => `${name} ${range}`).join(', ')}; nothing else from npm.
+        Copy these files into your project, next to the shared atlas-ui files listed below. Needs{' '}
+        {deps.map(([name, range]) => `${name} ${range}`).join(', ')}; nothing else from npm.
       </p>
       <p className="prose">
         Shared files:{' '}
@@ -271,8 +296,8 @@ function Reference({ docs }: { docs: ComponentDocs }) {
         <TabPanel value="motion" className="reference__panel">
           <p className="prose">{meta.reducedMotion}</p>
           <p className="prose prose--soft">
-            Applies when your system asks for reduced motion, or when you choose Reduce motion in the
-            search palette.
+            Applies when your system asks for reduced motion, or when you choose Reduce motion in
+            the search palette.
           </p>
         </TabPanel>
       </Tabs>
@@ -284,9 +309,15 @@ function Reference({ docs }: { docs: ComponentDocs }) {
 function InlineCode({ text }: { text: string }) {
   return (
     <>
-      {text.split(/(`[^`]+`)/g).map((part, i) =>
-        part.startsWith('`') && part.endsWith('`') ? <code key={i}>{part.slice(1, -1)}</code> : part,
-      )}
+      {text
+        .split(/(`[^`]+`)/g)
+        .map((part, i) =>
+          part.startsWith('`') && part.endsWith('`') ? (
+            <code key={i}>{part.slice(1, -1)}</code>
+          ) : (
+            part
+          ),
+        )}
     </>
   );
 }

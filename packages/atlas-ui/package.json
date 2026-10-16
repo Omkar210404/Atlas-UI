@@ -13,11 +13,9 @@
   "exports": {
     "./tokens.css": "./dist/tokens/tokens.css",
     "./base.css": "./dist/styles/base.css",
-    "./navigation/floating-dock": "./dist/components/navigation/floating-dock/index.js",
-    "./navigation/command-palette": "./dist/components/navigation/command-palette/index.js",
-    "./navigation/breadcrumb-trail": "./dist/components/navigation/breadcrumb-trail/index.js",
-    "./navigation/tab-bar": "./dist/components/navigation/tab-bar/index.js",
-    "./icons/*": "./dist/icons/*.js"
+    "./icons/*": "./dist/icons/*.js",
+    "./primitives/*": "./dist/primitives/*.js",
+    "./*": "./dist/components/*/index.js"
   },
   "scripts": {
     "build": "vite build"

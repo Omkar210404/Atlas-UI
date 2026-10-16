@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Button } from 'atlas-ui/actions/button';
 import { useReducedMotion } from 'atlas-ui/primitives/use-reduced-motion';
 import { Chart, useLayoutForViewport } from './atlas/Chart';
 import { RegionPanel } from './atlas/RegionPanel';
@@ -142,16 +143,12 @@ export function App() {
       {reason && !noticeDismissed ? (
         <aside className="notice" aria-label="About this view">
           <p>{reason}</p>
-          <button
-            type="button"
-            className="notice__action"
-            onClick={() => setPref('view', 'spatial')}
-          >
+          <Button variant="primary" size="s" onClick={() => setPref('view', 'spatial')}>
             Use the Spatial view
-          </button>
-          <button type="button" className="notice__close" onClick={() => setNoticeDismissed(true)}>
+          </Button>
+          <Button variant="quiet" size="s" onClick={() => setNoticeDismissed(true)}>
             Dismiss
-          </button>
+          </Button>
         </aside>
       ) : null}
       <main id="main" className="main" data-view={view} data-level={route.level} tabIndex={-1}>
