@@ -91,7 +91,7 @@ test.describe('Simple view', () => {
 
   test('links every type in a region', async ({ page }) => {
     await page.goto('feedback');
-    await expect(page.getByRole('link', { name: 'Toast stack' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Toast stack', exact: true })).toBeVisible();
   });
 });
 
