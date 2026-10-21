@@ -89,10 +89,9 @@ test.describe('Simple view', () => {
     await expect(title(page)).toHaveText('Navigation');
   });
 
-  test('shows uncharted types as text, not links', async ({ page }) => {
+  test('links every type in a region', async ({ page }) => {
     await page.goto('feedback');
-    await expect(page.locator('.simple__uncharted', { hasText: 'Toast stack' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Toast stack' })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Toast stack' })).toBeVisible();
   });
 });
 
