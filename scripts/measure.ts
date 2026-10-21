@@ -40,7 +40,10 @@ const lighthouseResults: Array<Record<string, number | string>> = [];
 for (const entry of pages) {
   const runs: Array<Record<string, number>> = [];
   for (let i = 0; i < 3; i++) {
-    const chrome = await chromeLauncher.launch({ chromePath, chromeFlags: ['--headless=new', '--no-sandbox'] });
+    const chrome = await chromeLauncher.launch({
+      chromePath,
+      chromeFlags: ['--headless=new', '--no-sandbox'],
+    });
     try {
       const url = base + entry.path;
       const result = await lighthouse(url, {
@@ -82,12 +85,21 @@ const webVitals = readFileSync(require.resolve('web-vitals/dist/web-vitals.iife.
 async function freshPage(view: 'spatial' | 'simple' = 'spatial'): Promise<Page> {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await context.addInitScript((v) => {
-    localStorage.setItem('atlas-ui:prefs', JSON.stringify({ theme: 'night', view: v, motion: 'system' }));
+    localStorage.setItem(
+      'atlas-ui:prefs',
+      JSON.stringify({ theme: 'night', view: v, motion: 'system' }),
+    );
     sessionStorage.setItem('atlas-ui:unfolded', '1');
   }, view);
   await context.addInitScript(webVitals);
   await context.addInitScript(() => {
-    const w = window as unknown as { __vitals: Record<string, number>; webVitals: Record<string, (cb: (m: { name: string; value: number }) => void, o?: object) => void> };
+    const w = window as unknown as {
+      __vitals: Record<string, number>;
+      webVitals: Record<
+        string,
+        (cb: (m: { name: string; value: number }) => void, o?: object) => void
+      >;
+    };
     w.__vitals = {};
     const record = (m: { name: string; value: number }) => (w.__vitals[m.name] = m.value);
     addEventListener('DOMContentLoaded', () => {
@@ -122,7 +134,9 @@ await page.evaluate(() => {
   document.dispatchEvent(new Event('visibilitychange'));
 });
 await page.waitForTimeout(300);
-const vitals = (await page.evaluate(() => (window as unknown as { __vitals: Record<string, number> }).__vitals)) as Record<string, number>;
+const vitals = (await page.evaluate(
+  () => (window as unknown as { __vitals: Record<string, number> }).__vitals,
+)) as Record<string, number>;
 await page.context().close();
 console.log('web-vitals', vitals);
 
@@ -172,7 +186,9 @@ async function frameTiming(throttle: number) {
     frames: frames.length,
     p50Ms: Number(percentile(frames, 50).toFixed(1)),
     p95Ms: Number(percentile(frames, 95).toFixed(1)),
-    over25MsPct: Number(((frames.filter((f) => f > 25).length / Math.max(frames.length, 1)) * 100).toFixed(1)),
+    over25MsPct: Number(
+      ((frames.filter((f) => f > 25).length / Math.max(frames.length, 1)) * 100).toFixed(1),
+    ),
   });
   return { throttle, zoom: summarise(zoom), drag: summarise(drag) };
 }
@@ -203,7 +219,14 @@ const machine = {
   browser: `Playwright Chromium ${browser.version()}`,
 };
 
-const report = { measuredAt: new Date().toISOString(), machine, lighthouse: lighthouseResults, webVitals: vitals, frames, threeInSimple };
+const report = {
+  measuredAt: new Date().toISOString(),
+  machine,
+  lighthouse: lighthouseResults,
+  webVitals: vitals,
+  frames,
+  threeInSimple,
+};
 mkdirSync(`${root}reports`, { recursive: true });
 writeFileSync(`${root}reports/perf.json`, JSON.stringify(report, null, 2) + '\n');
 
@@ -220,7 +243,8 @@ const md = [
   '| Page | Performance | Accessibility | LCP | FCP | CLS | TBT |',
   '|---|---|---|---|---|---|---|',
   ...lighthouseResults.map(
-    (r) => `| ${r.page} | ${r.performance} | ${r.accessibility} | ${r.lcpMs} ms | ${r.fcpMs} ms | ${r.cls} | ${r.tbtMs} ms |`,
+    (r) =>
+      `| ${r.page} | ${r.performance} | ${r.accessibility} | ${r.lcpMs} ms | ${r.fcpMs} ms | ${r.cls} | ${r.tbtMs} ms |`,
   ),
   '',
   `Budgets: LCP ≤ 2000 ms (${ok(lighthouseResults.every((r) => Number(r.lcpMs) <= 2000))}), CLS ≤ 0.05 (${ok(lighthouseResults.every((r) => Number(r.cls) <= 0.05))}), TBT ≤ 150 ms (${ok(lighthouseResults.every((r) => Number(r.tbtMs) <= 150))}), Accessibility 100 (${ok(lighthouseResults.every((r) => Number(r.accessibility) === 100))}).`,
@@ -250,7 +274,9 @@ const md = [
   '',
   '| Budget | Size | Limit | Result |',
   '|---|---|---|---|',
-  ...bundle.results.map((r) => `| ${r.name} | ${r.kb} KB | ${r.limit / 1024} KB | ${ok(r.withinBudget)} |`),
+  ...bundle.results.map(
+    (r) => `| ${r.name} | ${r.kb} KB | ${r.limit / 1024} KB | ${ok(r.withinBudget)} |`,
+  ),
   '',
   `three.js requested in Simple view: ${threeInSimple.length === 0 ? 'no' : `yes (${threeInSimple.join(', ')})`}.`,
   '',

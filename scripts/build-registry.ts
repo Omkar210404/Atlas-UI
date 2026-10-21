@@ -29,11 +29,15 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 const src = join(root, 'packages/atlas-ui/src');
 const outDir = join(root, 'registry');
 const check = process.argv.includes('--check');
-const pkg = JSON.parse(readFileSync(join(root, 'packages/atlas-ui/package.json'), 'utf8')) as { version: string };
+const pkg = JSON.parse(readFileSync(join(root, 'packages/atlas-ui/package.json'), 'utf8')) as {
+  version: string;
+};
 
 // Bundle every docs module once, with React and three left external and CSS ignored, then
 // import it to read `meta`. Presets are never rendered here.
-const docsFiles = globSync('components/*/*/docs.tsx', { cwd: src }).map((f) => f.replace(/\\/g, '/')).sort();
+const docsFiles = globSync('components/*/*/docs.tsx', { cwd: src })
+  .map((f) => f.replace(/\\/g, '/'))
+  .sort();
 const tmp = join(root, 'node_modules/.cache/atlas-registry');
 rmSync(tmp, { recursive: true, force: true });
 await build({
@@ -45,18 +49,29 @@ await build({
   platform: 'node',
   jsx: 'automatic',
   loader: { '.css': 'empty' },
-  external: ['react', 'react-dom', 'react/jsx-runtime', 'motion', 'motion/react', 'three', 'three/*'],
+  external: [
+    'react',
+    'react-dom',
+    'react/jsx-runtime',
+    'motion',
+    'motion/react',
+    'three',
+    'three/*',
+  ],
   logLevel: 'silent',
 });
 
 const metas: Meta[] = [];
 for (const file of docsFiles) {
-  const mod = (await import(pathToFileURL(join(tmp, file.replace(/\.tsx$/, '.js'))).href)) as { meta: Meta };
+  const mod = (await import(pathToFileURL(join(tmp, file.replace(/\.tsx$/, '.js'))).href)) as {
+    meta: Meta;
+  };
   metas.push(mod.meta);
 }
 
 const read = (path: string) => readFileSync(join(src, path), 'utf8').replace(/\r\n/g, '\n');
-const kindOf = (path: string) => (path.endsWith('.css') ? 'style' : path.endsWith('index.ts') ? 'index' : 'source');
+const kindOf = (path: string) =>
+  path.endsWith('.css') ? 'style' : path.endsWith('index.ts') ? 'index' : 'source';
 
 interface Item {
   $schema: string;
@@ -91,7 +106,11 @@ for (const meta of metas) {
     }),
     dependencies: { ...meta.dependencies },
     registryDependencies: [...meta.registryDependencies],
-    accessibility: { keyboard: meta.keyboard, notes: meta.accessibility, reducedMotion: meta.reducedMotion },
+    accessibility: {
+      keyboard: meta.keyboard,
+      notes: meta.accessibility,
+      reducedMotion: meta.reducedMotion,
+    },
     license: 'MIT',
   });
 }
@@ -164,7 +183,8 @@ const index = {
 
 const outputs = new Map<string, string>();
 outputs.set('registry.json', JSON.stringify(index, null, 2) + '\n');
-for (const item of sorted) outputs.set(`r/${item.name.replace('/', '-')}.json`, JSON.stringify(item, null, 2) + '\n');
+for (const item of sorted)
+  outputs.set(`r/${item.name.replace('/', '-')}.json`, JSON.stringify(item, null, 2) + '\n');
 
 if (check) {
   const stale = [...outputs].filter(([file, text]) => {
@@ -172,7 +192,9 @@ if (check) {
     return !existsSync(path) || readFileSync(path, 'utf8').replace(/\r\n/g, '\n') !== text;
   });
   if (stale.length) {
-    console.error(`Registry is out of date (${stale.length} files). Run \`npm run registry\` and commit.`);
+    console.error(
+      `Registry is out of date (${stale.length} files). Run \`npm run registry\` and commit.`,
+    );
     process.exit(1);
   }
   console.log(`Registry is up to date: ${sorted.length} items.`);
